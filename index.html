@@ -1,0 +1,510 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#wrap{display:flex;gap:0;height:620px;background:#000;font-family:'Courier New',monospace}
+#left{width:340px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:10px;gap:6px}
+#globe-wrap{position:relative;width:300px;height:300px}
+canvas#globe{border-radius:50%;display:block}
+canvas#overlay{position:absolute;top:0;left:0;border-radius:50%;pointer-events:none}
+#top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
+#era-badge{font-size:13px;color:#ffec27;letter-spacing:1px;text-align:center;font-weight:bold;flex:1}
+#lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
+#lang-btn:hover{background:#1a3a5c}
+#eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
+#event-log{width:100%;font-size:8px;color:#ffa07a;min-height:24px;text-align:center;line-height:1.4;padding:2px 4px;background:#040e1c;border:1px solid #1a3a5c}
+#btns{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.ebtn{font-family:'Courier New',monospace;font-size:9px;padding:3px 7px;background:#0a1628;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.ebtn:hover{background:#1a3a5c;color:#fff}
+#speed-row{display:flex;align-items:center;gap:4px;font-size:9px;color:#7ec8e3;flex-wrap:wrap;justify-content:center}
+#speed-row button{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#aaa;border:1px solid #1a3a5c;cursor:pointer}
+#speed-row button.active{background:#1a5276;color:#ffec27;border-color:#ffec27}
+#progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
+#progress-bar{height:100%;background:#1a5276;width:0%}
+#progress-label{position:absolute;right:3px;top:0;font-size:7px;color:#4a7c9e;line-height:8px}
+#year-display{font-size:9px;color:#4a7c9e;text-align:center}
+#right{flex:1;display:flex;flex-direction:column;overflow:hidden;border-left:1px solid #1a3a5c}
+.panel{padding:5px 10px;border-bottom:1px solid #0d2137}
+.ptitle{font-size:8px;color:#4a7c9e;letter-spacing:2px;margin-bottom:3px}
+.gas-row{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.gas-label{font-size:9px;color:#7ec8e3;width:36px}
+.bar-bg{flex:1;height:5px;background:#071525}
+.bar-fill{height:5px}
+.gas-val{font-size:9px;width:40px;text-align:right}
+.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
+.ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
+.ec-val{font-size:12px;font-weight:bold}
+#bio-section{flex:1;overflow-y:auto;padding:5px 10px}
+.bio-group{margin-bottom:5px}
+.bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:2px;border-bottom:1px solid #0d2137;padding-bottom:1px}
+.bio-row{display:flex;align-items:center;gap:3px;margin-bottom:1px}
+.bio-icon{font-size:10px;width:14px;text-align:center}
+.bio-name{font-size:8px;color:#7ec8e3;width:80px;white-space:nowrap;overflow:hidden}
+.bio-val{font-size:8px;width:26px;text-align:right}
+/* タイムライン: 縦書きに戻す、フォント大きく */
+#timeline{padding:4px 6px 4px;background:#040e1c;border-top:1px solid #0d2137;overflow-x:auto;flex-shrink:0}
+#timeline::-webkit-scrollbar{height:4px;background:#040e1c}
+#timeline::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:2px}
+.tl-inner{display:flex;gap:2px;align-items:flex-end;width:max-content;padding-bottom:2px}
+.tl-era{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:3px 4px;border-radius:2px;flex-shrink:0}
+.tl-era:hover{background:#0d2137}
+.tl-era.active{background:#1a3a5c}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-bottom:3px;flex-shrink:0}
+/* 縦書き、フォント9px */
+.tl-name{font-size:9px;color:#4a7c9e;text-align:center;writing-mode:vertical-lr;height:60px;line-height:1.2;overflow:hidden;letter-spacing:1px}
+.tl-era.active .tl-name{color:#ffec27}
+</style>
+
+<div id="wrap">
+<div id="left">
+  <div id="top-row">
+    <div id="era-badge">EARTH SIMULATOR</div>
+    <button id="lang-btn" onclick="toggleLang()">日本語</button>
+  </div>
+  <div id="eon-badge">HADEAN — 4.5 BYA</div>
+  <div id="globe-wrap">
+    <canvas id="globe" width="300" height="300"></canvas>
+    <canvas id="overlay" width="300" height="300"></canvas>
+  </div>
+  <div id="progress-outer">
+    <div id="progress-bar"></div>
+    <span id="progress-label">0%</span>
+  </div>
+  <div id="year-display">4,500 MYA ago</div>
+  <div id="event-log">Earth forms from cosmic dust...</div>
+  <div id="btns">
+    <button class="ebtn" id="btn-meteor" onclick="doEvent('meteor')">☄ METEOR</button>
+    <button class="ebtn" id="btn-volcano" onclick="doEvent('volcano')">🌋 VOLCANO</button>
+    <button class="ebtn" id="btn-ice" onclick="doEvent('ice')">❄ ICE AGE</button>
+    <button class="ebtn" id="btn-warm" onclick="doEvent('warm')">☀ WARMING</button>
+    <button class="ebtn" id="btn-ext" onclick="doEvent('mass_ext')">💀 MASS EXT</button>
+    <button class="ebtn" id="btn-reset" onclick="resetSim()">↺ RESET</button>
+  </div>
+  <div id="speed-row">
+    <span id="lbl-speed">SPEED:</span>
+    <button id="b1" onclick="setSpd(1)" class="active">1x</button>
+    <button id="b5" onclick="setSpd(5)">5x</button>
+    <button id="b20" onclick="setSpd(20)">20x</button>
+    <button id="b100" onclick="setSpd(100)">100x</button>
+  </div>
+</div>
+<div id="right">
+  <div class="panel">
+    <div class="ptitle" id="lbl-atmo">ATMOSPHERE</div>
+    <div id="atmo-bars"></div>
+  </div>
+  <div class="panel">
+    <div class="ptitle" id="lbl-climate">CLIMATE</div>
+    <div class="env-grid" id="env-grid"></div>
+  </div>
+  <div id="bio-section">
+    <div class="ptitle" id="lbl-bio" style="margin-bottom:4px">BIOSPHERE</div>
+    <div id="bio-groups"></div>
+  </div>
+  <div id="timeline">
+    <div class="tl-inner" id="tl-inner"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ---- 言語データ ----
+const LANG={
+  en:{
+    title:'EARTH SIMULATOR', langBtn:'日本語',
+    speed:'SPEED:', atmo:'ATMOSPHERE', climate:'CLIMATE', bio:'BIOSPHERE',
+    temp:'TEMP', wind:'WIND', ice:'ICE',
+    ago:' ago', bya:' BYA', mya:' MYA',
+    reborn:'Earth reborn — the cycle begins again...',
+    reset_msg:'Earth reset — 4.5 billion years begin',
+    btn_meteor:'☄ METEOR', btn_volcano:'🌋 VOLCANO', btn_ice:'❄ ICE AGE',
+    btn_warm:'☀ WARMING', btn_ext:'💀 MASS EXT', btn_reset:'↺ RESET',
+    ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',
+    ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',
+    ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',
+    ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',
+    ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',
+    grp_microbe:'MICROBES', grp_plant:'PLANTS & ALGAE',
+    grp_invert:'INVERTEBRATES', grp_vert:'VERTEBRATES',
+  },
+  ja:{
+    title:'地球シミュレータ', langBtn:'English',
+    speed:'速度:', atmo:'大気組成', climate:'気候', bio:'生物圏',
+    temp:'気温', wind:'風速', ice:'氷床',
+    ago:'前', bya:' 十億年前', mya:' 百万年前',
+    reborn:'地球誕生…サイクルが再び始まる',
+    reset_msg:'リセット — 46億年の旅が始まる',
+    btn_meteor:'☄ 隕石', btn_volcano:'🌋 火山噴火', btn_ice:'❄ 氷河期',
+    btn_warm:'☀ 温暖化', btn_ext:'💀 大量絶滅', btn_reset:'↺ リセット',
+    ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',
+    ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',
+    ev_ice:'❄ 氷河期！全球凍結の危機！',
+    ev_warm:'☀ 地球温暖化！氷が溶ける！',
+    ev_ext:'💀 大量絶滅！種の90%が消滅！',
+    grp_microbe:'微生物', grp_plant:'植物・藻類',
+    grp_invert:'無脊椎動物', grp_vert:'脊椎動物',
+  }
+};
+
+let lang='en';
+function T(k){return LANG[lang][k]||LANG['en'][k]||k;}
+
+function toggleLang(){
+  lang=lang==='en'?'ja':'en';
+  applyLang();
+}
+
+function applyLang(){
+  document.getElementById('era-badge').textContent=T('title');
+  document.getElementById('lang-btn').textContent=T('langBtn');
+  document.getElementById('lbl-speed').textContent=T('speed');
+  document.getElementById('lbl-atmo').textContent=T('atmo');
+  document.getElementById('lbl-climate').textContent=T('climate');
+  document.getElementById('lbl-bio').textContent=T('bio');
+  document.getElementById('btn-meteor').textContent=T('btn_meteor');
+  document.getElementById('btn-volcano').textContent=T('btn_volcano');
+  document.getElementById('btn-ice').textContent=T('btn_ice');
+  document.getElementById('btn-warm').textContent=T('btn_warm');
+  document.getElementById('btn-ext').textContent=T('btn_ext');
+  document.getElementById('btn-reset').textContent=T('btn_reset');
+  // タイムライン再描画
+  buildTimeline();
+  updateTimeline(curEraIdx);
+}
+
+// ---- 生物グループ ----
+const BIO_GROUPS_DEF=[
+  {gkey:'microbe', members:[
+    {key:'archaea',    en:'Archaea',       ja:'古細菌',     color:'#9b59b6',icon:'🔬'},
+    {key:'bacteria',   en:'Bacteria',      ja:'バクテリア', color:'#7fb3d3',icon:'🦠'},
+    {key:'cyanobact',  en:'Cyanobacteria', ja:'シアノバクテリア',color:'#1abc9c',icon:'💧'},
+    {key:'plankton',   en:'Plankton',      ja:'プランクトン',color:'#5dade2',icon:'🌀'},
+  ]},
+  {gkey:'plant', members:[
+    {key:'algae',       en:'Algae',         ja:'藻類',       color:'#82e0aa',icon:'🌊'},
+    {key:'lichen',      en:'Lichen/Moss',   ja:'地衣・コケ', color:'#2ecc71',icon:'🌱'},
+    {key:'spore_plant', en:'Spore plants',  ja:'シダ植物',   color:'#27ae60',icon:'🌿'},
+    {key:'gymnosperm',  en:'Gymnosperms',   ja:'裸子植物',   color:'#1d6a2f',icon:'🌲'},
+    {key:'angiosperm',  en:'Angiosperms',   ja:'被子植物',   color:'#e74c3c',icon:'🌸'},
+    {key:'fungi',       en:'Fungi',         ja:'菌類',       color:'#f0b27a',icon:'🍄'},
+  ]},
+  {gkey:'invert', members:[
+    {key:'jellyfish',   en:'Jellyfish/Worm',ja:'クラゲ・ワーム',color:'#f8c8d4',icon:'🪼'},
+    {key:'trilobite',   en:'Trilobites',    ja:'三葉虫',     color:'#a04000',icon:'🦂'},
+    {key:'mollusk',     en:'Mollusks/Clams',ja:'軟体・貝類', color:'#8e6c88',icon:'🐚'},
+    {key:'crustacean',  en:'Crustaceans',   ja:'甲殻類',     color:'#e67e22',icon:'🦀'},
+    {key:'insect',      en:'Insects',       ja:'昆虫類',     color:'#f7dc6f',icon:'🦟'},
+    {key:'arachnid',    en:'Arachnids',     ja:'クモ形類',   color:'#922b21',icon:'🕷'},
+    {key:'echinoderm',  en:'Echinoderms',   ja:'棘皮動物',   color:'#d98880',icon:'⭐'},
+  ]},
+  {gkey:'vert', members:[
+    {key:'jawless_fish',en:'Jawless Fish',  ja:'無顎魚類',   color:'#aed6f1',icon:'🐡'},
+    {key:'jawed_fish',  en:'Jawed Fish',    ja:'有顎魚類',   color:'#5dade2',icon:'🐟'},
+    {key:'lobe_fish',   en:'Lobe-fin Fish', ja:'肉鰭類',     color:'#2471a3',icon:'🐠'},
+    {key:'amphibian',   en:'Amphibians',    ja:'両生類',     color:'#58d68d',icon:'🐸'},
+    {key:'reptile',     en:'Reptiles',      ja:'爬虫類',     color:'#a9cce3',icon:'🦎'},
+    {key:'synapsid',    en:'Synapsids',     ja:'単弓類',     color:'#e59866',icon:'🦏'},
+    {key:'dino',        en:'Dinosaurs',     ja:'恐竜',       color:'#d35400',icon:'🦕'},
+    {key:'pterosaur',   en:'Pterosaurs',    ja:'翼竜',       color:'#8e44ad',icon:'🦅'},
+    {key:'bird',        en:'Birds',         ja:'鳥類',       color:'#f1c40f',icon:'🐦'},
+    {key:'mammal',      en:'Mammals',       ja:'哺乳類',     color:'#ec407a',icon:'🐾'},
+    {key:'primate',     en:'Primates',      ja:'霊長類',     color:'#ff8a65',icon:'🐒'},
+    {key:'human',       en:'Humans',        ja:'人類',       color:'#fff176',icon:'👤'},
+  ]},
+];
+const ALL_BIO=[];BIO_GROUPS_DEF.forEach(g=>g.members.forEach(m=>ALL_BIO.push(m)));
+function bioKeys(){return ALL_BIO.map(b=>b.key);}
+
+// ---- 時代データ ----
+const ERA_NAMES={
+  hadean:    {en:'Hadean',          ja:'冥王代'},
+  archean:   {en:'Archean',         ja:'太古代'},
+  proterozoic:{en:'Proterozoic',    ja:'原生代'},
+  snowball:  {en:'Snowball Earth',  ja:'全球凍結'},
+  ediacaran: {en:'Ediacaran',       ja:'エディアカラ紀'},
+  cambrian:  {en:'Cambrian',        ja:'カンブリア紀'},
+  ordovician:{en:'Ordovician',      ja:'オルドビス紀'},
+  silurian:  {en:'Silurian',        ja:'シルル紀'},
+  devonian:  {en:'Devonian',        ja:'デボン紀'},
+  carboniferous:{en:'Carbonif.',    ja:'石炭紀'},
+  permian:   {en:'Permian',         ja:'ペルム紀'},
+  pt_ext:    {en:'P-T Extinct.',    ja:'P-T大絶滅'},
+  triassic_e:{en:'Triassic E.',     ja:'三畳紀前期'},
+  triassic_l:{en:'Triassic L.',     ja:'三畳紀後期'},
+  jurassic_e:{en:'Jurassic E.',     ja:'ジュラ紀前期'},
+  jurassic_l:{en:'Jurassic L.',     ja:'ジュラ紀後期'},
+  cretaceous_e:{en:'Cretac. E.',    ja:'白亜紀前期'},
+  cretaceous_l:{en:'Cretac. L.',    ja:'白亜紀後期'},
+  kpg_ext:   {en:'K-Pg Extinct.',   ja:'K-Pg大絶滅'},
+  paleogene: {en:'Paleogene',       ja:'暁新世'},
+  neogene:   {en:'Neogene',         ja:'中新世'},
+  quaternary:{en:'Quaternary',      ja:'第四紀'},
+};
+
+const ERA_DESC={
+  hadean:    {en:'Molten Earth. Meteor bombardment. No life possible.',ja:'溶融した地球。隕石の集中砲火。生命不可能。'},
+  archean:   {en:'First oceans & primitive bacteria. Zero oxygen.',ja:'最初の海と原始細菌。酸素はゼロ。'},
+  proterozoic:{en:'Great Oxidation Event! Cyanobacteria flood atmosphere with O2.',ja:'大酸化イベント！シアノバクテリアが大気にO2を放出。'},
+  snowball:  {en:'SNOWBALL EARTH — entire planet frozen! Life clings to vents.',ja:'全球凍結！惑星全体が氷に覆われる！生命は熱水噴出孔にしがみつく。'},
+  ediacaran: {en:'First multicellular life! Soft-bodied Ediacaran fauna emerge.',ja:'最初の多細胞生物！エディアカラ生物群が出現。'},
+  cambrian:  {en:'Cambrian Explosion! Most animal phyla appear. Trilobites dominate.',ja:'カンブリア爆発！ほとんどの動物門が出現。三葉虫が支配。'},
+  ordovician:{en:'Marine life diversifies. First land plants. Ends with mass extinction.',ja:'海洋生物が多様化。最初の陸上植物。大量絶滅で終わる。'},
+  silurian:  {en:'First vascular plants. Jawed fish evolve. Coral reefs flourish.',ja:'最初の維管束植物。顎を持つ魚が進化。サンゴ礁が繁栄。'},
+  devonian:  {en:'Age of Fishes! First forests. Tetrapods crawl onto land.',ja:'魚の時代！最初の森林。四肢動物が陸上へ。'},
+  carboniferous:{en:'O2 hits 30%! Giant insects. Coal swamp forests. First reptiles.',ja:'O2が30%！巨大昆虫。石炭紀の森林。最初の爬虫類。'},
+  permian:   {en:'Pangaea. Synapsids dominate. End: WORST mass extinction — 96% gone.',ja:'パンゲア。単弓類が支配。終末：最悪の大量絶滅—96%消滅。'},
+  pt_ext:    {en:'96% of all species EXTINCT. Siberian Traps erupt. Anoxic oceans.',ja:'全種の96%が絶滅。シベリアの罠噴火。無酸素の海。'},
+  triassic_e:{en:'Recovery begins. First dinosaurs! Archosaurs diversify rapidly.',ja:'回復開始。最初の恐竜！主竜類が急速に多様化。'},
+  triassic_l:{en:'Dinosaurs diversify. First true mammals. Pangaea begins splitting.',ja:'恐竜が多様化。最初の真の哺乳類。パンゲアが分裂開始。'},
+  jurassic_e:{en:'Sauropods grow enormous. Atlantic Ocean opens. Pangaea breaks apart.',ja:'竜脚類が巨大化。大西洋が開く。パンゲアが分裂。'},
+  jurassic_l:{en:'Peak Jurassic! Brachiosaurus, Stegosaurus. First birds!',ja:'ジュラ紀の頂点！ブラキオサウルス、ステゴサウルス。最初の鳥！'},
+  cretaceous_e:{en:'Flowering plants explode across continents. Sea levels very high.',ja:'被子植物が大陸に広まる。海面が非常に高い。'},
+  cretaceous_l:{en:'T-Rex! Triceratops! Angiosperms dominant. Asteroid incoming...',ja:'T-レックス！トリケラトプス！被子植物が優勢。小惑星が近づく…'},
+  kpg_ext:   {en:'Chicxulub impact! 75% species extinct. Nuclear winter. Dinos gone.',ja:'チクシュルーブ衝突！種の75%が絶滅。核の冬。恐竜消滅。'},
+  paleogene: {en:'Mammals explode! Whales return to sea. Primates appear.',ja:'哺乳類が爆発的に多様化！クジラが海へ。霊長類が出現。'},
+  neogene:   {en:'Grasslands spread. Megafauna evolve. Hominids walk upright.',ja:'草原が広まる。大型動物が進化。ホミニドが直立歩行。'},
+  quaternary:{en:'Ice ages cycle. Homo sapiens emerge. Present day.',ja:'氷期サイクル。ホモ・サピエンス出現。現代。'},
+};
+
+const ERA_BIO={
+  hadean:    {archaea:0,bacteria:0,cyanobact:0,plankton:0,algae:0,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:0,jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0,jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  archean:   {archaea:45,bacteria:30,cyanobact:5,plankton:0,algae:0,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:0,jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0,jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  proterozoic:{archaea:20,bacteria:30,cyanobact:25,plankton:8,algae:15,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:3,jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0,jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  snowball:  {archaea:12,bacteria:15,cyanobact:6,plankton:2,algae:4,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:3,jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0,jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  ediacaran: {archaea:8,bacteria:12,cyanobact:12,plankton:10,algae:18,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:6,jellyfish:8,trilobite:0,mollusk:3,crustacean:1,insect:0,arachnid:0,echinoderm:5,jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  cambrian:  {archaea:3,bacteria:8,cyanobact:8,plankton:12,algae:14,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:6,jellyfish:6,trilobite:18,mollusk:8,crustacean:5,insect:0,arachnid:0,echinoderm:8,jawless_fish:5,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  ordovician:{archaea:2,bacteria:5,cyanobact:5,plankton:12,algae:12,lichen:2,spore_plant:2,gymnosperm:0,angiosperm:0,fungi:6,jellyfish:5,trilobite:14,mollusk:10,crustacean:8,insect:0,arachnid:0,echinoderm:10,jawless_fish:8,jawed_fish:2,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  silurian:  {archaea:1,bacteria:4,cyanobact:4,plankton:10,algae:10,lichen:5,spore_plant:6,gymnosperm:0,angiosperm:0,fungi:6,jellyfish:4,trilobite:10,mollusk:10,crustacean:9,insect:2,arachnid:1,echinoderm:8,jawless_fish:6,jawed_fish:10,lobe_fish:3,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  devonian:  {archaea:1,bacteria:3,cyanobact:3,plankton:8,algae:8,lichen:5,spore_plant:10,gymnosperm:3,angiosperm:0,fungi:6,jellyfish:3,trilobite:6,mollusk:8,crustacean:8,insect:5,arachnid:4,echinoderm:7,jawless_fish:3,jawed_fish:15,lobe_fish:8,amphibian:6,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  carboniferous:{archaea:1,bacteria:3,cyanobact:2,plankton:6,algae:5,lichen:5,spore_plant:16,gymnosperm:6,angiosperm:0,fungi:7,jellyfish:2,trilobite:2,mollusk:6,crustacean:7,insect:20,arachnid:8,echinoderm:5,jawless_fish:1,jawed_fish:8,lobe_fish:3,amphibian:14,reptile:6,synapsid:2,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  permian:   {archaea:1,bacteria:2,cyanobact:2,plankton:5,algae:4,lichen:4,spore_plant:10,gymnosperm:12,angiosperm:0,fungi:6,jellyfish:2,trilobite:1,mollusk:6,crustacean:6,insect:12,arachnid:6,echinoderm:5,jawless_fish:0,jawed_fish:6,lobe_fish:1,amphibian:8,reptile:12,synapsid:18,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  pt_ext:    {archaea:6,bacteria:14,cyanobact:4,plankton:3,algae:2,lichen:1,spore_plant:2,gymnosperm:2,angiosperm:0,fungi:12,jellyfish:2,trilobite:0,mollusk:2,crustacean:2,insect:3,arachnid:2,echinoderm:1,jawless_fish:0,jawed_fish:2,lobe_fish:0,amphibian:2,reptile:4,synapsid:3,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  triassic_e:{archaea:2,bacteria:5,cyanobact:3,plankton:5,algae:5,lichen:3,spore_plant:6,gymnosperm:8,angiosperm:0,fungi:8,jellyfish:2,trilobite:0,mollusk:4,crustacean:4,insect:6,arachnid:4,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:5,reptile:14,synapsid:8,dino:5,pterosaur:2,bird:0,mammal:0,primate:0,human:0},
+  triassic_l:{archaea:1,bacteria:3,cyanobact:2,plankton:5,algae:5,lichen:3,spore_plant:7,gymnosperm:11,angiosperm:0,fungi:7,jellyfish:2,trilobite:0,mollusk:5,crustacean:5,insect:8,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:4,reptile:10,synapsid:5,dino:12,pterosaur:4,bird:0,mammal:2,primate:0,human:0},
+  jurassic_e:{archaea:1,bacteria:2,cyanobact:2,plankton:5,algae:5,lichen:3,spore_plant:7,gymnosperm:13,angiosperm:1,fungi:6,jellyfish:2,trilobite:0,mollusk:5,crustacean:5,insect:8,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:7,synapsid:1,dino:20,pterosaur:6,bird:0,mammal:2,primate:0,human:0},
+  jurassic_l:{archaea:1,bacteria:2,cyanobact:2,plankton:6,algae:5,lichen:3,spore_plant:6,gymnosperm:14,angiosperm:2,fungi:5,jellyfish:2,trilobite:0,mollusk:5,crustacean:5,insect:9,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:6,synapsid:0,dino:25,pterosaur:7,bird:3,mammal:3,primate:0,human:0},
+  cretaceous_e:{archaea:1,bacteria:2,cyanobact:2,plankton:7,algae:5,lichen:2,spore_plant:5,gymnosperm:10,angiosperm:10,fungi:5,jellyfish:2,trilobite:0,mollusk:5,crustacean:5,insect:10,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:5,synapsid:0,dino:22,pterosaur:6,bird:4,mammal:4,primate:0,human:0},
+  cretaceous_l:{archaea:1,bacteria:2,cyanobact:2,plankton:7,algae:4,lichen:2,spore_plant:4,gymnosperm:8,angiosperm:18,fungi:5,jellyfish:2,trilobite:0,mollusk:5,crustacean:5,insect:11,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:4,synapsid:0,dino:18,pterosaur:5,bird:5,mammal:6,primate:0,human:0},
+  kpg_ext:   {archaea:3,bacteria:10,cyanobact:3,plankton:3,algae:3,lichen:1,spore_plant:3,gymnosperm:4,angiosperm:6,fungi:14,jellyfish:2,trilobite:0,mollusk:3,crustacean:3,insect:6,arachnid:4,echinoderm:2,jawless_fish:0,jawed_fish:4,lobe_fish:0,amphibian:3,reptile:4,synapsid:0,dino:0,pterosaur:0,bird:3,mammal:3,primate:0,human:0},
+  paleogene: {archaea:1,bacteria:2,cyanobact:2,plankton:7,algae:4,lichen:3,spore_plant:4,gymnosperm:8,angiosperm:20,fungi:5,jellyfish:2,trilobite:0,mollusk:4,crustacean:5,insect:10,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:6,synapsid:0,dino:0,pterosaur:0,bird:8,mammal:18,primate:4,human:0},
+  neogene:   {archaea:1,bacteria:2,cyanobact:1,plankton:6,algae:3,lichen:3,spore_plant:3,gymnosperm:7,angiosperm:24,fungi:5,jellyfish:2,trilobite:0,mollusk:4,crustacean:5,insect:10,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:5,synapsid:0,dino:0,pterosaur:0,bird:8,mammal:20,primate:8,human:0},
+  quaternary:{archaea:1,bacteria:2,cyanobact:1,plankton:5,algae:3,lichen:3,spore_plant:3,gymnosperm:6,angiosperm:24,fungi:5,jellyfish:2,trilobite:0,mollusk:4,crustacean:5,insect:9,arachnid:5,echinoderm:4,jawless_fish:0,jawed_fish:5,lobe_fish:0,amphibian:3,reptile:5,synapsid:0,dino:0,pterosaur:0,bird:7,mammal:18,primate:6,human:5},
+};
+
+const ERAS=[
+  {id:'hadean',      color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},   temp:230,wind:180,iceRatio:0,  ocean:0,   gc:'#8b0000',clouds:0.1,snowball:false},
+  {id:'archean',     color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},      temp:70, wind:120,iceRatio:0,  ocean:0.3, gc:'#2c3e50',clouds:0.3,snowball:false},
+  {id:'proterozoic', color:'#7d6608',mya:2500,endMya:720, atmo:{N2:78,CO2:5,H2O:2,H2:0.2,O2:5,CH4:0.5,Ar:1},   temp:30, wind:90, iceRatio:0.15,ocean:0.5, gc:'#1a5276',clouds:0.4,snowball:false},
+  {id:'snowball',    color:'#aed6f1',mya:720, endMya:635, atmo:{N2:78,CO2:0.1,H2O:0.5,H2:0,O2:5,CH4:0,Ar:1},    temp:-50,wind:200,iceRatio:1.0, ocean:0,   gc:'#d6eaf8',clouds:0.8,snowball:true},
+  {id:'ediacaran',   color:'#1a5276',mya:635, endMya:538, atmo:{N2:78,CO2:1,H2O:2,H2:0,O2:10,CH4:0,Ar:1},       temp:20, wind:70, iceRatio:0.05,ocean:0.65,gc:'#1f618d',clouds:0.5,snowball:false},
+  {id:'cambrian',    color:'#117a65',mya:538, endMya:485, atmo:{N2:77,CO2:4,H2O:2,H2:0,O2:13,CH4:0,Ar:1},       temp:22, wind:60, iceRatio:0,  ocean:0.7, gc:'#1a6b5a',clouds:0.5,snowball:false},
+  {id:'ordovician',  color:'#0e6655',mya:485, endMya:443, atmo:{N2:76,CO2:8,H2O:2,H2:0,O2:14,CH4:0,Ar:1},       temp:25, wind:55, iceRatio:0,  ocean:0.7, gc:'#1a6b5a',clouds:0.45,snowball:false},
+  {id:'silurian',    color:'#1e8449',mya:443, endMya:419, atmo:{N2:75,CO2:5,H2O:2,H2:0,O2:16,CH4:0,Ar:1},       temp:17, wind:50, iceRatio:0,  ocean:0.65,gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'devonian',    color:'#d4ac0d',mya:419, endMya:358, atmo:{N2:74,CO2:3,H2O:2,H2:0,O2:17,CH4:0,Ar:1},       temp:20, wind:45, iceRatio:0,  ocean:0.6, gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'carboniferous',color:'#1d8348',mya:358,endMya:298, atmo:{N2:68,CO2:1,H2O:2,H2:0,O2:30,CH4:0,Ar:1},       temp:14, wind:40, iceRatio:0.15,ocean:0.55,gc:'#27ae60',clouds:0.5,snowball:false},
+  {id:'permian',     color:'#b7950b',mya:298, endMya:252, atmo:{N2:75,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},       temp:16, wind:50, iceRatio:0.1, ocean:0.5, gc:'#ca6f1e',clouds:0.35,snowball:false},
+  {id:'pt_ext',      color:'#e74c3c',mya:252, endMya:248, atmo:{N2:72,CO2:20,H2O:3,H2:0,O2:10,CH4:2,Ar:1},      temp:60, wind:180,iceRatio:0,  ocean:0.3, gc:'#c0392b',clouds:0.9,snowball:false},
+  {id:'triassic_e',  color:'#ca6f1e',mya:248, endMya:230, atmo:{N2:76,CO2:4,H2O:2,H2:0,O2:16,CH4:0,Ar:1},       temp:30, wind:60, iceRatio:0,  ocean:0.45,gc:'#ca6f1e',clouds:0.3,snowball:false},
+  {id:'triassic_l',  color:'#d35400',mya:230, endMya:201, atmo:{N2:76,CO2:3,H2O:2,H2:0,O2:18,CH4:0,Ar:1},       temp:25, wind:55, iceRatio:0,  ocean:0.5, gc:'#d35400',clouds:0.3,snowball:false},
+  {id:'jurassic_e',  color:'#27ae60',mya:201, endMya:175, atmo:{N2:77,CO2:3,H2O:2,H2:0,O2:20,CH4:0,Ar:1},       temp:20, wind:45, iceRatio:0,  ocean:0.6, gc:'#27ae60',clouds:0.45,snowball:false},
+  {id:'jurassic_l',  color:'#1e8449',mya:175, endMya:145, atmo:{N2:77,CO2:2.5,H2O:2,H2:0,O2:21,CH4:0,Ar:1},    temp:18, wind:40, iceRatio:0,  ocean:0.65,gc:'#239b56',clouds:0.5,snowball:false},
+  {id:'cretaceous_e',color:'#1a5276',mya:145, endMya:90,  atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},       temp:22, wind:35, iceRatio:0,  ocean:0.7, gc:'#1a5276',clouds:0.55,snowball:false},
+  {id:'cretaceous_l',color:'#154360',mya:90,  endMya:66,  atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},       temp:19, wind:35, iceRatio:0,  ocean:0.68,gc:'#154360',clouds:0.55,snowball:false},
+  {id:'kpg_ext',     color:'#e74c3c',mya:66,  endMya:63,  atmo:{N2:75,CO2:10,H2O:3,H2:0,O2:18,CH4:0.5,Ar:1},    temp:40, wind:200,iceRatio:0,  ocean:0.55,gc:'#922b21',clouds:0.95,snowball:false},
+  {id:'paleogene',   color:'#2471a3',mya:63,  endMya:23,  atmo:{N2:78,CO2:0.1,H2O:2,H2:0,O2:21,CH4:0,Ar:1},     temp:22, wind:30, iceRatio:0,  ocean:0.6, gc:'#2471a3',clouds:0.5,snowball:false},
+  {id:'neogene',     color:'#1a5276',mya:23,  endMya:2.6, atmo:{N2:78,CO2:0.028,H2O:2,H2:0,O2:21,CH4:0,Ar:1},   temp:15, wind:25, iceRatio:0.1, ocean:0.58,gc:'#1a5276',clouds:0.45,snowball:false},
+  {id:'quaternary',  color:'#2980b9',mya:2.6, endMya:0,   atmo:{N2:78,CO2:0.04,H2O:1.5,H2:0,O2:21,CH4:0.0002,Ar:0.93},temp:14,wind:20,iceRatio:0.07,ocean:0.57,gc:'#2980b9',clouds:0.4,snowball:false},
+];
+ERAS.forEach(e=>{
+  e.bio=ERA_BIO[e.id]||ERA_BIO['hadean'];
+  e.name=ERA_NAMES[e.id]||{en:e.id,ja:e.id};
+  e.desc=ERA_DESC[e.id]||{en:'',ja:''};
+});
+
+const GASES=[
+  {key:'N2',label:'N₂',color:'#7ec8e3'},{key:'CO2',label:'CO₂',color:'#ff6b6b'},
+  {key:'O2',label:'O₂',color:'#98fb98'},{key:'H2O',label:'H₂O',color:'#87ceeb'},
+  {key:'CH4',label:'CH₄',color:'#ffa500'},{key:'H2',label:'H₂',color:'#dda0dd'},
+];
+
+const TOTAL_MYA=4500,REAL_SECONDS_1X=300*60,MYA_PER_SEC_1X=TOTAL_MYA/REAL_SECONDS_1X;
+let simMya=TOTAL_MYA,spd=1,state={},offset={},lastEraIdx=-1,curEraIdx=0,lastTimestamp=null;
+let cloudAngle=0,cloudParticles=[];
+let meteorActive=false,meteorX=0,meteorY=0,meteorVY=0;
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function getEraIdx(mya){for(let i=0;i<ERAS.length;i++){if(mya<=ERAS[i].mya&&mya>ERAS[i].endMya)return i;}return ERAS.length-1;}
+function initOffset(){const bio={};bioKeys().forEach(k=>bio[k]=0);offset={temp:0,co2:0,o2:0,iceRatio:0,bio};}
+function initState(eIdx){const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);state={atmo:{...e.atmo},temp:e.temp,wind:e.wind,iceRatio:e.iceRatio,ocean:e.ocean,clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};}
+
+function updateSim(ds){
+  simMya-=MYA_PER_SEC_1X*spd*ds;
+  if(simMya<=0){simMya=TOTAL_MYA;lastEraIdx=-1;initState(0);setEvent(T('reborn'));}
+  const eIdx=getEraIdx(simMya);curEraIdx=eIdx;const e=ERAS[eIdx];
+  const eraDurSec=(e.mya-e.endMya)/(MYA_PER_SEC_1X*spd);
+  const tau=Math.max(eraDurSec*0.18,0.8);
+  const blend=clamp(1-Math.exp(-ds/tau),0,0.4);
+  Object.keys(e.atmo).forEach(k=>state.atmo[k]=lerp(state.atmo[k]||0,e.atmo[k],blend));
+  state.atmo.CO2=clamp(state.atmo.CO2+offset.co2*0.01,0,90);
+  state.atmo.O2 =clamp(state.atmo.O2 +offset.o2*0.01, 0,40);
+  state.temp    =lerp(state.temp,   e.temp+offset.temp,                    blend);
+  state.wind    =lerp(state.wind,   e.wind,                                blend);
+  state.iceRatio=lerp(state.iceRatio,clamp(e.iceRatio+offset.iceRatio,0,1),blend);
+  state.ocean   =lerp(state.ocean,  e.ocean,                               blend);
+  state.clouds  =lerp(state.clouds, e.clouds,                              blend);
+  state.gc=e.gc;state.snowball=e.snowball||state.iceRatio>0.85;
+  bioKeys().forEach(k=>{const tgt=clamp((e.bio[k]||0)+(offset.bio[k]||0),0,100);state.bio[k]=lerp(state.bio[k]||0,tgt,blend);});
+  const df=Math.exp(-ds/90);
+  offset.temp*=df;offset.co2*=df;offset.o2*=df;offset.iceRatio*=df;
+  bioKeys().forEach(k=>offset.bio[k]*=df);
+  cloudAngle+=ds*0.04*(state.wind/100);
+  cloudParticles.forEach(p=>p.angle+=p.speed*ds*60);
+  if(meteorActive){meteorY+=meteorVY*ds*60;if(meteorY>290)meteorActive=false;}
+  if(eIdx!==lastEraIdx){
+    lastEraIdx=eIdx;
+    setEvent(e.desc[lang]||e.desc.en);
+    document.getElementById('eon-badge').textContent=(e.name[lang]||e.name.en).toUpperCase()+' — '+(e.mya>=1000?(e.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):e.mya+(lang==='ja'?'百万年前':' MYA'));
+    updateTimeline(eIdx);
+  }
+}
+
+function doEvent(type){
+  if(type==='meteor'){meteorActive=true;meteorX=Math.random()*260+20;meteorY=20;meteorVY=3+Math.random()*2;offset.temp+=25;offset.co2+=18;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
+  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;setEvent(T('ev_volcano'));}
+  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
+  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;setEvent(T('ev_warm'));}
+  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;setEvent(T('ev_ext'));}
+}
+
+function setEvent(msg){const el=document.getElementById('event-log');if(el)el.textContent=msg;}
+function setSpd(s){spd=s;[1,5,20,100].forEach(v=>{const b=document.getElementById('b'+v);if(b)b.classList.toggle('active',v===s);});}
+
+function resetSim(){
+  simMya=TOTAL_MYA;lastEraIdx=-1;curEraIdx=0;lastTimestamp=null;
+  initOffset();initState(0);
+  setEvent(T('reset_msg'));
+  document.getElementById('eon-badge').textContent=(lang==='ja'?'冥王代':'HADEAN')+' — 4.5 BYA';
+  updateTimeline(0);
+}
+
+function jumpToEra(idx){
+  const e=ERAS[idx];simMya=e.mya-(e.mya-e.endMya)*0.05;
+  initState(idx);initOffset();lastEraIdx=idx;curEraIdx=idx;lastTimestamp=null;
+  setEvent(e.desc[lang]||e.desc.en);
+  document.getElementById('eon-badge').textContent=(e.name[lang]||e.name.en).toUpperCase()+' — '+(e.mya>=1000?(e.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):e.mya+(lang==='ja'?'百万年前':' MYA'));
+  updateTimeline(idx);
+}
+
+// Globe
+const gcv=document.getElementById('globe'),gctx=gcv.getContext('2d');
+const ocv=document.getElementById('overlay'),octx=ocv.getContext('2d');
+const R=148,CX=150,CY=150;let _stars=null;
+function initClouds(){cloudParticles=[];for(let i=0;i<20;i++)cloudParticles.push({angle:Math.random()*Math.PI*2,lat:(Math.random()-0.5)*1.4,size:Math.random()*16+7,speed:(Math.random()*0.003+0.001)*(Math.random()<0.5?1:-1),alpha:Math.random()*0.35+0.25});}
+function lighten(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgb(${Math.min(255,((n>>16)&255)+a)},${Math.min(255,((n>>8)&255)+a)},${Math.min(255,(n&255)+a)})`;}
+function darken(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgb(${Math.max(0,((n>>16)&255)-a)},${Math.max(0,((n>>8)&255)-a)},${Math.max(0,(n&255)-a)})`;}
+
+function drawGlobe(){
+  gctx.clearRect(0,0,300,300);octx.clearRect(0,0,300,300);
+  gctx.fillStyle='#000';gctx.fillRect(0,0,300,300);
+  if(!_stars){_stars=[];for(let i=0;i<80;i++)_stars.push([Math.random()*300,Math.random()*300,Math.random()*1.2+0.3]);}
+  _stars.forEach(([x,y,r])=>{gctx.fillStyle='rgba(255,255,255,0.5)';gctx.beginPath();gctx.arc(x,y,r,0,Math.PI*2);gctx.fill();});
+  const grad=gctx.createRadialGradient(CX-45,CY-45,15,CX,CY,R);
+  if(state.snowball){grad.addColorStop(0,'#eaf4fd');grad.addColorStop(0.5,'#aed6f1');grad.addColorStop(1,'#5dade2');}
+  else{grad.addColorStop(0,lighten(state.gc||'#1a5276',45));grad.addColorStop(0.6,state.gc||'#1a5276');grad.addColorStop(1,darken(state.gc||'#1a5276',40));}
+  gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.fillStyle=grad;gctx.fill();
+  if(!state.snowball&&state.ocean>0.1){
+    gctx.save();gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.clip();
+    for(let i=0;i<5;i++){const ox=CX+Math.cos(i*1.26+cloudAngle*0.25)*55,oy=CY+Math.sin(i*1.7+cloudAngle*0.18)*48,or=28+state.ocean*48+Math.sin(i*2.1)*12;gctx.beginPath();gctx.arc(ox,oy,or,0,Math.PI*2);gctx.fillStyle=`rgba(41,128,185,${0.28+state.ocean*0.28})`;gctx.fill();}
+    gctx.restore();
+  }
+  if(state.iceRatio>0.01){
+    gctx.save();gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.clip();
+    const ih=state.iceRatio*R*1.9;
+    gctx.fillStyle=`rgba(210,235,255,${0.65+state.iceRatio*0.3})`;
+    gctx.beginPath();gctx.ellipse(CX,CY-R+ih/2,R*0.65*state.iceRatio+18,ih/2,0,0,Math.PI*2);gctx.fill();
+    gctx.beginPath();gctx.ellipse(CX,CY+R-ih/2,R*0.65*state.iceRatio+18,ih/2,0,0,Math.PI*2);gctx.fill();
+    if(state.snowball){gctx.fillStyle='rgba(215,238,255,0.9)';gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.fill();}
+    gctx.restore();
+  }
+  const o2f=clamp((state.atmo.O2||0)/25,0,1),co2f=clamp((state.atmo.CO2||0)/20,0,1);
+  const ag=gctx.createRadialGradient(CX,CY,R-4,CX,CY,R+20);
+  ag.addColorStop(0,`rgba(${Math.round(80+co2f*160)},${Math.round(140+o2f*90)},${Math.round(210-co2f*90)},0.65)`);ag.addColorStop(1,'rgba(0,0,0,0)');
+  gctx.beginPath();gctx.arc(CX,CY,R+20,0,Math.PI*2);gctx.fillStyle=ag;gctx.fill();
+  octx.save();octx.beginPath();octx.arc(CX,CY,R,0,Math.PI*2);octx.clip();
+  cloudParticles.forEach(p=>{const px=CX+Math.cos(p.angle)*R*0.8*Math.cos(p.lat),py=CY+Math.sin(p.lat)*R*0.8,depth=Math.cos(p.angle)*Math.cos(p.lat);if(depth>-0.1){const alpha=p.alpha*state.clouds*(0.4+depth*0.6);octx.fillStyle=`rgba(235,245,255,${alpha})`;octx.beginPath();octx.ellipse(px,py,p.size*(0.6+depth*0.4),p.size*0.38*(0.6+depth*0.4),p.angle*0.2,0,Math.PI*2);octx.fill();}});
+  octx.restore();
+  if(meteorActive){octx.strokeStyle='rgba(255,200,80,0.9)';octx.lineWidth=2.5;octx.beginPath();octx.moveTo(meteorX-35,meteorY-35);octx.lineTo(meteorX,meteorY);octx.stroke();octx.fillStyle='rgba(255,140,40,0.95)';octx.beginPath();octx.arc(meteorX,meteorY,5,0,Math.PI*2);octx.fill();}
+  const sg=gctx.createRadialGradient(CX+55,CY+45,R*0.25,CX,CY,R);sg.addColorStop(0,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,0.58)');gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.fillStyle=sg;gctx.fill();
+}
+
+let uiTick=0;
+function updateUI(){
+  uiTick++;
+  const pct=Math.max(0,(TOTAL_MYA-simMya)/TOTAL_MYA*100);
+  const pb=document.getElementById('progress-bar');if(pb)pb.style.width=pct.toFixed(2)+'%';
+  const pl=document.getElementById('progress-label');if(pl)pl.textContent=pct.toFixed(1)+'%';
+  const m=Math.max(0,simMya);
+  const ydEl=document.getElementById('year-display');
+  if(ydEl){
+    if(lang==='ja') ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+'十億年前':m.toFixed(1)+'百万年前');
+    else ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+' BYA':m.toFixed(1)+' MYA')+' ago';
+  }
+  if(uiTick%3!==0)return;
+
+  const atmo=state.atmo,total=Object.values(atmo).reduce((a,b)=>a+(b||0),0)||1;
+  let h='';
+  GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;h+=`<div class="gas-row"><span class="gas-label">${g.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
+  document.getElementById('atmo-bars').innerHTML=h;
+
+  const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
+  const ic=state.iceRatio>0.5?'#aed6f1':'#5dade2';
+  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val" style="color:#7ec8e3">${Math.round(state.wind)}m/s</div></div><div class="ec"><div class="ec-label">${T('ice')}</div><div class="ec-val" style="color:${ic}">${Math.round(state.iceRatio*100)}%</div></div>`;
+
+  let bh='';
+  BIO_GROUPS_DEF.forEach(group=>{
+    const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
+    if(active.length===0)return;
+    const gmax=Math.max(...active.map(m=>state.bio[m.key]||0),1);
+    const gtitle=T('grp_'+group.gkey);
+    bh+=`<div class="bio-group"><div class="bio-group-title">${gtitle}</div>`;
+    active.sort((a,b2)=>(state.bio[b2.key]||0)-(state.bio[a.key]||0));
+    active.forEach(m=>{
+      const v=state.bio[m.key]||0;
+      const lbl=m[lang]||m.en;
+      bh+=`<div class="bio-row"><span class="bio-icon">${m.icon}</span><span class="bio-name">${lbl}</span><div class="bar-bg"><div class="bar-fill" style="width:${v/gmax*100}%;background:${m.color}"></div></div><span class="bio-val" style="color:${m.color}">${Math.round(v)}%</span></div>`;
+    });
+    bh+='</div>';
+  });
+  document.getElementById('bio-groups').innerHTML=bh;
+}
+
+function buildTimeline(){
+  const tl=document.getElementById('tl-inner');tl.innerHTML='';
+  ERAS.forEach((e,i)=>{
+    const name=e.name[lang]||e.name.en;
+    const d=document.createElement('div');
+    d.className='tl-era';d.id='tl-'+i;
+    d.onclick=()=>jumpToEra(i);
+    d.innerHTML=`<div class="tl-dot" style="background:${e.color}"></div><div class="tl-name">${name}</div>`;
+    tl.appendChild(d);
+  });
+}
+
+function updateTimeline(idx){
+  document.querySelectorAll('.tl-era').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tl-name').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  const el=document.getElementById('tl-'+idx);
+  if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+
+function loop(ts){
+  if(lastTimestamp===null)lastTimestamp=ts;
+  const ds=Math.min((ts-lastTimestamp)/1000,0.2);lastTimestamp=ts;
+  updateSim(ds);drawGlobe();updateUI();
+  requestAnimationFrame(loop);
+}
+
+initState(0);initOffset();initClouds();buildTimeline();
+requestAnimationFrame(loop);
+</script>
