@@ -42,7 +42,7 @@ canvas#overlay{position:absolute;top:0;left:0;border-radius:50%;pointer-events:n
 .bar-bg{flex:1;height:5px;background:#071525}
 .bar-fill{height:5px}
 .gas-val{font-size:9px;width:40px;text-align:right}
-.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.env-grid{display:grid;grid-template-columns:70px 140px 1fr;gap:3px}
 .ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:11px;font-weight:bold}
@@ -342,9 +342,12 @@ function updateSim(ds){
   state.temp=lerp(state.temp,e.temp+offset.temp,blend);
   const sf=e.surface||ERA_SURFACE.hadean;
   state.surface.magma =lerp(state.surface.magma, sf.magma, blend);
-  state.surface.ocean =lerp(state.surface.ocean, sf.ocean, blend);
-  state.surface.land  =lerp(state.surface.land,  sf.land,  blend);
-  state.surface.ice   =lerp(state.surface.ice,   clamp(sf.ice+offset.iceRatio*100,0,100), blend);
+  const targetIce=clamp(sf.ice+offset.iceRatio*100,0,100);
+  const iceDelta=targetIce-sf.ice; // イベントによる氷の増減分
+  state.surface.ice   =lerp(state.surface.ice,   targetIce, blend);
+  // 氷が増えた分は海洋から、減った分は海洋へ
+  state.surface.ocean =lerp(state.surface.ocean, clamp(sf.ocean-iceDelta*0.7,0,100), blend);
+  state.surface.land  =lerp(state.surface.land,  clamp(sf.land -iceDelta*0.3,0,100), blend);
   state.surface.windAvg=lerp(state.surface.windAvg,sf.windAvg,blend);
   state.surface.windMax=lerp(state.surface.windMax,sf.windMax,blend);
   state.clouds=lerp(state.clouds,e.clouds,blend);
@@ -453,8 +456,8 @@ function updateUI(){
   const sf2=state.surface;
   const wc='#7ec8e3';
   const surfItems=[{v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},{v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean')},{v:sf2.land,color:'#82e0aa',icon:'🏔',lbl:T('land')},{v:sf2.ice,color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}].filter(x=>x.v>0.5);
-  const surfHtml=surfItems.map(x=>`<span style="color:${x.color};white-space:nowrap">${x.icon} ${x.lbl} ${Math.round(x.v)}%</span>`).join('<span style="color:#1a3a5c"> | </span>');
-  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val"><span style="font-size:8px;color:#4a7c9e">avg.</span><span style="color:#7ec8e3">${Math.round(sf2.windAvg)}</span><span style="font-size:8px;color:#4a7c9e"> max.</span><span style="color:#7ec8e3">${Math.round(sf2.windMax)}</span><span style="font-size:7px;color:#4a7c9e"> m/s</span></div></div><div class="ec"><div class="ec-label">${lang==='ja'?'地表':'SURFACE'}</div><div style="font-size:8px;line-height:1.7;margin-top:1px">${surfHtml}</div></div>`;
+  const surfHtml=surfItems.map(x=>`<span style="color:${x.color};white-space:nowrap">${x.icon}${x.lbl} ${Math.round(x.v)}%</span>`).join('<span style="color:#1a3a5c"> | </span>');
+  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val">${lang==='ja'?'平均':'avg.'}${Math.round(sf2.windAvg)} ${lang==='ja'?'最大':'max.'}${Math.round(sf2.windMax)} m/s</div></div><div class="ec"><div class="ec-label">${lang==='ja'?'地表':'SURFACE'}</div><div style="font-size:8px;line-height:1.7;margin-top:1px">${surfHtml}</div></div>`;
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
