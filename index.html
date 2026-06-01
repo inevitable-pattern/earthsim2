@@ -457,7 +457,7 @@ function updateUI(){
   const wc='#7ec8e3';
   const surfItems=[{v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},{v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean')},{v:sf2.land,color:'#82e0aa',icon:'🏔',lbl:T('land')},{v:sf2.ice,color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}].filter(x=>x.v>0.5);
   const surfHtml=surfItems.map(x=>`<span style="color:${x.color};white-space:nowrap">${x.icon}${x.lbl} ${Math.round(x.v)}%</span>`).join('<span style="color:#1a3a5c"> | </span>');
-  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val">${lang==='ja'?'平均':'avg.'}${Math.round(sf2.windAvg)} ${lang==='ja'?'最大':'max.'}${Math.round(sf2.windMax)} m/s</div></div><div class="ec"><div class="ec-label">${lang==='ja'?'地表':'SURFACE'}</div><div style="font-size:8px;line-height:1.7;margin-top:1px">${surfHtml}</div></div>`;
+  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val">${lang==='ja'?'平均':'avg.'}${Math.round(sf2.windAvg)} ${lang==='ja'?'最大':'max.'}${Math.round(sf2.windMax)} m/s</div></div><div class="ec"><div class="ec-label">${lang==='ja'?'地表':'SURFACE'}</div><div style="line-height:1.7;margin-top:1px">${surfHtml}</div></div>`;
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
