@@ -42,7 +42,7 @@ canvas#overlay{position:absolute;top:0;left:0;border-radius:50%;pointer-events:n
 .bar-bg{flex:1;height:5px;background:#071525}
 .bar-fill{height:5px}
 .gas-val{font-size:9px;width:40px;text-align:right}
-.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.env-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}
 .ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:12px;font-weight:bold}
@@ -139,8 +139,8 @@ autoScale();
 
 // ---- 言語 ----
 const LANG={
-  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',climate:'CLIMATE',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',ice:'ICE',ago:' ago',reborn:'Present day — Earth continues...',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',end_title:'PRESENT DAY',end_sub:'Simulation complete — Earth endures'},
-  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',climate:'気候',bio:'生物圏',temp:'気温',wind:'風速',ice:'氷床',ago:'前',reborn:'現代 — 地球は続く...',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',end_title:'現　代',end_sub:'シミュレーション完了 — 地球は続く'},
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',climate:'CLIMATE',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',ice:'ICE',ago:' ago',reborn:'Present day — Earth continues...',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',end_title:'PRESENT DAY',end_sub:'Simulation complete — Earth endures',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice'},
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',climate:'気候',bio:'生物圏',temp:'気温',wind:'風速',ice:'氷床',ago:'前',reborn:'現代 — 地球は続く...',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',end_title:'現　代',end_sub:'シミュレーション完了 — 地球は続く',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床'},
 };
 let lang='en';
 function T(k){return LANG[lang][k]||LANG.en[k]||k;}
@@ -232,31 +232,62 @@ const ERA_BIO={
   quaternary: {archaea:4,bacteria:22,cyanobact:15,plankton:59, algae:3,lichen:3,spore_plant:4,gymnosperm:14,angiosperm:70,fungi:6, jellyfish:4,trilobite:0,mollusk:16,crustacean:16,insect:33,arachnid:14,echinoderm:17, jawless_fish:0,jawed_fish:16,lobe_fish:0,amphibian:6,reptile:14,synapsid:0,dino:0,pterosaur:0,bird:20,mammal:36,primate:7,human:1},
 };
 
+// 地表カテゴリ (合計100%) + 風速 avg/max m/s
+const ERA_SURFACE={
+  hadean:      {magma:60,ocean:5, land:35,ice:0, windAvg:180,windMax:350},
+  archean:     {magma:8, ocean:35,land:55,ice:0, windAvg:100,windMax:200},
+  proterozoic: {magma:1, ocean:50,land:44,ice:5, windAvg:70, windMax:140},
+  snowball:    {magma:0, ocean:2, land:8, ice:90,windAvg:180,windMax:300},
+  ediacaran:   {magma:0, ocean:60,land:36,ice:4, windAvg:55, windMax:110},
+  cambrian:    {magma:0, ocean:68,land:32,ice:0, windAvg:45, windMax:90},
+  ordovician:  {magma:0, ocean:68,land:30,ice:2, windAvg:45, windMax:85},
+  silurian:    {magma:0, ocean:65,land:34,ice:1, windAvg:40, windMax:80},
+  devonian:    {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
+  carboniferous:{magma:0,ocean:55,land:40,ice:5, windAvg:35, windMax:70},
+  permian:     {magma:0, ocean:52,land:44,ice:4, windAvg:40, windMax:80},
+  pt_ext:      {magma:3, ocean:45,land:50,ice:2, windAvg:120,windMax:250},
+  triassic_e:  {magma:1, ocean:50,land:48,ice:1, windAvg:50, windMax:100},
+  triassic_l:  {magma:0, ocean:55,land:44,ice:1, windAvg:45, windMax:90},
+  jurassic_e:  {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
+  jurassic_l:  {magma:0, ocean:65,land:34,ice:1, windAvg:35, windMax:70},
+  cretaceous_e:{magma:0, ocean:70,land:29,ice:1, windAvg:30, windMax:60},
+  cretaceous_l:{magma:0, ocean:68,land:31,ice:1, windAvg:30, windMax:60},
+  kpg_ext:     {magma:2, ocean:60,land:36,ice:2, windAvg:150,windMax:300},
+  paleogene:   {magma:0, ocean:62,land:36,ice:2, windAvg:28, windMax:55},
+  neogene:     {magma:0, ocean:60,land:33,ice:7, windAvg:25, windMax:50},
+  quaternary:  {magma:0, ocean:58,land:35,ice:7, windAvg:20, windMax:45},
+};
+
 const ERAS=[
-  {id:'hadean',color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},temp:230,wind:180,iceRatio:0,ocean:0,gc:'#8b0000',clouds:0.1,snowball:false},
-  {id:'archean',color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},temp:70,wind:120,iceRatio:0,ocean:0.3,gc:'#2c3e50',clouds:0.3,snowball:false},
-  {id:'proterozoic',color:'#7d6608',mya:2500,endMya:720,atmo:{N2:78,CO2:5,H2O:2,H2:0.2,O2:5,CH4:0.5,Ar:1},temp:30,wind:90,iceRatio:0.15,ocean:0.5,gc:'#1a5276',clouds:0.4,snowball:false},
-  {id:'snowball',color:'#aed6f1',mya:720,endMya:635,atmo:{N2:78,CO2:0.1,H2O:0.5,H2:0,O2:5,CH4:0,Ar:1},temp:-50,wind:200,iceRatio:1.0,ocean:0,gc:'#d6eaf8',clouds:0.8,snowball:true},
-  {id:'ediacaran',color:'#1a5276',mya:635,endMya:538,atmo:{N2:78,CO2:1,H2O:2,H2:0,O2:10,CH4:0,Ar:1},temp:20,wind:70,iceRatio:0.05,ocean:0.65,gc:'#1f618d',clouds:0.5,snowball:false},
-  {id:'cambrian',color:'#117a65',mya:538,endMya:485,atmo:{N2:77,CO2:4,H2O:2,H2:0,O2:13,CH4:0,Ar:1},temp:22,wind:60,iceRatio:0,ocean:0.7,gc:'#1a6b5a',clouds:0.5,snowball:false},
-  {id:'ordovician',color:'#0e6655',mya:485,endMya:443,atmo:{N2:76,CO2:8,H2O:2,H2:0,O2:14,CH4:0,Ar:1},temp:25,wind:55,iceRatio:0,ocean:0.7,gc:'#1a6b5a',clouds:0.45,snowball:false},
-  {id:'silurian',color:'#1e8449',mya:443,endMya:419,atmo:{N2:75,CO2:5,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:17,wind:50,iceRatio:0,ocean:0.65,gc:'#239b56',clouds:0.4,snowball:false},
-  {id:'devonian',color:'#d4ac0d',mya:419,endMya:358,atmo:{N2:74,CO2:3,H2O:2,H2:0,O2:17,CH4:0,Ar:1},temp:20,wind:45,iceRatio:0,ocean:0.6,gc:'#239b56',clouds:0.4,snowball:false},
-  {id:'carboniferous',color:'#1d8348',mya:358,endMya:298,atmo:{N2:68,CO2:1,H2O:2,H2:0,O2:30,CH4:0,Ar:1},temp:14,wind:40,iceRatio:0.15,ocean:0.55,gc:'#27ae60',clouds:0.5,snowball:false},
-  {id:'permian',color:'#b7950b',mya:298,endMya:252,atmo:{N2:75,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:16,wind:50,iceRatio:0.1,ocean:0.5,gc:'#ca6f1e',clouds:0.35,snowball:false},
-  {id:'pt_ext',color:'#e74c3c',mya:252,endMya:248,atmo:{N2:72,CO2:20,H2O:3,H2:0,O2:10,CH4:2,Ar:1},temp:60,wind:180,iceRatio:0,ocean:0.3,gc:'#c0392b',clouds:0.9,snowball:false},
-  {id:'triassic_e',color:'#ca6f1e',mya:248,endMya:230,atmo:{N2:76,CO2:4,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:30,wind:60,iceRatio:0,ocean:0.45,gc:'#ca6f1e',clouds:0.3,snowball:false},
-  {id:'triassic_l',color:'#d35400',mya:230,endMya:201,atmo:{N2:76,CO2:3,H2O:2,H2:0,O2:18,CH4:0,Ar:1},temp:25,wind:55,iceRatio:0,ocean:0.5,gc:'#d35400',clouds:0.3,snowball:false},
-  {id:'jurassic_e',color:'#27ae60',mya:201,endMya:175,atmo:{N2:77,CO2:3,H2O:2,H2:0,O2:20,CH4:0,Ar:1},temp:20,wind:45,iceRatio:0,ocean:0.6,gc:'#27ae60',clouds:0.45,snowball:false},
-  {id:'jurassic_l',color:'#1e8449',mya:175,endMya:145,atmo:{N2:77,CO2:2.5,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:18,wind:40,iceRatio:0,ocean:0.65,gc:'#239b56',clouds:0.5,snowball:false},
-  {id:'cretaceous_e',color:'#1a5276',mya:145,endMya:90,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,wind:35,iceRatio:0,ocean:0.7,gc:'#1a5276',clouds:0.55,snowball:false},
-  {id:'cretaceous_l',color:'#154360',mya:90,endMya:66,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:19,wind:35,iceRatio:0,ocean:0.68,gc:'#154360',clouds:0.55,snowball:false},
-  {id:'kpg_ext',color:'#e74c3c',mya:66,endMya:63,atmo:{N2:75,CO2:10,H2O:3,H2:0,O2:18,CH4:0.5,Ar:1},temp:40,wind:200,iceRatio:0,ocean:0.55,gc:'#922b21',clouds:0.95,snowball:false},
-  {id:'paleogene',color:'#2471a3',mya:63,endMya:23,atmo:{N2:78,CO2:0.1,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,wind:30,iceRatio:0,ocean:0.6,gc:'#2471a3',clouds:0.5,snowball:false},
-  {id:'neogene',color:'#1a5276',mya:23,endMya:2.6,atmo:{N2:78,CO2:0.028,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:15,wind:25,iceRatio:0.1,ocean:0.58,gc:'#1a5276',clouds:0.45,snowball:false},
-  {id:'quaternary',color:'#2980b9',mya:2.6,endMya:0,atmo:{N2:78,CO2:0.04,H2O:1.5,H2:0,O2:21,CH4:0.0002,Ar:0.93},temp:14,wind:20,iceRatio:0.07,ocean:0.57,gc:'#2980b9',clouds:0.4,snowball:false},
+  {id:'hadean',color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},temp:230,gc:'#8b0000',clouds:0.1,snowball:false},
+  {id:'archean',color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},temp:70,gc:'#2c3e50',clouds:0.3,snowball:false},
+  {id:'proterozoic',color:'#7d6608',mya:2500,endMya:720,atmo:{N2:78,CO2:5,H2O:2,H2:0.2,O2:5,CH4:0.5,Ar:1},temp:30,gc:'#1a5276',clouds:0.4,snowball:false},
+  {id:'snowball',color:'#aed6f1',mya:720,endMya:635,atmo:{N2:78,CO2:0.1,H2O:0.5,H2:0,O2:5,CH4:0,Ar:1},temp:-50,gc:'#d6eaf8',clouds:0.8,snowball:true},
+  {id:'ediacaran',color:'#1a5276',mya:635,endMya:538,atmo:{N2:78,CO2:1,H2O:2,H2:0,O2:10,CH4:0,Ar:1},temp:20,gc:'#1f618d',clouds:0.5,snowball:false},
+  {id:'cambrian',color:'#117a65',mya:538,endMya:485,atmo:{N2:77,CO2:4,H2O:2,H2:0,O2:13,CH4:0,Ar:1},temp:22,gc:'#1a6b5a',clouds:0.5,snowball:false},
+  {id:'ordovician',color:'#0e6655',mya:485,endMya:443,atmo:{N2:76,CO2:8,H2O:2,H2:0,O2:14,CH4:0,Ar:1},temp:25,gc:'#1a6b5a',clouds:0.45,snowball:false},
+  {id:'silurian',color:'#1e8449',mya:443,endMya:419,atmo:{N2:75,CO2:5,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:17,gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'devonian',color:'#d4ac0d',mya:419,endMya:358,atmo:{N2:74,CO2:3,H2O:2,H2:0,O2:17,CH4:0,Ar:1},temp:20,gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'carboniferous',color:'#1d8348',mya:358,endMya:298,atmo:{N2:68,CO2:1,H2O:2,H2:0,O2:30,CH4:0,Ar:1},temp:14,gc:'#27ae60',clouds:0.5,snowball:false},
+  {id:'permian',color:'#b7950b',mya:298,endMya:252,atmo:{N2:75,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:16,gc:'#ca6f1e',clouds:0.35,snowball:false},
+  {id:'pt_ext',color:'#e74c3c',mya:252,endMya:248,atmo:{N2:72,CO2:20,H2O:3,H2:0,O2:10,CH4:2,Ar:1},temp:60,gc:'#c0392b',clouds:0.9,snowball:false},
+  {id:'triassic_e',color:'#ca6f1e',mya:248,endMya:230,atmo:{N2:76,CO2:4,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:30,gc:'#ca6f1e',clouds:0.3,snowball:false},
+  {id:'triassic_l',color:'#d35400',mya:230,endMya:201,atmo:{N2:76,CO2:3,H2O:2,H2:0,O2:18,CH4:0,Ar:1},temp:25,gc:'#d35400',clouds:0.3,snowball:false},
+  {id:'jurassic_e',color:'#27ae60',mya:201,endMya:175,atmo:{N2:77,CO2:3,H2O:2,H2:0,O2:20,CH4:0,Ar:1},temp:20,gc:'#27ae60',clouds:0.45,snowball:false},
+  {id:'jurassic_l',color:'#1e8449',mya:175,endMya:145,atmo:{N2:77,CO2:2.5,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:18,gc:'#239b56',clouds:0.5,snowball:false},
+  {id:'cretaceous_e',color:'#1a5276',mya:145,endMya:90,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,gc:'#1a5276',clouds:0.55,snowball:false},
+  {id:'cretaceous_l',color:'#154360',mya:90,endMya:66,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:19,gc:'#154360',clouds:0.55,snowball:false},
+  {id:'kpg_ext',color:'#e74c3c',mya:66,endMya:63,atmo:{N2:75,CO2:10,H2O:3,H2:0,O2:18,CH4:0.5,Ar:1},temp:40,gc:'#922b21',clouds:0.95,snowball:false},
+  {id:'paleogene',color:'#2471a3',mya:63,endMya:23,atmo:{N2:78,CO2:0.1,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,gc:'#2471a3',clouds:0.5,snowball:false},
+  {id:'neogene',color:'#1a5276',mya:23,endMya:2.6,atmo:{N2:78,CO2:0.028,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:15,gc:'#1a5276',clouds:0.45,snowball:false},
+  {id:'quaternary',color:'#2980b9',mya:2.6,endMya:0,atmo:{N2:78,CO2:0.04,H2O:1.5,H2:0,O2:21,CH4:0.0002,Ar:0.93},temp:14,gc:'#2980b9',clouds:0.4,snowball:false},
 ];
-ERAS.forEach(e=>{e.bio=ERA_BIO[e.id]||ERA_BIO.hadean;e.name=ERA_NAMES[e.id]||{en:e.id,ja:e.id};e.desc=ERA_DESC[e.id]||{en:'',ja:''};});
+ERAS.forEach(e=>{
+  e.bio=ERA_BIO[e.id]||ERA_BIO.hadean;
+  e.surface=ERA_SURFACE[e.id]||ERA_SURFACE.hadean;
+  e.name=ERA_NAMES[e.id]||{en:e.id,ja:e.id};
+  e.desc=ERA_DESC[e.id]||{en:'',ja:''};
+});
 
 const GASES=[{key:'N2',label:'N₂',color:'#7ec8e3'},{key:'CO2',label:'CO₂',color:'#ff6b6b'},{key:'O2',label:'O₂',color:'#98fb98'},{key:'H2O',label:'H₂O',color:'#87ceeb'},{key:'CH4',label:'CH₄',color:'#ffa500'},{key:'H2',label:'H₂',color:'#dda0dd'}];
 
@@ -270,7 +301,7 @@ function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function getEraIdx(mya){for(let i=0;i<ERAS.length;i++){if(mya<=ERAS[i].mya&&mya>ERAS[i].endMya)return i;}return ERAS.length-1;}
 function initOffset(){const bio={};bioKeys().forEach(k=>bio[k]=0);offset={temp:0,co2:0,o2:0,iceRatio:0,bio};}
-function initState(eIdx){const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);state={atmo:{...e.atmo},temp:e.temp,wind:e.wind,iceRatio:e.iceRatio,ocean:e.ocean,clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};}
+function initState(eIdx){const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);const sf=e.surface||ERA_SURFACE.hadean;state={atmo:{...e.atmo},temp:e.temp,surface:{magma:sf.magma,ocean:sf.ocean,land:sf.land,ice:sf.ice,windAvg:sf.windAvg,windMax:sf.windMax},clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};}
 
 function showEndBanner(show){
   const b=document.getElementById('end-banner');
@@ -309,16 +340,20 @@ function updateSim(ds){
   state.atmo.CO2=clamp(state.atmo.CO2+offset.co2*0.01,0,90);
   state.atmo.O2=clamp(state.atmo.O2+offset.o2*0.01,0,40);
   state.temp=lerp(state.temp,e.temp+offset.temp,blend);
-  state.wind=lerp(state.wind,e.wind,blend);
-  state.iceRatio=lerp(state.iceRatio,clamp(e.iceRatio+offset.iceRatio,0,1),blend);
-  state.ocean=lerp(state.ocean,e.ocean,blend);
+  const sf=e.surface||ERA_SURFACE.hadean;
+  state.surface.magma =lerp(state.surface.magma, sf.magma, blend);
+  state.surface.ocean =lerp(state.surface.ocean, sf.ocean, blend);
+  state.surface.land  =lerp(state.surface.land,  sf.land,  blend);
+  state.surface.ice   =lerp(state.surface.ice,   clamp(sf.ice+offset.iceRatio*100,0,100), blend);
+  state.surface.windAvg=lerp(state.surface.windAvg,sf.windAvg,blend);
+  state.surface.windMax=lerp(state.surface.windMax,sf.windMax,blend);
   state.clouds=lerp(state.clouds,e.clouds,blend);
-  state.gc=e.gc;state.snowball=e.snowball||state.iceRatio>0.85;
+  state.gc=e.gc;state.snowball=e.snowball||(state.surface.ice>80);
   bioKeys().forEach(k=>{const tgt=clamp((e.bio[k]||0)+(offset.bio[k]||0),0,100);state.bio[k]=lerp(state.bio[k]||0,tgt,blend);});
   const df=Math.exp(-ds/90);
   offset.temp*=df;offset.co2*=df;offset.o2*=df;offset.iceRatio*=df;
   bioKeys().forEach(k=>offset.bio[k]*=df);
-  cloudAngle+=ds*0.04*(state.wind/100);
+  cloudAngle+=ds*0.04*(state.surface.windAvg/100);
   cloudParticles.forEach(p=>p.angle+=p.speed*ds*60);
   if(meteorActive){meteorY+=meteorVY*ds*60;if(meteorY>290)meteorActive=false;}
   if(eIdx!==lastEraIdx){
@@ -376,17 +411,17 @@ function drawGlobe(){
   if(state.snowball){grad.addColorStop(0,'#eaf4fd');grad.addColorStop(0.5,'#aed6f1');grad.addColorStop(1,'#5dade2');}
   else{grad.addColorStop(0,lighten(state.gc||'#1a5276',45));grad.addColorStop(0.6,state.gc||'#1a5276');grad.addColorStop(1,darken(state.gc||'#1a5276',40));}
   gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.fillStyle=grad;gctx.fill();
-  if(!state.snowball&&state.ocean>0.1){
+  if(!state.snowball&&state.surface.ocean>10){
     gctx.save();gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.clip();
-    for(let i=0;i<5;i++){const ox=CX+Math.cos(i*1.26+cloudAngle*0.25)*55,oy=CY+Math.sin(i*1.7+cloudAngle*0.18)*48,or=28+state.ocean*48+Math.sin(i*2.1)*12;gctx.beginPath();gctx.arc(ox,oy,or,0,Math.PI*2);gctx.fillStyle=`rgba(41,128,185,${0.28+state.ocean*0.28})`;gctx.fill();}
+    for(let i=0;i<5;i++){const ox=CX+Math.cos(i*1.26+cloudAngle*0.25)*55,oy=CY+Math.sin(i*1.7+cloudAngle*0.18)*48,or=28+state.surface.ocean*0.48+Math.sin(i*2.1)*12;gctx.beginPath();gctx.arc(ox,oy,or,0,Math.PI*2);gctx.fillStyle=`rgba(41,128,185,${0.28+state.surface.ocean*0.0028})`;gctx.fill();}
     gctx.restore();
   }
-  if(state.iceRatio>0.01){
+  if(state.surface.ice>1){
     gctx.save();gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.clip();
-    const ih=state.iceRatio*R*1.9;
-    gctx.fillStyle=`rgba(210,235,255,${0.65+state.iceRatio*0.3})`;
-    gctx.beginPath();gctx.ellipse(CX,CY-R+ih/2,R*0.65*state.iceRatio+18,ih/2,0,0,Math.PI*2);gctx.fill();
-    gctx.beginPath();gctx.ellipse(CX,CY+R-ih/2,R*0.65*state.iceRatio+18,ih/2,0,0,Math.PI*2);gctx.fill();
+    const ih=state.surface.ice/100*R*1.9;
+    gctx.fillStyle=`rgba(210,235,255,${0.65+state.surface.ice/100*0.3})`;
+    gctx.beginPath();gctx.ellipse(CX,CY-R+ih/2,R*0.65*state.surface.ice/100+18,ih/2,0,0,Math.PI*2);gctx.fill();
+    gctx.beginPath();gctx.ellipse(CX,CY+R-ih/2,R*0.65*state.surface.ice/100+18,ih/2,0,0,Math.PI*2);gctx.fill();
     if(state.snowball){gctx.fillStyle='rgba(215,238,255,0.9)';gctx.beginPath();gctx.arc(CX,CY,R,0,Math.PI*2);gctx.fill();}
     gctx.restore();
   }
@@ -415,8 +450,19 @@ function updateUI(){
   let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;h+=`<div class="gas-row"><span class="gas-label">${g.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
   document.getElementById('atmo-bars').innerHTML=h;
   const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
-  const ic=state.iceRatio>0.5?'#aed6f1':'#5dade2';
-  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val" style="color:#7ec8e3">${Math.round(state.wind)}m/s</div></div><div class="ec"><div class="ec-label">${T('ice')}</div><div class="ec-val" style="color:${ic}">${Math.round(state.iceRatio*100)}%</div></div>`;
+  const sf2=state.surface;
+  const wc='#7ec8e3';
+  document.getElementById('env-grid').innerHTML=`
+    <div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div>
+    <div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val" style="color:${wc};font-size:9px">avg.${Math.round(sf2.windAvg)} max.${Math.round(sf2.windMax)}<span style="font-size:7px"> m/s</span></div></div>
+    <div class="ec" style="grid-column:span 3">
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center">
+        ${sf2.magma>0.5?`<span style="color:#ff6b6b;font-size:9px">🌋 ${T('magma')} ${Math.round(sf2.magma)}%</span>`:''}
+        <span style="color:#5dade2;font-size:9px">🌊 ${T('ocean')} ${Math.round(sf2.ocean)}%</span>
+        <span style="color:#82e0aa;font-size:9px">🏔 ${T('land')} ${Math.round(sf2.land)}%</span>
+        ${sf2.ice>0.5?`<span style="color:#aed6f1;font-size:9px">🧊 ${T('ice_s')} ${Math.round(sf2.ice)}%</span>`:''}
+      </div>
+    </div>`;
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
