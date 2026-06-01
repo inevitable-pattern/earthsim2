@@ -42,10 +42,10 @@ canvas#overlay{position:absolute;top:0;left:0;border-radius:50%;pointer-events:n
 .bar-bg{flex:1;height:5px;background:#071525}
 .bar-fill{height:5px}
 .gas-val{font-size:9px;width:40px;text-align:right}
-.env-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}
+.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
 .ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
-.ec-val{font-size:12px;font-weight:bold}
+.ec-val{font-size:11px;font-weight:bold}
 #bio-section{flex:1;overflow-y:auto;padding:5px 10px}
 .bio-group{margin-bottom:5px}
 .bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:2px;border-bottom:1px solid #0d2137;padding-bottom:1px}
@@ -452,17 +452,9 @@ function updateUI(){
   const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
   const sf2=state.surface;
   const wc='#7ec8e3';
-  document.getElementById('env-grid').innerHTML=`
-    <div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div>
-    <div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val" style="color:${wc};font-size:9px">avg.${Math.round(sf2.windAvg)} max.${Math.round(sf2.windMax)}<span style="font-size:7px"> m/s</span></div></div>
-    <div class="ec" style="grid-column:span 3">
-      <div style="display:flex;gap:10px;justify-content:center;align-items:center">
-        ${sf2.magma>0.5?`<span style="color:#ff6b6b;font-size:9px">🌋 ${T('magma')} ${Math.round(sf2.magma)}%</span>`:''}
-        <span style="color:#5dade2;font-size:9px">🌊 ${T('ocean')} ${Math.round(sf2.ocean)}%</span>
-        <span style="color:#82e0aa;font-size:9px">🏔 ${T('land')} ${Math.round(sf2.land)}%</span>
-        ${sf2.ice>0.5?`<span style="color:#aed6f1;font-size:9px">🧊 ${T('ice_s')} ${Math.round(sf2.ice)}%</span>`:''}
-      </div>
-    </div>`;
+  const surfItems=[{v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},{v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean')},{v:sf2.land,color:'#82e0aa',icon:'🏔',lbl:T('land')},{v:sf2.ice,color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}].filter(x=>x.v>0.5);
+  const surfHtml=surfItems.map(x=>`<span style="color:${x.color};white-space:nowrap">${x.icon} ${x.lbl} ${Math.round(x.v)}%</span>`).join('<span style="color:#1a3a5c"> | </span>');
+  document.getElementById('env-grid').innerHTML=`<div class="ec"><div class="ec-label">${T('temp')}</div><div class="ec-val" style="color:${tc}">${Math.round(state.temp)}°C</div></div><div class="ec"><div class="ec-label">${T('wind')}</div><div class="ec-val"><span style="font-size:8px;color:#4a7c9e">avg.</span><span style="color:#7ec8e3">${Math.round(sf2.windAvg)}</span><span style="font-size:8px;color:#4a7c9e"> max.</span><span style="color:#7ec8e3">${Math.round(sf2.windMax)}</span><span style="font-size:7px;color:#4a7c9e"> m/s</span></div></div><div class="ec"><div class="ec-label">${lang==='ja'?'地表':'SURFACE'}</div><div style="font-size:8px;line-height:1.7;margin-top:1px">${surfHtml}</div></div>`;
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
