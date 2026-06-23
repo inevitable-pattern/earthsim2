@@ -465,8 +465,7 @@ function updateUI(){
   document.getElementById('env-grid').innerHTML=
     '<div class="ec"><div class="ec-label">'+T('temp')+'</div><div class="ec-val" style="color:'+tc+'">'+Math.round(state.temp)+'°C</div></div>'+
     '<div class="ec"><div class="ec-label">'+T('wind')+'</div><div class="ec-val" style="color:#7ec8e3">'+(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+' '+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+' m/s</div></div>'+
-    '<div class="ec"><div class="ec-label">'+(lang==='ja'?'地表':'SURFACE')+'</div><div class="ec-val" style="display:flex;flex-wrap:nowrap;align-items:center;gap:4px;white-space:nowrap;overflow:hidden">'+surfHtml+'</div></div>';
-  let bh='';
+    '<div class="ec"><div class="ec-label">'+(lang==='ja'?'地表':'SURFACE')+'</div><div class="ec-val" style="font-size:7px;display:flex;flex-wrap:nowrap;align-items:center;gap:4px;white-space:nowrap;overflow:hidden">'+surfHtml+'</div></div>'; let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
     if(!active.length)return;
