@@ -1,550 +1,885 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Earth Evolution Simulator</title>
+<title>Earth History Simulator</title>
 <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{width:100%;height:100%;background:#000;color:#7ec8e3;font-family:'Courier New',monospace;overflow:hidden;display:flex;align-items:center;justify-content:center}
-    
-    #root{
-        width:960px;height:640px;
-        background:#02070f;
-        border:4px solid #0a1f3a;
-        box-shadow:0 0 40px rgba(26,82,118,0.6);
-        position:relative;
-        overflow:hidden;
-    }
-    
-    #main{display:flex;height:100%}
-    
-    /* LEFT - MACRO CROSS SECTION */
-    #macro-container{
-        width:420px;
-        background:#01050a;
-        position:relative;
-        border-right:3px solid #0a1f3a;
-        overflow:hidden;
-    }
-    #macro{
-        width:100%;
-        height:100%;
-        background:linear-gradient(#0b1b3a 45%, #0a2a4a 48%, #0a3a6a 65%, #051833 100%);
-        position:relative;
-    }
-    
-    /* RIGHT PANEL */
-    #right{
-        flex:1;
-        display:flex;
-        flex-direction:column;
-        overflow:hidden;
-    }
-    
-    .panel{
-        padding:8px 12px;
-        border-bottom:1px solid #0a1f3a;
-        background:rgba(10,30,55,0.6);
-    }
-    .ptitle{
-        font-size:9px;
-        letter-spacing:2px;
-        color:#4a7c9e;
-        margin-bottom:4px;
-    }
-    
-    /* Small Planet */
-    #small-planet{
-        position:absolute;
-        top:12px;
-        right:18px;
-        width:110px;
-        height:110px;
-        border:3px solid #0a1f3a;
-        border-radius:50%;
-        box-shadow:0 0 20px rgba(26,82,118,0.8),
-                   inset 0 0 30px rgba(0,0,0,0.6);
-        overflow:hidden;
-        z-index:10;
-    }
-    
-    #top-bar{
-        position:absolute;
-        top:0;left:0;right:0;
-        height:42px;
-        background:rgba(5,15,35,0.95);
-        border-bottom:2px solid #1a5276;
-        display:flex;
-        align-items:center;
-        padding:0 20px;
-        z-index:20;
-        gap:15px;
-    }
-    
-    .btn{
-        font-size:9px;
-        padding:4px 10px;
-        background:#0a1628;
-        border:1px solid #1a5276;
-        color:#7ec8e3;
-        cursor:pointer;
-        transition:all 0.2s;
-    }
-    .btn:hover{
-        background:#1a3a5c;
-        border-color:#7ec8e3;
-    }
-    .btn.active{
-        background:#1a5276;
-        color:#ffec27;
-        border-color:#ffec27;
-    }
-    
-    #era-info{
-        font-size:13px;
-        color:#ffec27;
-        font-weight:bold;
-        letter-spacing:1px;
-        flex:1;
-        text-align:center;
-    }
-    
-    #event-log{
-        position:absolute;
-        bottom:8px;
-        left:20px;
-        right:20px;
-        background:rgba(4,14,28,0.9);
-        border:1px solid #1a3a5c;
-        padding:6px 10px;
-        font-size:9px;
-        color:#ffa07a;
-        min-height:22px;
-        text-align:center;
-        z-index:15;
-    }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#scale-root{width:940px;height:640px;transform-origin:center center;position:relative}
+#wrap{display:flex;gap:0;width:940px;height:640px;background:#000;font-family:'Courier New',monospace}
+#left{width:440px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:10px;gap:6px;position:relative}
+#top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
+#era-badge{font-size:13px;color:#ffec27;letter-spacing:1px;text-align:center;font-weight:bold;flex:1}
+#lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
+#lang-btn:hover{background:#1a3a5c}
+#eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
+#macro-wrap{position:relative;width:400px;height:340px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
+canvas#macro{width:400px;height:340px;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+#top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
+.macro-tag{font-size:7px;color:#ffec27;background:rgba(4,14,28,0.75);padding:1px 4px;letter-spacing:1px;border:1px solid #1a3a5c}
+#progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
+#progress-bar{height:100%;background:#1a5276;width:0%}
+#progress-label{position:absolute;right:3px;top:0;font-size:7px;color:#4a7c9e;line-height:8px}
+#year-display{font-size:9px;color:#4a7c9e;text-align:center}
+#event-log{width:100%;font-size:8px;color:#ffa07a;min-height:24px;text-align:center;line-height:1.4;padding:2px 4px;background:#040e1c;border:1px solid #1a3a5c}
+#btns{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.ebtn{font-family:'Courier New',monospace;font-size:9px;padding:3px 7px;background:#0a1628;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.ebtn:hover{background:#1a3a5c;color:#fff}
+#speed-row{display:flex;align-items:center;gap:4px;font-size:9px;color:#7ec8e3;flex-wrap:wrap;justify-content:center}
+#speed-row button{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#aaa;border:1px solid #1a3a5c;cursor:pointer}
+#speed-row button.active{background:#1a5276;color:#ffec27;border-color:#ffec27}
+#right{flex:1;display:flex;flex-direction:column;overflow:hidden;border-left:1px solid #1a3a5c}
+.panel{padding:5px 10px;border-bottom:1px solid #0d2137}
+.ptitle{font-size:8px;color:#4a7c9e;letter-spacing:2px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
+#atmo-head{display:flex;align-items:center;gap:8px}
+#planet-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
+.gas-row{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.gas-label{font-size:9px;color:#7ec8e3;width:36px}
+.bar-bg{flex:1;height:5px;background:#071525}
+.bar-fill{height:5px}
+.gas-val{font-size:9px;width:40px;text-align:right}
+.env-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
+.ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
+.ec-val{font-size:9px;font-weight:bold;color:#7ec8e3}
+#bio-section{flex:1;overflow-y:auto;padding:5px 10px}
+.bio-group{margin-bottom:5px}
+.bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:2px;border-bottom:1px solid #0d2137;padding-bottom:1px}
+.bio-row{display:flex;align-items:center;gap:3px;margin-bottom:1px}
+.bio-icon{font-size:10px;width:14px;text-align:center}
+.bio-name{font-size:8px;color:#7ec8e3;width:80px;white-space:nowrap;overflow:hidden}
+.bio-val{font-size:8px;width:26px;text-align:right}
+#timeline{padding:4px 6px 4px;background:#040e1c;border-top:1px solid #0d2137;overflow-x:auto;flex-shrink:0}
+#timeline::-webkit-scrollbar{height:4px;background:#040e1c}
+#timeline::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:2px}
+.tl-inner{display:flex;gap:2px;align-items:flex-end;width:max-content;padding-bottom:2px}
+.tl-era{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:3px 4px;border-radius:2px;flex-shrink:0}
+.tl-era:hover{background:#0d2137}
+.tl-era.active{background:#1a3a5c}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-bottom:3px;flex-shrink:0}
+.tl-name{font-size:9px;color:#4a7c9e;text-align:center;writing-mode:vertical-lr;height:60px;line-height:1.2;overflow:hidden;letter-spacing:1px}
+.tl-era.active .tl-name{color:#ffec27}
+#end-banner{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);border:1px solid #ffec27;padding:12px 20px;font-size:10px;color:#ffec27;text-align:center;font-family:'Courier New',monospace;z-index:10;pointer-events:none;line-height:1.8}
 </style>
 </head>
 <body>
-<div id="root">
-    <div id="top-bar">
-        <div style="font-size:15px;color:#ffec27;letter-spacing:2px">EARTH EVOLUTION</div>
-        <div id="era-info">DEVONIAN — 419 MYA</div>
-        <button onclick="toggleLang()" id="lang-btn" class="btn">ENGLISH</button>
+<div id="scale-root">
+<div id="wrap">
+<div id="left">
+  <div id="top-row">
+    <div id="era-badge">EARTH SIMULATOR</div>
+    <button id="lang-btn" onclick="toggleLang()">日本語</button>
+  </div>
+  <div id="eon-badge">HADEAN — 4.5 BYA</div>
+  <div id="macro-wrap">
+    <canvas id="macro" width="160" height="136"></canvas>
+    <div id="top-row2"><span class="macro-tag" id="tag-sky">AIR</span><span class="macro-tag" id="tag-sea">SEA</span></div>
+    <div id="end-banner"></div>
+  </div>
+  <div id="progress-outer">
+    <div id="progress-bar"></div>
+    <span id="progress-label">0%</span>
+  </div>
+  <div id="year-display">4,500 MYA ago</div>
+  <div id="event-log">Earth forms from cosmic dust...</div>
+  <div id="btns">
+    <button class="ebtn" id="btn-meteor" onclick="doEvent('meteor')">☄ METEOR</button>
+    <button class="ebtn" id="btn-volcano" onclick="doEvent('volcano')">🌋 VOLCANO</button>
+    <button class="ebtn" id="btn-ice" onclick="doEvent('ice')">❄ ICE AGE</button>
+    <button class="ebtn" id="btn-warm" onclick="doEvent('warm')">☀ WARMING</button>
+    <button class="ebtn" id="btn-ext" onclick="doEvent('mass_ext')">💀 MASS EXT</button>
+    <button class="ebtn" id="btn-reset" onclick="resetSim()">↺ RESET</button>
+  </div>
+  <div id="speed-row">
+    <span id="lbl-speed">SPEED:</span>
+    <button id="b1" onclick="setSpd(1)" class="active">1x</button>
+    <button id="b5" onclick="setSpd(5)">5x</button>
+    <button id="b20" onclick="setSpd(20)">20x</button>
+    <button id="b100" onclick="setSpd(100)">100x</button>
+  </div>
+</div>
+<div id="right">
+  <div class="panel">
+    <div class="ptitle" id="lbl-atmo">ATMOSPHERE</div>
+    <div id="atmo-head">
+      <div id="planet-wrap"><canvas id="planet-icon" width="52" height="52"></canvas></div>
+      <div id="atmo-bars" style="flex:1"></div>
     </div>
-    
-    <div id="main">
-        <!-- MACRO CROSS SECTION -->
-        <div id="macro-container">
-            <canvas id="macro-canvas" width="420" height="640"></canvas>
-            <div id="event-log">Age of Fishes! First forests emerge...</div>
-        </div>
-        
-        <!-- RIGHT PANELS -->
-        <div id="right">
-            <!-- ATMOSPHERE -->
-            <div class="panel">
-                <div class="ptitle">ATMOSPHERE</div>
-                <div id="atmo-bars"></div>
-            </div>
-            
-            <!-- AIR (CLIMATE) -->
-            <div class="panel">
-                <div class="ptitle">AIR</div>
-                <div id="air-info" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:9px"></div>
-            </div>
-            
-            <!-- SMALL PLANET -->
-            <div id="small-planet">
-                <canvas id="planet-canvas" width="110" height="110"></canvas>
-            </div>
-            
-            <!-- BIOSPHERE -->
-            <div class="panel" style="flex:1;overflow-y:auto">
-                <div class="ptitle">BIOSPHERE</div>
-                <div id="bio-groups"></div>
-            </div>
-            
-            <!-- CONTROLS -->
-            <div class="panel" style="border-bottom:none">
-                <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">
-                    <button onclick="triggerEvent('meteor')" class="btn">☄ METEOR</button>
-                    <button onclick="triggerEvent('volcano')" class="btn">🌋 VOLCANO</button>
-                    <button onclick="triggerEvent('ice')" class="btn">❄ ICE AGE</button>
-                    <button onclick="triggerEvent('warm')" class="btn">☀ WARMING</button>
-                    <button onclick="triggerEvent('ext')" class="btn">💀 MASS EXT</button>
-                    <button onclick="resetSim()" class="btn">↺ RESET</button>
-                </div>
-                
-                <div style="margin-top:8px;display:flex;justify-content:center;gap:6px;align-items:center">
-                    <span style="font-size:9px;color:#4a7c9e">SPEED:</span>
-                    <button onclick="setSpeed(1)" id="spd1" class="btn active">1x</button>
-                    <button onclick="setSpeed(5)" id="spd5" class="btn">5x</button>
-                    <button onclick="setSpeed(20)" id="spd20" class="btn">20x</button>
-                    <button onclick="setSpeed(100)" id="spd100" class="btn">100x</button>
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
+  <div class="panel">
+    <div class="ptitle" id="lbl-air">AIR</div>
+    <div class="env-grid" id="env-grid"></div>
+  </div>
+  <div id="bio-section">
+    <div class="ptitle" id="lbl-bio" style="margin-bottom:4px">BIOSPHERE</div>
+    <div id="bio-groups"></div>
+  </div>
+  <div id="timeline">
+    <div class="tl-inner" id="tl-inner"></div>
+  </div>
+</div>
+</div>
 </div>
 
 <script>
-// ================ STATE ================
-let lang = 'ja';
-let timeMYA = 419;
-let speed = 1;
-let state = {
-    atmo: {N2:74, CO2:3.1, O2:17.5, H2O:2.1, CH4:0, H2:0},
-    temp: 20,
-    wind: {avg:38, max:75},
-    pressure: 1013,
-    humidity: 65,
-    surface: {ocean:62, land:37, ice:1},
-    bio: {
-        plankton:38, bacteria:32, cyanobacteria:22, archaea:8,
-        algae:30, spore_plants:30, fungi:24, lichen:8, gymnosperm:8,
-        mollusks:22, crustaceans:20, echinoderms:19, trilobites:15,
-        insects:8, arachnids:8
-    }
+// ---- 自動スケール ----
+function autoScale(){
+  const root=document.getElementById('scale-root');
+  const W=940,H=640;
+  const scaleX=window.innerWidth/W;
+  const scaleY=window.innerHeight/H;
+  const scale=Math.min(scaleX,scaleY)*0.98;
+  root.style.transform=`scale(${scale})`;
+}
+window.addEventListener('resize',autoScale);
+autoScale();
+
+// ---- 言語 ----
+const LANG={
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',air:'AIR',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',ago:' ago',reborn:'Present day — Earth continues...',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',end_title:'PRESENT DAY',end_sub:'Simulation complete — Earth endures',sky:'SKY',sea:'SEA'},
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',air:'気象',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',ago:'前',reborn:'現代 — 地球は続く...',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',end_title:'現　代',end_sub:'シミュレーション完了 — 地球は続く',sky:'空',sea:'海'},
+};
+let lang='en';
+function T(k){return LANG[lang][k]||LANG.en[k]||k;}
+function toggleLang(){lang=lang==='en'?'ja':'en';applyLang();}
+function applyLang(){
+  document.getElementById('era-badge').textContent=T('title');
+  document.getElementById('lang-btn').textContent=T('langBtn');
+  document.getElementById('lbl-speed').textContent=T('speed');
+  document.getElementById('lbl-atmo').textContent=T('atmo');
+  document.getElementById('lbl-air').textContent=T('air');
+  document.getElementById('lbl-bio').textContent=T('bio');
+  document.getElementById('tag-sky').textContent=T('sky');
+  document.getElementById('tag-sea').textContent=T('sea');
+  ['meteor','volcano','ice','warm','ext','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
+  buildTimeline();updateTimeline(curEraIdx);
+}
+
+// ---- 生物グループ ----
+const BIO_GROUPS_DEF=[
+  {gkey:'microbe',members:[
+    {key:'archaea',en:'Archaea',ja:'古細菌',color:'#9b59b6',icon:'🔬'},
+    {key:'bacteria',en:'Bacteria',ja:'バクテリア',color:'#7fb3d3',icon:'🦠'},
+    {key:'cyanobact',en:'Cyanobacteria',ja:'シアノバクテリア',color:'#1abc9c',icon:'💧'},
+    {key:'plankton',en:'Plankton',ja:'プランクトン',color:'#5dade2',icon:'🌀'},
+  ]},
+  {gkey:'plant',members:[
+    {key:'algae',en:'Algae',ja:'藻類',color:'#82e0aa',icon:'🌊'},
+    {key:'lichen',en:'Lichen/Moss',ja:'地衣・コケ',color:'#2ecc71',icon:'🌱'},
+    {key:'spore_plant',en:'Spore plants',ja:'シダ植物',color:'#27ae60',icon:'🌿'},
+    {key:'gymnosperm',en:'Gymnosperms',ja:'裸子植物',color:'#1d6a2f',icon:'🌲'},
+    {key:'angiosperm',en:'Angiosperms',ja:'被子植物',color:'#e74c3c',icon:'🌸'},
+    {key:'fungi',en:'Fungi',ja:'菌類',color:'#f0b27a',icon:'🍄'},
+  ]},
+  {gkey:'invert',members:[
+    {key:'jellyfish',en:'Jellyfish/Worm',ja:'クラゲ・ワーム',color:'#f8c8d4',icon:'🪼'},
+    {key:'trilobite',en:'Trilobites',ja:'三葉虫',color:'#a04000',icon:'🦂'},
+    {key:'mollusk',en:'Mollusks/Clams',ja:'軟体・貝類',color:'#8e6c88',icon:'🐚'},
+    {key:'crustacean',en:'Crustaceans',ja:'甲殻類',color:'#e67e22',icon:'🦀'},
+    {key:'insect',en:'Insects',ja:'昆虫類',color:'#f7dc6f',icon:'🦟'},
+    {key:'arachnid',en:'Arachnids',ja:'クモ形類',color:'#922b21',icon:'🕷'},
+    {key:'echinoderm',en:'Echinoderms',ja:'棘皮動物',color:'#d98880',icon:'⭐'},
+  ]},
+  {gkey:'vert',members:[
+    {key:'jawless_fish',en:'Jawless Fish',ja:'無顎魚類',color:'#aed6f1',icon:'🐡'},
+    {key:'jawed_fish',en:'Jawed Fish',ja:'有顎魚類',color:'#5dade2',icon:'🐟'},
+    {key:'lobe_fish',en:'Lobe-fin Fish',ja:'肉鰭類',color:'#2471a3',icon:'🐠'},
+    {key:'amphibian',en:'Amphibians',ja:'両生類',color:'#58d68d',icon:'🐸'},
+    {key:'reptile',en:'Reptiles',ja:'爬虫類',color:'#a9cce3',icon:'🦎'},
+    {key:'synapsid',en:'Synapsids',ja:'単弓類',color:'#e59866',icon:'🦏'},
+    {key:'dino',en:'Dinosaurs',ja:'恐竜',color:'#d35400',icon:'🦕'},
+    {key:'pterosaur',en:'Pterosaurs',ja:'翼竜',color:'#8e44ad',icon:'🦅'},
+    {key:'bird',en:'Birds',ja:'鳥類',color:'#f1c40f',icon:'🐦'},
+    {key:'mammal',en:'Mammals',ja:'哺乳類',color:'#ec407a',icon:'🐾'},
+    {key:'primate',en:'Primates',ja:'霊長類',color:'#ff8a65',icon:'🐒'},
+    {key:'human',en:'Humans',ja:'人類',color:'#fff176',icon:'👤'},
+  ]},
+];
+const ALL_BIO=[];BIO_GROUPS_DEF.forEach(g=>g.members.forEach(m=>ALL_BIO.push(m)));
+function bioKeys(){return ALL_BIO.map(b=>b.key);}
+
+// ---- 時代データ ----
+const ERA_NAMES={hadean:{en:'Hadean',ja:'冥王代'},archean:{en:'Archean',ja:'太古代'},proterozoic:{en:'Proterozoic',ja:'原生代'},snowball:{en:'Snowball Earth',ja:'全球凍結'},ediacaran:{en:'Ediacaran',ja:'エディアカラ紀'},cambrian:{en:'Cambrian',ja:'カンブリア紀'},ordovician:{en:'Ordovician',ja:'オルドビス紀'},silurian:{en:'Silurian',ja:'シルル紀'},devonian:{en:'Devonian',ja:'デボン紀'},carboniferous:{en:'Carbonifer.',ja:'石炭紀'},permian:{en:'Permian',ja:'ペルム紀'},pt_ext:{en:'P-T Extinct.',ja:'P-T大絶滅'},triassic_e:{en:'Triassic E.',ja:'三畳紀前期'},triassic_l:{en:'Triassic L.',ja:'三畳紀後期'},jurassic_e:{en:'Jurassic E.',ja:'ジュラ紀前期'},jurassic_l:{en:'Jurassic L.',ja:'ジュラ紀後期'},cretaceous_e:{en:'Cretac. E.',ja:'白亜紀前期'},cretaceous_l:{en:'Cretac. L.',ja:'白亜紀後期'},kpg_ext:{en:'K-Pg Extinct.',ja:'K-Pg大絶滅'},paleogene:{en:'Paleogene',ja:'暁新世'},neogene:{en:'Neogene',ja:'中新世'},quaternary:{en:'Quaternary',ja:'第四紀'}};
+const ERA_DESC={hadean:{en:'Molten Earth. Meteor bombardment. No life possible.',ja:'溶融した地球。隕石の集中砲火。生命不可能。'},archean:{en:'First oceans & primitive bacteria. Zero oxygen.',ja:'最初の海と原始細菌。酸素はゼロ。'},proterozoic:{en:'Great Oxidation Event! Cyanobacteria flood atmosphere with O2.',ja:'大酸化イベント！シアノバクテリアがO2を放出。'},snowball:{en:'SNOWBALL EARTH — entire planet frozen! Life clings to vents.',ja:'全球凍結！惑星全体が氷に覆われる！'},ediacaran:{en:'First multicellular life! Soft-bodied Ediacaran fauna emerge.',ja:'最初の多細胞生物！エディアカラ生物群が出現。'},cambrian:{en:'Cambrian Explosion! Most animal phyla appear. Trilobites dominate.',ja:'カンブリア爆発！ほとんどの動物門が出現。三葉虫が支配。'},ordovician:{en:'Marine life diversifies. First land plants. Ends with mass extinction.',ja:'海洋生物が多様化。最初の陸上植物。大量絶滅で終わる。'},silurian:{en:'First vascular plants. Jawed fish evolve. Coral reefs flourish.',ja:'最初の維管束植物。顎を持つ魚が進化。'},devonian:{en:'Age of Fishes! First forests. Tetrapods crawl onto land.',ja:'魚の時代！最初の森林。四肢動物が陸上へ。'},carboniferous:{en:'O2 hits 30%! Giant insects. Coal swamp forests.',ja:'O2が30%！巨大昆虫。石炭紀の森林。'},permian:{en:'Pangaea. Synapsids dominate. End: WORST mass extinction.',ja:'パンゲア。単弓類が支配。最悪の大量絶滅。'},pt_ext:{en:'96% of all species EXTINCT. Siberian Traps erupt.',ja:'全種の96%が絶滅。シベリアの罠噴火。'},triassic_e:{en:'Recovery begins. First dinosaurs! Archosaurs diversify.',ja:'回復開始。最初の恐竜！主竜類が急速に多様化。'},triassic_l:{en:'Dinosaurs diversify. First true mammals. Pangaea splits.',ja:'恐竜が多様化。最初の哺乳類。パンゲアが分裂。'},jurassic_e:{en:'Sauropods grow enormous. Atlantic Ocean opens.',ja:'竜脚類が巨大化。大西洋が開く。'},jurassic_l:{en:'Peak Jurassic! Brachiosaurus, Stegosaurus. First birds!',ja:'ジュラ紀の頂点！最初の鳥！'},cretaceous_e:{en:'Flowering plants explode. Sea levels very high.',ja:'被子植物が大陸に広まる。海面が高い。'},cretaceous_l:{en:'T-Rex! Triceratops! Angiosperms dominant. Asteroid incoming...',ja:'T-レックス！トリケラトプス！小惑星が近づく…'},kpg_ext:{en:'Chicxulub impact! 75% species extinct. Dinos gone.',ja:'チクシュルーブ衝突！種の75%が絶滅。恐竜消滅。'},paleogene:{en:'Mammals explode! Whales return to sea. Primates appear.',ja:'哺乳類が爆発的に多様化！霊長類が出現。'},neogene:{en:'Grasslands spread. Megafauna evolve. Hominids walk upright.',ja:'草原が広まる。ホミニドが直立歩行。'},quaternary:{en:'Ice ages cycle. Homo sapiens emerge. Present day.',ja:'氷期サイクル。ホモ・サピエンス出現。現代。'}};
+const ERA_BIO={
+  hadean:     {archaea:0,bacteria:0,cyanobact:0,plankton:0, algae:0,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:0, jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0, jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  archean:    {archaea:55,bacteria:40,cyanobact:5,plankton:0, algae:0,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:0, jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0, jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  proterozoic:{archaea:25,bacteria:45,cyanobact:22,plankton:8, algae:60,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:40, jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0, jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  snowball:   {archaea:40,bacteria:50,cyanobact:8,plankton:2, algae:70,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:30, jellyfish:0,trilobite:0,mollusk:0,crustacean:0,insect:0,arachnid:0,echinoderm:0, jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  ediacaran:  {archaea:20,bacteria:45,cyanobact:20,plankton:15, algae:55,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:45, jellyfish:50,trilobite:0,mollusk:20,crustacean:5,insect:0,arachnid:0,echinoderm:25, jawless_fish:0,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  cambrian:   {archaea:15,bacteria:40,cyanobact:25,plankton:20, algae:50,lichen:0,spore_plant:0,gymnosperm:0,angiosperm:0,fungi:50, jellyfish:15,trilobite:40,mollusk:18,crustacean:12,insect:0,arachnid:0,echinoderm:15, jawless_fish:100,jawed_fish:0,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  ordovician: {archaea:12,bacteria:38,cyanobact:25,plankton:25, algae:48,lichen:3,spore_plant:3,gymnosperm:0,angiosperm:0,fungi:46, jellyfish:12,trilobite:35,mollusk:22,crustacean:16,insect:0,arachnid:0,echinoderm:15, jawless_fish:60,jawed_fish:10,lobe_fish:0,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  silurian:   {archaea:10,bacteria:36,cyanobact:24,plankton:30, algae:42,lichen:8,spore_plant:10,gymnosperm:0,angiosperm:0,fungi:40, jellyfish:10,trilobite:25,mollusk:24,crustacean:20,insect:3,arachnid:2,echinoderm:16, jawless_fish:45,jawed_fish:40,lobe_fish:15,amphibian:0,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  devonian:   {archaea:8,bacteria:32,cyanobact:22,plankton:38, algae:30,lichen:8,spore_plant:30,gymnosperm:8,angiosperm:0,fungi:24, jellyfish:8,trilobite:15,mollusk:22,crustacean:20,insect:8,arachnid:8,echinoderm:19, jawless_fish:15,jawed_fish:50,lobe_fish:25,amphibian:10,reptile:0,synapsid:0,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  carboniferous:{archaea:6,bacteria:30,cyanobact:20,plankton:44, algae:15,lichen:8,spore_plant:50,gymnosperm:12,angiosperm:0,fungi:15, jellyfish:5,trilobite:4,mollusk:18,crustacean:16,insect:35,arachnid:14,echinoderm:8, jawless_fish:2,jawed_fish:20,lobe_fish:8,amphibian:55,reptile:12,synapsid:3,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  permian:    {archaea:6,bacteria:30,cyanobact:18,plankton:46, algae:12,lichen:8,spore_plant:35,gymnosperm:30,angiosperm:0,fungi:15, jellyfish:4,trilobite:1,mollusk:20,crustacean:16,insect:30,arachnid:16,echinoderm:13, jawless_fish:0,jawed_fish:16,lobe_fish:4,amphibian:30,reptile:28,synapsid:22,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  pt_ext:     {archaea:15,bacteria:50,cyanobact:20,plankton:15, algae:20,lichen:3,spore_plant:12,gymnosperm:12,angiosperm:0,fungi:53, jellyfish:15,trilobite:0,mollusk:20,crustacean:18,insect:22,arachnid:15,echinoderm:10, jawless_fish:0,jawed_fish:18,lobe_fish:0,amphibian:18,reptile:38,synapsid:26,dino:0,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  triassic_e: {archaea:8,bacteria:34,cyanobact:20,plankton:38, algae:15,lichen:6,spore_plant:22,gymnosperm:35,angiosperm:0,fungi:22, jellyfish:6,trilobite:0,mollusk:22,crustacean:18,insect:24,arachnid:14,echinoderm:16, jawless_fish:0,jawed_fish:22,lobe_fish:0,amphibian:22,reptile:38,synapsid:16,dino:2,pterosaur:0,bird:0,mammal:0,primate:0,human:0},
+  triassic_l: {archaea:7,bacteria:32,cyanobact:20,plankton:41, algae:12,lichen:5,spore_plant:20,gymnosperm:42,angiosperm:0,fungi:21, jellyfish:5,trilobite:0,mollusk:22,crustacean:18,insect:26,arachnid:14,echinoderm:15, jawless_fish:0,jawed_fish:20,lobe_fish:0,amphibian:18,reptile:30,synapsid:14,dino:14,pterosaur:3,bird:0,mammal:1,primate:0,human:0},
+  jurassic_e: {archaea:6,bacteria:30,cyanobact:18,plankton:46, algae:10,lichen:4,spore_plant:20,gymnosperm:52,angiosperm:2,fungi:12, jellyfish:5,trilobite:0,mollusk:22,crustacean:18,insect:26,arachnid:14,echinoderm:15, jawless_fish:0,jawed_fish:18,lobe_fish:0,amphibian:12,reptile:24,synapsid:3,dino:36,pterosaur:4,bird:0,mammal:2,primate:0,human:0},
+  jurassic_l: {archaea:5,bacteria:28,cyanobact:18,plankton:49, algae:8,lichen:4,spore_plant:16,gymnosperm:58,angiosperm:4,fungi:10, jellyfish:4,trilobite:0,mollusk:22,crustacean:18,insect:26,arachnid:14,echinoderm:16, jawless_fish:0,jawed_fish:16,lobe_fish:0,amphibian:10,reptile:20,synapsid:0,dino:44,pterosaur:6,bird:2,mammal:2,primate:0,human:0},
+  cretaceous_e:{archaea:5,bacteria:26,cyanobact:18,plankton:51, algae:7,lichen:3,spore_plant:12,gymnosperm:48,angiosperm:20,fungi:10, jellyfish:4,trilobite:0,mollusk:22,crustacean:18,insect:28,arachnid:13,echinoderm:15, jawless_fish:0,jawed_fish:15,lobe_fish:0,amphibian:8,reptile:18,synapsid:0,dino:44,pterosaur:6,bird:6,mammal:3,primate:0,human:0},
+  cretaceous_l:{archaea:5,bacteria:25,cyanobact:18,plankton:52, algae:5,lichen:3,spore_plant:8,gymnosperm:35,angiosperm:42,fungi:7, jellyfish:4,trilobite:0,mollusk:20,crustacean:17,insect:30,arachnid:13,echinoderm:16, jawless_fish:0,jawed_fish:15,lobe_fish:0,amphibian:7,reptile:16,synapsid:0,dino:40,pterosaur:5,bird:8,mammal:4,primate:0,human:0},
+  kpg_ext:    {archaea:10,bacteria:45,cyanobact:20,plankton:25, algae:10,lichen:4,spore_plant:10,gymnosperm:25,angiosperm:22,fungi:29, jellyfish:8,trilobite:0,mollusk:20,crustacean:18,insect:28,arachnid:14,echinoderm:12, jawless_fish:0,jawed_fish:20,lobe_fish:0,amphibian:10,reptile:32,synapsid:0,dino:0,pterosaur:0,bird:18,mammal:20,primate:0,human:0},
+  paleogene:  {archaea:5,bacteria:24,cyanobact:17,plankton:54, algae:4,lichen:4,spore_plant:7,gymnosperm:22,angiosperm:55,fungi:8, jellyfish:4,trilobite:0,mollusk:18,crustacean:17,insect:30,arachnid:14,echinoderm:17, jawless_fish:0,jawed_fish:18,lobe_fish:0,amphibian:8,reptile:18,synapsid:0,dino:0,pterosaur:0,bird:24,mammal:28,primate:4,human:0},
+  neogene:    {archaea:4,bacteria:23,cyanobact:16,plankton:57, algae:3,lichen:4,spore_plant:5,gymnosperm:18,angiosperm:64,fungi:6, jellyfish:4,trilobite:0,mollusk:17,crustacean:17,insect:32,arachnid:14,echinoderm:16, jawless_fish:0,jawed_fish:17,lobe_fish:0,amphibian:7,reptile:16,synapsid:0,dino:0,pterosaur:0,bird:22,mammal:32,primate:6,human:0},
+  quaternary: {archaea:4,bacteria:22,cyanobact:15,plankton:59, algae:3,lichen:3,spore_plant:4,gymnosperm:14,angiosperm:70,fungi:6, jellyfish:4,trilobite:0,mollusk:16,crustacean:16,insect:33,arachnid:14,echinoderm:17, jawless_fish:0,jawed_fish:16,lobe_fish:0,amphibian:6,reptile:14,synapsid:0,dino:0,pterosaur:0,bird:20,mammal:36,primate:7,human:1},
 };
 
-const canvas = document.getElementById('macro-canvas');
-const ctx = canvas.getContext('2d');
-const pCanvas = document.getElementById('planet-canvas');
-const pCtx = pCanvas.getContext('2d');
-
-let particles = [];
-let creatures = [];
-let timeOfDay = 0; // 0-1
-
-// ================ LANGUAGE ================
-const texts = {
-    ja: {
-        title: "EARTH EVOLUTION",
-        atmo: "大気組成",
-        air: "AIR",
-        bio: "生物圏",
-        temp: "気温",
-        wind: "風速",
-        pressure: "気圧",
-        humidity: "湿度"
-    },
-    en: {
-        title: "EARTH EVOLUTION",
-        atmo: "ATMOSPHERE",
-        air: "AIR",
-        bio: "BIOSPHERE",
-        temp: "TEMP",
-        wind: "WIND",
-        pressure: "PRESSURE",
-        humidity: "HUMIDITY"
-    }
+const ERA_SURFACE={
+  hadean:      {magma:60,ocean:5, land:35,ice:0, windAvg:180,windMax:350},
+  archean:     {magma:8, ocean:35,land:55,ice:0, windAvg:100,windMax:200},
+  proterozoic: {magma:1, ocean:50,land:44,ice:5, windAvg:70, windMax:140},
+  snowball:    {magma:0, ocean:2, land:8, ice:90,windAvg:180,windMax:300},
+  ediacaran:   {magma:0, ocean:60,land:36,ice:4, windAvg:55, windMax:110},
+  cambrian:    {magma:0, ocean:68,land:32,ice:0, windAvg:45, windMax:90},
+  ordovician:  {magma:0, ocean:68,land:30,ice:2, windAvg:45, windMax:85},
+  silurian:    {magma:0, ocean:65,land:34,ice:1, windAvg:40, windMax:80},
+  devonian:    {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
+  carboniferous:{magma:0,ocean:55,land:40,ice:5, windAvg:35, windMax:70},
+  permian:     {magma:0, ocean:52,land:44,ice:4, windAvg:40, windMax:80},
+  pt_ext:      {magma:3, ocean:45,land:50,ice:2, windAvg:120,windMax:250},
+  triassic_e:  {magma:1, ocean:50,land:48,ice:1, windAvg:50, windMax:100},
+  triassic_l:  {magma:0, ocean:55,land:44,ice:1, windAvg:45, windMax:90},
+  jurassic_e:  {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
+  jurassic_l:  {magma:0, ocean:65,land:34,ice:1, windAvg:35, windMax:70},
+  cretaceous_e:{magma:0, ocean:70,land:29,ice:1, windAvg:30, windMax:60},
+  cretaceous_l:{magma:0, ocean:68,land:31,ice:1, windAvg:30, windMax:60},
+  kpg_ext:     {magma:2, ocean:60,land:36,ice:2, windAvg:150,windMax:300},
+  paleogene:   {magma:0, ocean:62,land:36,ice:2, windAvg:28, windMax:55},
+  neogene:     {magma:0, ocean:60,land:33,ice:7, windAvg:25, windMax:50},
+  quaternary:  {magma:0, ocean:58,land:35,ice:7, windAvg:20, windMax:45},
 };
 
-function T(key) {
-    return texts[lang][key] || key;
+const ERAS=[
+  {id:'hadean',color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},temp:230,gc:'#8b0000',clouds:0.1,snowball:false},
+  {id:'archean',color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},temp:70,gc:'#2c3e50',clouds:0.3,snowball:false},
+  {id:'proterozoic',color:'#7d6608',mya:2500,endMya:720,atmo:{N2:78,CO2:5,H2O:2,H2:0.2,O2:5,CH4:0.5,Ar:1},temp:30,gc:'#1a5276',clouds:0.4,snowball:false},
+  {id:'snowball',color:'#aed6f1',mya:720,endMya:635,atmo:{N2:78,CO2:0.1,H2O:0.5,H2:0,O2:5,CH4:0,Ar:1},temp:-50,gc:'#d6eaf8',clouds:0.8,snowball:true},
+  {id:'ediacaran',color:'#1a5276',mya:635,endMya:538,atmo:{N2:78,CO2:1,H2O:2,H2:0,O2:10,CH4:0,Ar:1},temp:20,gc:'#1f618d',clouds:0.5,snowball:false},
+  {id:'cambrian',color:'#117a65',mya:538,endMya:485,atmo:{N2:77,CO2:4,H2O:2,H2:0,O2:13,CH4:0,Ar:1},temp:22,gc:'#1a6b5a',clouds:0.5,snowball:false},
+  {id:'ordovician',color:'#0e6655',mya:485,endMya:443,atmo:{N2:76,CO2:8,H2O:2,H2:0,O2:14,CH4:0,Ar:1},temp:25,gc:'#1a6b5a',clouds:0.45,snowball:false},
+  {id:'silurian',color:'#1e8449',mya:443,endMya:419,atmo:{N2:75,CO2:5,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:17,gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'devonian',color:'#d4ac0d',mya:419,endMya:358,atmo:{N2:74,CO2:3,H2O:2,H2:0,O2:17,CH4:0,Ar:1},temp:20,gc:'#239b56',clouds:0.4,snowball:false},
+  {id:'carboniferous',color:'#1d8348',mya:358,endMya:298,atmo:{N2:68,CO2:1,H2O:2,H2:0,O2:30,CH4:0,Ar:1},temp:14,gc:'#27ae60',clouds:0.5,snowball:false},
+  {id:'permian',color:'#b7950b',mya:298,endMya:252,atmo:{N2:75,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:16,gc:'#ca6f1e',clouds:0.35,snowball:false},
+  {id:'pt_ext',color:'#e74c3c',mya:252,endMya:248,atmo:{N2:72,CO2:20,H2O:3,H2:0,O2:10,CH4:2,Ar:1},temp:60,gc:'#c0392b',clouds:0.9,snowball:false},
+  {id:'triassic_e',color:'#ca6f1e',mya:248,endMya:230,atmo:{N2:76,CO2:4,H2O:2,H2:0,O2:16,CH4:0,Ar:1},temp:30,gc:'#ca6f1e',clouds:0.3,snowball:false},
+  {id:'triassic_l',color:'#d35400',mya:230,endMya:201,atmo:{N2:76,CO2:3,H2O:2,H2:0,O2:18,CH4:0,Ar:1},temp:25,gc:'#d35400',clouds:0.3,snowball:false},
+  {id:'jurassic_e',color:'#27ae60',mya:201,endMya:175,atmo:{N2:77,CO2:3,H2O:2,H2:0,O2:20,CH4:0,Ar:1},temp:20,gc:'#27ae60',clouds:0.45,snowball:false},
+  {id:'jurassic_l',color:'#1e8449',mya:175,endMya:145,atmo:{N2:77,CO2:2.5,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:18,gc:'#239b56',clouds:0.5,snowball:false},
+  {id:'cretaceous_e',color:'#1a5276',mya:145,endMya:90,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,gc:'#1a5276',clouds:0.55,snowball:false},
+  {id:'cretaceous_l',color:'#154360',mya:90,endMya:66,atmo:{N2:77,CO2:2,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:19,gc:'#154360',clouds:0.55,snowball:false},
+  {id:'kpg_ext',color:'#e74c3c',mya:66,endMya:63,atmo:{N2:75,CO2:10,H2O:3,H2:0,O2:18,CH4:0.5,Ar:1},temp:40,gc:'#922b21',clouds:0.95,snowball:false},
+  {id:'paleogene',color:'#2471a3',mya:63,endMya:23,atmo:{N2:78,CO2:0.1,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:22,gc:'#2471a3',clouds:0.5,snowball:false},
+  {id:'neogene',color:'#1a5276',mya:23,endMya:2.6,atmo:{N2:78,CO2:0.028,H2O:2,H2:0,O2:21,CH4:0,Ar:1},temp:15,gc:'#1a5276',clouds:0.45,snowball:false},
+  {id:'quaternary',color:'#2980b9',mya:2.6,endMya:0,atmo:{N2:78,CO2:0.04,H2O:1.5,H2:0,O2:21,CH4:0.0002,Ar:0.93},temp:14,gc:'#2980b9',clouds:0.4,snowball:false},
+];
+ERAS.forEach(e=>{
+  e.bio=ERA_BIO[e.id]||ERA_BIO.hadean;
+  e.surface=ERA_SURFACE[e.id]||ERA_SURFACE.hadean;
+  e.name=ERA_NAMES[e.id]||{en:e.id,ja:e.id};
+  e.desc=ERA_DESC[e.id]||{en:'',ja:''};
+});
+
+const GASES=[{key:'N2',label:'N₂',color:'#7ec8e3'},{key:'CO2',label:'CO₂',color:'#ff6b6b'},{key:'O2',label:'O₂',color:'#98fb98'},{key:'H2O',label:'H₂O',color:'#87ceeb'},{key:'CH4',label:'CH₄',color:'#ffa500'},{key:'H2',label:'H₂',color:'#dda0dd'}];
+
+const TOTAL_MYA=4500,REAL_SECONDS_1X=300*60,MYA_PER_SEC_1X=TOTAL_MYA/REAL_SECONDS_1X;
+let simMya=TOTAL_MYA,spd=1,state={},offset={},lastEraIdx=-1,curEraIdx=0,lastTimestamp=null;
+let simEnded=false;
+let ashLevel=0,impactFlash=0,lightningFlash=0,lightningTimer=0;
+
+// Macro cross-section canvas coordinate space (160x136)
+const MW=160,MH=136;
+const SKY_TOP=2,SKY_BOT=70,LAND_TOP=70,LAND_BASE=96,SEA_TOP=96,SEA_BOT=128,FLOOR_TOP=128,FLOOR_BOT=136;
+let meteorActive=false,meteorX=0,meteorY=0,meteorVY=0;
+let clockT=0; // real-time seconds accumulator, drives visual-only cycles (day/night, waves, wind)
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function getEraIdx(mya){for(let i=0;i<ERAS.length;i++){if(mya<=ERAS[i].mya&&mya>ERAS[i].endMya)return i;}return ERAS.length-1;}
+function initOffset(){const bio={};bioKeys().forEach(k=>bio[k]=0);offset={temp:0,co2:0,o2:0,iceRatio:0,bio};}
+function initState(eIdx){const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);const sf=e.surface||ERA_SURFACE.hadean;state={atmo:{...e.atmo},temp:e.temp,surface:{magma:sf.magma,ocean:sf.ocean,land:sf.land,ice:sf.ice,windAvg:sf.windAvg,windMax:sf.windMax},clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};}
+
+function showEndBanner(show){
+  const b=document.getElementById('end-banner');
+  if(show){
+    b.style.display='block';
+    b.innerHTML=`<div style="font-size:12px;margin-bottom:6px">${T('end_title')}</div><div style="font-size:9px;color:#7ec8e3">${T('end_sub')}</div>`;
+  } else {
+    b.style.display='none';
+  }
 }
 
-// ================ DRAW MACRO CROSS SECTION ================
-function drawMacro() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const w = canvas.width;
-    const h = canvas.height;
-    
-    // SKY
-    const skyHue = state.atmo.CO2 > 10 ? 10 : (state.atmo.O2 > 25 ? 200 : 210);
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, h*0.48);
-    skyGrad.addColorStop(0, `hsl(${skyHue}, 60%, ${state.atmo.CO2 > 15 ? 25 : 65}%)`);
-    skyGrad.addColorStop(1, `hsl(${skyHue}, 80%, 20%)`);
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, w, h*0.48);
-    
-    // Clouds
-    ctx.fillStyle = `rgba(255,255,255,${0.6 + state.humidity/300})`;
-    for (let i = 0; i < 6; i++) {
-        const x = (w * 0.15 * i + timeOfDay * 80) % (w + 100) - 50;
-        ctx.beginPath();
-        ctx.ellipse(x, 80 + Math.sin(timeOfDay*10 + i)*15, 55, 18, 0, 0, Math.PI*2);
-        ctx.fill();
-    }
-    
-    // SUN / MOON
-    const sunY = 90 + Math.sin(timeOfDay * Math.PI) * 40;
-    ctx.fillStyle = state.temp > 30 ? '#ffeb3b' : '#ddd';
-    ctx.beginPath();
-    ctx.arc(w*0.75, sunY, 22, 0, Math.PI*2);
-    ctx.fill();
-    
-    // LAND
-    ctx.fillStyle = state.temp < 0 ? '#e0f0ff' : (state.atmo.O2 > 20 ? '#1e5c2f' : '#3a6b2a');
-    ctx.fillRect(0, h*0.48, w, h*0.32);
-    
-    // Mountains
-    ctx.fillStyle = state.temp < 5 ? '#ccddee' : '#555';
-    ctx.beginPath();
-    ctx.moveTo(30, h*0.48);
-    ctx.lineTo(90, h*0.32);
-    ctx.lineTo(160, h*0.48);
-    ctx.fill();
-    
-    // Trees / Vegetation
-    const treeColor = state.atmo.O2 > 22 ? '#0f4' : '#3a2';
-    for (let i = 0; i < 8; i++) {
-        const tx = 50 + i * 38;
-        ctx.fillStyle = treeColor;
-        ctx.fillRect(tx-4, h*0.48 - 45, 8, 45); // trunk
-        ctx.beginPath();
-        ctx.moveTo(tx-18, h*0.48 - 55);
-        ctx.lineTo(tx+18, h*0.48 - 55);
-        ctx.lineTo(tx, h*0.48 - 85);
-        ctx.fill();
-    }
-    
-    // SEA
-    const seaLevel = h * 0.8;
-    const seaColor = state.humidity > 70 ? '#0a4a7a' : '#1e6aa8';
-    ctx.fillStyle = seaColor;
-    ctx.fillRect(0, seaLevel, w, h - seaLevel);
-    
-    // Waves
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-    ctx.lineWidth = 3;
-    for (let i = 0; i < 5; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, seaLevel + 12 + Math.sin(timeOfDay*12 + i*1.5)*8);
-        for (let x = 0; x < w; x += 25) {
-            ctx.lineTo(x, seaLevel + 12 + Math.sin(timeOfDay*12 + x/30 + i)*8);
-        }
-        ctx.stroke();
-    }
-    
-    // Creatures
-    drawCreatures();
-    
-    // Seabed
-    ctx.fillStyle = '#1a3a2a';
-    ctx.fillRect(0, h*0.92, w, h*0.08);
+function updateSim(ds){
+  clockT+=ds;
+  ashLevel=Math.max(0,ashLevel-ds/8);
+  impactFlash=Math.max(0,impactFlash-ds/1.2);
+  lightningFlash=Math.max(0,lightningFlash-ds*6);
+
+  if(simEnded){
+    updateMeteor(ds);
+    return;
+  }
+
+  simMya-=MYA_PER_SEC_1X*spd*ds;
+
+  if(simMya<=0){
+    simMya=0;
+    simEnded=true;
+    setEvent(T('reborn'));
+    showEndBanner(true);
+    const lastE=ERAS[ERAS.length-1];
+    curEraIdx=ERAS.length-1;
+    updateTimeline(curEraIdx);
+    document.getElementById('eon-badge').textContent=(lastE.name[lang]||lastE.name.en).toUpperCase()+' — PRESENT';
+    return;
+  }
+
+  const eIdx=getEraIdx(simMya);curEraIdx=eIdx;const e=ERAS[eIdx];
+  const eraDurSec=(e.mya-e.endMya)/(MYA_PER_SEC_1X*spd);
+  const tau=Math.max(eraDurSec*0.18,0.8);
+  const blend=clamp(1-Math.exp(-ds/tau),0,0.4);
+  Object.keys(e.atmo).forEach(k=>state.atmo[k]=lerp(state.atmo[k]||0,e.atmo[k],blend));
+  state.atmo.CO2=clamp(state.atmo.CO2+offset.co2*0.01,0,90);
+  state.atmo.O2=clamp(state.atmo.O2+offset.o2*0.01,0,40);
+  state.temp=lerp(state.temp,e.temp+offset.temp,blend);
+  const sf=e.surface||ERA_SURFACE.hadean;
+  state.surface.magma =lerp(state.surface.magma, sf.magma, blend);
+  const targetIce=clamp(sf.ice+offset.iceRatio*100,0,100);
+  const iceDelta=targetIce-sf.ice;
+  state.surface.ice   =lerp(state.surface.ice,   targetIce, blend);
+  state.surface.ocean =lerp(state.surface.ocean, clamp(sf.ocean-iceDelta*0.7,0,100), blend);
+  state.surface.land  =lerp(state.surface.land,  clamp(sf.land -iceDelta*0.3,0,100), blend);
+  state.surface.windAvg=lerp(state.surface.windAvg,sf.windAvg,blend);
+  state.surface.windMax=lerp(state.surface.windMax,sf.windMax,blend);
+  state.clouds=lerp(state.clouds,e.clouds,blend);
+  state.gc=e.gc;state.snowball=e.snowball||(state.surface.ice>80);
+  bioKeys().forEach(k=>{const tgt=clamp((e.bio[k]||0)+(offset.bio[k]||0),0,100);state.bio[k]=lerp(state.bio[k]||0,tgt,blend);});
+  const df=Math.exp(-ds/90);
+  offset.temp*=df;offset.co2*=df;offset.o2*=df;offset.iceRatio*=df;
+  bioKeys().forEach(k=>offset.bio[k]*=df);
+
+  // ambient ash from high volcanism
+  if(state.surface.magma>15) ashLevel=Math.max(ashLevel,Math.min(0.6,state.surface.magma/150));
+
+  // ambient lightning during humid/stormy conditions
+  lightningTimer-=ds;
+  const h2ofAmb=clamp((state.atmo.H2O||0)/8,0,1);
+  if(lightningTimer<=0){
+    lightningTimer=2+Math.random()*6;
+    if(h2ofAmb>0.35 && Math.random()<h2ofAmb) lightningFlash=1;
+  }
+
+  updateMeteor(ds);
+
+  if(eIdx!==lastEraIdx){
+    lastEraIdx=eIdx;
+    setEvent(e.desc[lang]||e.desc.en);
+    document.getElementById('eon-badge').textContent=(e.name[lang]||e.name.en).toUpperCase()+' — '+(e.mya>=1000?(e.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):e.mya+(lang==='ja'?'百万年前':' MYA'));
+    updateTimeline(eIdx);
+  }
 }
 
-// Simple creature system
-function createCreatures() {
-    creatures = [];
-    // Plankton / small floaters
-    for (let i = 0; i < Math.floor(state.bio.plankton / 4); i++) {
-        creatures.push({
-            type: 'plankton',
-            x: Math.random()*canvas.width,
-            y: canvas.height*0.55 + Math.random()*canvas.height*0.3,
-            vx: (Math.random()-0.5)*0.6,
-            size: 4
-        });
+function updateMeteor(ds){
+  if(meteorActive){
+    meteorY+=meteorVY*ds*60;
+    if(meteorY>=LAND_BASE){
+      meteorActive=false;
+      impactFlash=1;
+      ashLevel=1;
     }
-    // Fish
-    for (let i = 0; i < Math.floor(state.bio.mollusks / 6); i++) {
-        creatures.push({
-            type: 'fish',
-            x: Math.random()*canvas.width,
-            y: canvas.height*0.75 + Math.random()*40,
-            vx: 1.2 + Math.random()*1.5,
-            size: 9
-        });
-    }
+  }
 }
 
-function drawCreatures() {
-    creatures.forEach(c => {
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        
-        if (c.type === 'plankton') {
-            ctx.fillStyle = '#7dd3fc';
-            ctx.beginPath();
-            ctx.arc(0, 0, c.size, 0, Math.PI*2);
-            ctx.fill();
-            c.x += c.vx;
-            c.y += Math.sin(timeOfDay*20 + c.x) * 0.4;
-        } 
-        else if (c.type === 'fish') {
-            ctx.fillStyle = '#60a5fa';
-            ctx.fillRect(-c.size*1.4, -4, c.size*2.8, 8);
-            // tail
-            ctx.beginPath();
-            ctx.moveTo(-c.size*1.4, 0);
-            ctx.lineTo(-c.size*2.2, -6);
-            ctx.lineTo(-c.size*2.2, 6);
-            ctx.fill();
-        }
-        
-        ctx.restore();
-        
-        // wrap around
-        if (c.x < -30) c.x = canvas.width + 30;
-        if (c.x > canvas.width + 30) c.x = -30;
+function doEvent(type){
+  if(simEnded){simEnded=false;showEndBanner(false);}
+  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=2.2+Math.random()*1.2;offset.temp+=25;offset.co2+=18;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
+  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;ashLevel=1;setEvent(T('ev_volcano'));}
+  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
+  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;setEvent(T('ev_warm'));}
+  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;impactFlash=0.6;setEvent(T('ev_ext'));}
+}
+
+function setEvent(msg){const el=document.getElementById('event-log');if(el)el.textContent=msg;}
+function setSpd(s){spd=s;[1,5,20,100].forEach(v=>{const b=document.getElementById('b'+v);if(b)b.classList.toggle('active',v===s);});}
+
+function resetSim(){
+  simMya=TOTAL_MYA;lastEraIdx=-1;curEraIdx=0;lastTimestamp=null;simEnded=false;
+  ashLevel=0;impactFlash=0;meteorActive=false;
+  showEndBanner(false);
+  initOffset();initState(0);
+  setEvent(T('reset_msg'));
+  document.getElementById('eon-badge').textContent=(lang==='ja'?'冥王代':'HADEAN')+' — 4.5 BYA';
+  updateTimeline(0);
+}
+
+function jumpToEra(idx){
+  const e=ERAS[idx];simMya=e.mya-(e.mya-e.endMya)*0.05;
+  simEnded=false;showEndBanner(false);
+  initState(idx);initOffset();lastEraIdx=idx;curEraIdx=idx;lastTimestamp=null;
+  setEvent(e.desc[lang]||e.desc.en);
+  document.getElementById('eon-badge').textContent=(e.name[lang]||e.name.en).toUpperCase()+' — '+(e.mya>=1000?(e.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):e.mya+(lang==='ja'?'百万年前':' MYA'));
+  updateTimeline(idx);
+}
+
+// ---- color helpers ----
+function hexToRgb(hex){const n=parseInt(hex.replace('#',''),16);return{r:(n>>16)&255,g:(n>>8)&255,b:n&255};}
+function rgbToCss(c,a){return a===undefined?`rgb(${c.r|0},${c.g|0},${c.b|0})`:`rgba(${c.r|0},${c.g|0},${c.b|0},${a})`;}
+function mixC(a,b,t){return{r:lerp(a.r,b.r,t),g:lerp(a.g,b.g,t),b:lerp(a.b,b.b,t)};}
+function scaleC(c,f){return{r:clamp(c.r*f,0,255),g:clamp(c.g*f,0,255),b:clamp(c.b*f,0,255)};}
+function lighten(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgb(${Math.min(255,((n>>16)&255)+a)},${Math.min(255,((n>>8)&255)+a)},${Math.min(255,(n&255)+a)})`;}
+function darken(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgb(${Math.max(0,((n>>16)&255)-a)},${Math.max(0,((n>>8)&255)-a)},${Math.max(0,(n&255)-a)})`;}
+
+// ---- Planet icon (small, next to ATMOSPHERE title) ----
+const picv=document.getElementById('planet-icon'),pictx=picv.getContext('2d');
+function drawPlanetIcon(){
+  const s=52,cx=26,cy=26,r=24;
+  pictx.clearRect(0,0,s,s);
+  const o2f=clamp((state.atmo.O2||0)/25,0,1),co2f=clamp((state.atmo.CO2||0)/20,0,1);
+  const grad=pictx.createRadialGradient(cx-8,cy-8,3,cx,cy,r);
+  let base=state.gc||'#1a5276';
+  if(state.snowball){grad.addColorStop(0,'#eaf4fd');grad.addColorStop(0.5,'#aed6f1');grad.addColorStop(1,'#5dade2');}
+  else{grad.addColorStop(0,lighten(base,45));grad.addColorStop(0.6,base);grad.addColorStop(1,darken(base,40));}
+  pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=grad;pictx.fill();
+  // co2/o2 halo tint
+  const ag=pictx.createRadialGradient(cx,cy,r-3,cx,cy,r+5);
+  ag.addColorStop(0,`rgba(${Math.round(80+co2f*160)},${Math.round(140+o2f*90)},${Math.round(210-co2f*90)},0.6)`);ag.addColorStop(1,'rgba(0,0,0,0)');
+  pictx.beginPath();pictx.arc(cx,cy,r+5,0,Math.PI*2);pictx.fillStyle=ag;pictx.fill();
+  if(state.surface.ice>1){
+    pictx.save();pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.clip();
+    const ih=state.surface.ice/100*r*1.9;
+    pictx.fillStyle=`rgba(220,240,255,${0.6+state.surface.ice/100*0.3})`;
+    pictx.beginPath();pictx.ellipse(cx,cy-r+ih/2,r*0.6*state.surface.ice/100+4,ih/2,0,0,Math.PI*2);pictx.fill();
+    pictx.beginPath();pictx.ellipse(cx,cy+r-ih/2,r*0.6*state.surface.ice/100+4,ih/2,0,0,Math.PI*2);pictx.fill();
+    pictx.restore();
+  }
+  const sg=pictx.createRadialGradient(cx+9,cy+7,r*0.2,cx,cy,r);sg.addColorStop(0,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,0.5)');
+  pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=sg;pictx.fill();
+}
+
+// ---- Macro cross-section pixel view ----
+const mcv=document.getElementById('macro'),mctx=mcv.getContext('2d');
+mctx.imageSmoothingEnabled=false;
+
+let _macroStars=null;
+function initMacroStars(){_macroStars=[];for(let i=0;i<50;i++)_macroStars.push({x:Math.random()*MW,y:SKY_TOP+Math.random()*(SKY_BOT-SKY_TOP-6),r:Math.random()<0.8?1:2,ph:Math.random()*10});}
+
+let skyClouds=[],birds=[],bubbles=[],rainDrops=[];
+function initMacroParticles(){
+  skyClouds=[];for(let i=0;i<9;i++)skyClouds.push({x:Math.random(),y:0.05+Math.random()*0.55,w:8+Math.random()*14,speed:0.004+Math.random()*0.006,alpha:0.35+Math.random()*0.35});
+  bubbles=[];for(let i=0;i<5;i++)bubbles.push({x:Math.random(),y:Math.random(),speed:0.15+Math.random()*0.2,seed:Math.random()*10});
+  rainDrops=[];for(let i=0;i<40;i++)rainDrops.push({x:Math.random(),y:Math.random(),seed:Math.random()*10});
+}
+
+// terrain fleck texture (persistent positions, color follows current biome each frame)
+const terrainFlecks=[];for(let i=0;i<55;i++)terrainFlecks.push({x:Math.random()*MW,y:LAND_TOP+8+Math.random()*(LAND_BASE-LAND_TOP-8)});
+const seaFlecks=[];for(let i=0;i<30;i++)seaFlecks.push({x:Math.random()*MW,y:SEA_TOP+4+Math.random()*(SEA_BOT-SEA_TOP-6)});
+const mountains=[{cx:24,base:LAND_TOP+2,peakY:38,w:26},{cx:66,base:LAND_TOP+2,peakY:50,w:34},{cx:116,base:LAND_TOP+2,peakY:44,w:30},{cx:145,base:LAND_TOP+2,peakY:56,w:22}];
+
+// ---- creature particle pools driven by biomass ----
+function sumBio(keys){let s=0;keys.forEach(k=>s+=(state.bio[k]||0));return s;}
+function dominantColor(map,fallback){let bk=null,bv=-1;for(const k in map){const v=state.bio[k]||0;if(v>bv){bv=v;bk=k;}}return bv>0.5?map[bk]:fallback;}
+
+const CREATURES=[
+ {kind:'plankton',layer:'sea',keys:['plankton'],max:16,div:8,color:'#5dade2',beh:'drift',sz:1},
+ {kind:'kelp',layer:'floor',keys:['algae'],max:7,div:14,color:'#2ecc71',beh:'kelp',sz:1},
+ {kind:'jelly',layer:'sea',keys:['jellyfish'],max:5,div:16,color:'#f8c8d4',beh:'pulse',sz:1},
+ {kind:'trilo',layer:'floor',keys:['trilobite'],max:6,div:16,color:'#a04000',beh:'crawl',sz:1},
+ {kind:'shell',layer:'floor',keys:['mollusk','echinoderm'],max:6,div:16,color:'#d98880',beh:'static',sz:1},
+ {kind:'crab',layer:'floor',keys:['crustacean'],max:5,div:16,color:'#e67e22',beh:'crawl',sz:1},
+ {kind:'fish',layer:'sea',keys:['jawless_fish','jawed_fish','lobe_fish'],max:11,div:9,color:'#5dade2',
+   colorMap:{jawless_fish:'#aed6f1',jawed_fish:'#5dade2',lobe_fish:'#2471a3'},beh:'swim',sz:1.4},
+ {kind:'amph',layer:'land',keys:['amphibian'],max:5,div:16,color:'#58d68d',beh:'hop',sz:1.2},
+ {kind:'bug',layer:'land',keys:['insect','arachnid'],max:9,div:11,color:'#f7dc6f',beh:'walk',sz:0.8},
+ {kind:'rept',layer:'land',keys:['reptile','synapsid'],max:7,div:12,color:'#a9cce3',
+   colorMap:{reptile:'#a9cce3',synapsid:'#e59866'},beh:'walk',sz:1.6},
+ {kind:'dino',layer:'land',keys:['dino'],max:5,div:14,color:'#d35400',beh:'walk',sz:2.6},
+ {kind:'mam',layer:'land',keys:['mammal','primate','human'],max:7,div:12,color:'#ec407a',
+   colorMap:{mammal:'#ec407a',primate:'#ff8a65',human:'#fff176'},beh:'walk',sz:1.6},
+ {kind:'bird',layer:'sky',keys:['bird','pterosaur'],max:7,div:11,
+   colorMap:{bird:'#f1c40f',pterosaur:'#8e44ad'},color:'#f1c40f',beh:'fly',sz:1.4},
+ {kind:'fungi',layer:'land',keys:['fungi'],max:7,div:16,color:'#f0b27a',beh:'shroom',sz:1},
+ {kind:'tree',layer:'land',keys:['gymnosperm','angiosperm','spore_plant','lichen'],max:10,div:9,
+   colorMap:{gymnosperm:'#1d6a2f',angiosperm:'#c0392b',spore_plant:'#27ae60',lichen:'#52be80'},color:'#27ae60',beh:'tree',sz:1.8},
+];
+CREATURES.forEach(c=>{c.pool=[];for(let i=0;i<c.max;i++)c.pool.push({bx:Math.random(),by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.5+Math.random()*0.9,seed:Math.random()*20});});
+
+function drawTri(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x-w/2,y);ctx.lineTo(x+w/2,y);ctx.closePath();ctx.fill();}
+function drawRect(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x-w/2,y-h,w,h);}
+
+function drawCreature(c,p,t){
+  const x0=p.bx,y0=p.by;
+  const col=c.color;
+  mctx.fillStyle=col;
+  switch(c.beh){
+    case 'drift':{
+      const x=x0*MW+Math.sin(t*0.6+p.seed)*3;
+      const y=SEA_TOP+4+y0*(SEA_BOT-SEA_TOP-8)+Math.cos(t*0.5+p.seed)*2;
+      mctx.globalAlpha=0.55;mctx.fillRect(x,y,1,1);mctx.globalAlpha=1;
+      break;}
+    case 'kelp':{
+      const x=x0*MW;const baseY=FLOOR_TOP;const sway=Math.sin(t*1.1+p.seed)*3;
+      mctx.strokeStyle=col;mctx.lineWidth=1;mctx.beginPath();
+      mctx.moveTo(x,baseY);mctx.quadraticCurveTo(x+sway,baseY-5,x+sway*1.6,baseY-9);mctx.stroke();
+      break;}
+    case 'pulse':{
+      const x=x0*MW;const y=SEA_TOP+8+y0*(SEA_BOT-SEA_TOP-16);
+      const rr=1.6+Math.sin(t*2.4+p.seed)*0.6;
+      mctx.globalAlpha=0.8;mctx.beginPath();mctx.ellipse(x,y,rr,rr*0.7,0,0,Math.PI*2);mctx.fill();
+      mctx.strokeStyle=col;mctx.globalAlpha=0.4;mctx.lineWidth=0.6;
+      mctx.beginPath();mctx.moveTo(x-1,y+rr*0.7);mctx.lineTo(x-1,y+rr*0.7+2);mctx.moveTo(x+1,y+rr*0.7);mctx.lineTo(x+1,y+rr*0.7+2.5);mctx.stroke();
+      mctx.globalAlpha=1;
+      break;}
+    case 'crawl':{
+      const x=((x0+t*0.01*p.spd*p.dir)%1+1)%1*MW;
+      const y=FLOOR_TOP+2+y0*(FLOOR_BOT-FLOOR_TOP-3);
+      mctx.fillRect(x-1,y-1,2,2);
+      break;}
+    case 'static':{
+      const x=x0*MW;const y=FLOOR_TOP+2+y0*(FLOOR_BOT-FLOOR_TOP-3);
+      mctx.fillRect(x-0.5,y-0.5,1.5,1.5);
+      break;}
+    case 'swim':{
+      const x=((x0+t*0.018*p.spd*p.dir)%1+1)%1*MW;
+      const y=SEA_TOP+8+y0*(SEA_BOT-SEA_TOP-16)+Math.sin(t*3+p.seed)*1.6;
+      const w=2.2*(c.sz||1),h=1.2*(c.sz||1);
+      mctx.beginPath();
+      if(p.dir>0){mctx.moveTo(x-w/2,y);mctx.lineTo(x+w/2,y-h/2);mctx.lineTo(x+w/2,y+h/2);}
+      else{mctx.moveTo(x+w/2,y);mctx.lineTo(x-w/2,y-h/2);mctx.lineTo(x-w/2,y+h/2);}
+      mctx.closePath();mctx.fill();
+      break;}
+    case 'hop':{
+      const x=((x0+t*0.01*p.dir)%1+1)%1*MW;
+      const y=LAND_BASE-1-Math.abs(Math.sin(t*3+p.seed))*2.2;
+      mctx.fillRect(x-1,y-1,2,1.6);
+      break;}
+    case 'walk':{
+      const x=((x0+t*0.014*p.spd*p.dir)%1+1)%1*MW;
+      const sz=c.sz||1;
+      const bob=Math.abs(Math.sin(t*5+p.seed))*0.6;
+      drawRect(mctx,x,LAND_BASE-bob,2*sz,1.6*sz,col);
+      mctx.fillRect(x-0.6*sz,LAND_BASE-0.6,0.6,0.8);
+      mctx.fillRect(x+0.2*sz,LAND_BASE-0.6,0.6,0.8);
+      break;}
+    case 'fly':{
+      const x=((x0+t*0.03*p.spd*p.dir)%1+1)%1*MW;
+      const y=SKY_TOP+8+y0*(SKY_BOT-SKY_TOP-18)+Math.sin(t*4+p.seed)*2;
+      const flap=Math.sin(t*9+p.seed)*1.4;
+      mctx.strokeStyle=col;mctx.lineWidth=0.8;mctx.beginPath();
+      mctx.moveTo(x-2,y-flap);mctx.lineTo(x,y);mctx.lineTo(x+2,y-flap);mctx.stroke();
+      break;}
+    case 'shroom':{
+      const x=x0*MW;const y=LAND_BASE-0.5;
+      const pulse=0.9+Math.sin(t*1.6+p.seed)*0.15;
+      mctx.fillStyle=col;mctx.beginPath();mctx.ellipse(x,y-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0);mctx.fill();
+      mctx.fillStyle='#d5b895';mctx.fillRect(x-0.3,y-1.4,0.6,1.4);
+      break;}
+    case 'tree':{
+      const x=x0*MW;const lean=Math.sin(t*1.1+p.seed)*0.12*(1+state.surface.windAvg/200);
+      const h=3+2*(c.sz||1);
+      mctx.strokeStyle='#6b4a2b';mctx.lineWidth=0.8;
+      mctx.beginPath();mctx.moveTo(x,LAND_BASE);mctx.lineTo(x+lean*h,LAND_BASE-h);mctx.stroke();
+      mctx.fillStyle=col;mctx.beginPath();
+      mctx.ellipse(x+lean*h,LAND_BASE-h-1.4,2.2,2.4,0,0,Math.PI*2);mctx.fill();
+      break;}
+  }
+}
+
+function computeLandBiome(){
+  const iceR=state.surface.ice/100;
+  if(state.snowball || iceR>0.55) return 'snow';
+  if(state.temp>34 && (state.atmo.H2O||0)<1.5) return 'desert';
+  if(state.surface.magma>25) return 'barren';
+  return 'green';
+}
+
+function drawMacro(t){
+  const co2f=clamp((state.atmo.CO2||0)/20,0,1);
+  const o2f=clamp((state.atmo.O2||0)/25,0,1);
+  const h2of=clamp((state.atmo.H2O||0)/8,0,1);
+  const ch4f=clamp((state.atmo.CH4||0)/5,0,1);
+  const iceR=state.surface.ice/100;
+  const tempC=state.temp;
+  const dayPhase=(t*0.015)%1;
+  const nightFactor=(Math.sin(dayPhase*Math.PI*2-Math.PI/2)+1)/2; // 0=night,1=day
+
+  mctx.clearRect(0,0,MW,MH);
+
+  // ---- SKY ----
+  let sky=hexToRgb('#6fa8dc');
+  sky=mixC(sky,hexToRgb('#b5453a'),co2f*0.75);
+  sky=mixC(sky,hexToRgb('#c9b25c'),ch4f*0.55);
+  sky=mixC(sky,hexToRgb('#82c8ff'),o2f*0.25);
+  if(state.snowball||iceR>0.7) sky=mixC(sky,hexToRgb('#dcecf5'),0.55);
+  sky=mixC(sky,hexToRgb('#5a5a5a'),Math.min(0.7,ashLevel));
+  const skyLit=scaleC(sky,0.4+0.6*nightFactor);
+  const skyHorizon=scaleC(mixC(sky,hexToRgb('#ffe1b0'),0.15*nightFactor*(1-nightFactor)*4),0.5+0.5*nightFactor);
+  const skyGrad=mctx.createLinearGradient(0,SKY_TOP,0,LAND_TOP);
+  skyGrad.addColorStop(0,rgbToCss(scaleC(skyLit,0.85)));
+  skyGrad.addColorStop(1,rgbToCss(skyHorizon));
+  mctx.fillStyle=skyGrad;mctx.fillRect(0,SKY_TOP,MW,LAND_TOP-SKY_TOP);
+
+  // stars at night
+  if(!_macroStars) initMacroStars();
+  if(nightFactor<0.4){
+    const a=(0.4-nightFactor)/0.4;
+    _macroStars.forEach(s=>{mctx.globalAlpha=a*(0.5+0.5*Math.sin(t*2+s.ph));mctx.fillStyle='#fff';mctx.fillRect(s.x,s.y,s.r,s.r);});
+    mctx.globalAlpha=1;
+  }
+  // sun/moon
+  const sunX=MW*dayPhase;
+  const sunY=SKY_TOP+8+ (1-Math.sin(dayPhase*Math.PI))*(SKY_BOT-SKY_TOP-20);
+  if(nightFactor>0.15){
+    mctx.fillStyle='rgba(255,235,150,0.9)';mctx.beginPath();mctx.arc(sunX,sunY,3.2,0,Math.PI*2);mctx.fill();
+  } else {
+    mctx.fillStyle='rgba(220,225,235,0.85)';mctx.beginPath();mctx.arc(sunX,sunY,2.6,0,Math.PI*2);mctx.fill();
+  }
+
+  // aurora during deep cold at night
+  if((state.snowball||tempC<-15) && nightFactor<0.35){
+    for(let i=0;i<2;i++){
+      mctx.strokeStyle=i===0?'rgba(110,230,170,0.35)':'rgba(180,120,230,0.28)';
+      mctx.lineWidth=2;mctx.beginPath();
+      for(let x=0;x<=MW;x+=4){const y=SKY_TOP+6+i*5+Math.sin(x*0.08+t*1.3+i)*4;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
+      mctx.stroke();
+    }
+  }
+
+  if(!skyClouds.length) initMacroParticles();
+  // clouds
+  skyClouds.forEach(c=>{
+    c.x=(c.x+c.speed*(0.3+h2of)*0.02)%1;
+    const cx=c.x*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
+    mctx.globalAlpha=c.alpha*(0.3+state.clouds*0.9)*(0.5+0.5*nightFactor);
+    mctx.fillStyle='#f4f7fb';
+    mctx.beginPath();mctx.ellipse(cx,cy,c.w*0.5,c.w*0.22,0,0,Math.PI*2);mctx.fill();
+    mctx.globalAlpha=1;
+  });
+
+  // ash particles
+  if(ashLevel>0.05){
+    mctx.fillStyle=`rgba(90,90,90,${Math.min(0.8,ashLevel)})`;
+    for(let i=0;i<18;i++){
+      const ax=(i*37+t*20)%MW;
+      const ay=SKY_TOP+((i*53+t*30)%(LAND_BASE-SKY_TOP));
+      mctx.fillRect(ax,ay,1,1);
+    }
+  }
+
+  // lightning flash
+  if(lightningFlash>0.5){
+    mctx.fillStyle=`rgba(255,255,255,${(lightningFlash-0.5)*0.6})`;
+    mctx.fillRect(0,SKY_TOP,MW,LAND_TOP-SKY_TOP);
+    mctx.strokeStyle='rgba(255,255,240,0.9)';mctx.lineWidth=1;
+    mctx.beginPath();const lx=20+Math.random()*(MW-40);mctx.moveTo(lx,SKY_TOP+2);
+    mctx.lineTo(lx+4,SKY_TOP+18);mctx.lineTo(lx-3,SKY_TOP+30);mctx.lineTo(lx+2,LAND_TOP-4);mctx.stroke();
+  }
+
+  // meteor
+  if(meteorActive){
+    mctx.strokeStyle='rgba(255,190,80,0.9)';mctx.lineWidth=1.4;
+    mctx.beginPath();mctx.moveTo(meteorX-8,meteorY-14);mctx.lineTo(meteorX,meteorY);mctx.stroke();
+    mctx.fillStyle='rgba(255,140,40,0.95)';mctx.beginPath();mctx.arc(meteorX,meteorY,1.8,0,Math.PI*2);mctx.fill();
+  }
+
+  // birds
+  CREATURES.filter(c=>c.layer==='sky').forEach(c=>{
+    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
+    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
+    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
+  });
+
+  // ---- LAND ----
+  const biome=computeLandBiome();
+  let landCol;
+  if(biome==='snow') landCol=mixC(hexToRgb('#eef6fb'),hexToRgb('#c7dde8'),0.3);
+  else if(biome==='desert') landCol=mixC(hexToRgb('#d9b877'),hexToRgb('#c99a52'),0.4);
+  else if(biome==='barren') landCol=mixC(hexToRgb('#5b4636'),hexToRgb('#3a2c22'),0.4);
+  else {
+    const plantSum=clamp(sumBio(['algae','lichen','spore_plant','gymnosperm','angiosperm'])/120,0,1);
+    landCol=mixC(hexToRgb('#8a7a4a'),hexToRgb('#2e7d3e'),plantSum*0.7+o2f*0.3);
+  }
+  landCol=scaleC(landCol,0.5+0.5*nightFactor);
+  mctx.fillStyle=rgbToCss(landCol);
+  mctx.fillRect(0,LAND_TOP,MW,LAND_BASE-LAND_TOP);
+
+  // mountains (poke into sky band)
+  mountains.forEach(m=>{
+    let mc=biome==='snow'?'#dfeaf2':(biome==='desert'?'#b98f57':'#6e7a72');
+    mc=rgbToCss(scaleC(hexToRgb(mc),0.5+0.5*nightFactor));
+    drawTri(mctx,m.cx,m.base,m.w,m.base-m.peakY,mc);
+    if(iceR>0.15||biome==='snow'){
+      mctx.fillStyle='rgba(255,255,255,0.85)';
+      drawTri(mctx,m.cx,m.peakY+7,m.w*0.35,7,'rgba(255,255,255,0.85)');
+    }
+  });
+
+  // land texture flecks
+  terrainFlecks.forEach((f,i)=>{
+    let fc;
+    if(biome==='snow') fc='rgba(255,255,255,0.5)';
+    else if(biome==='desert') fc=(i%2===0)?'rgba(150,110,50,0.35)':'rgba(230,210,150,0.3)';
+    else if(biome==='barren') fc='rgba(20,15,10,0.4)';
+    else fc=(i%3===0)?'rgba(20,60,20,0.4)':'rgba(140,200,110,0.3)';
+    mctx.fillStyle=fc;mctx.fillRect(f.x,f.y,1,1);
+  });
+
+  // land creatures (trees, fungi, animals)
+  CREATURES.filter(c=>c.layer==='land').forEach(c=>{
+    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
+    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
+    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
+  });
+
+  // precipitation
+  const precip = tempC<2 ? 'snow' : (h2of>0.45 ? 'rain':'none');
+  if(precip!=='none'){
+    const intensity=clamp(h2of,0.2,1);
+    mctx.strokeStyle=precip==='snow'?'rgba(255,255,255,0.8)':'rgba(180,210,240,0.55)';
+    mctx.lineWidth=0.6;
+    const n=Math.round(20*intensity);
+    for(let i=0;i<n;i++){
+      const px=(i*23+t*40*(precip==='snow'?0.3:1))%MW;
+      const py=SKY_TOP+((i*31+t*60*(precip==='snow'?0.3:1.4))%(LAND_BASE-SKY_TOP));
+      if(precip==='snow'){mctx.fillStyle='rgba(255,255,255,0.8)';mctx.fillRect(px,py,1,1);}
+      else{mctx.beginPath();mctx.moveTo(px,py);mctx.lineTo(px-1,py+3);mctx.stroke();}
+    }
+  }
+
+  // ---- SEA ----
+  let seaCol=mixC(hexToRgb('#1c5c8a'),hexToRgb('#0d3b5c'),0.3);
+  const algaeF=clamp((state.bio.algae||0)/80,0,1);
+  seaCol=mixC(seaCol,hexToRgb('#1f7a52'),algaeF*0.35);
+  seaCol=mixC(seaCol,hexToRgb('#2e86c1'),h2of*0.3);
+  if(iceR>0.4||state.snowball) seaCol=mixC(seaCol,hexToRgb('#cfe8f5'),clamp(iceR,0,0.85));
+  seaCol=scaleC(seaCol,0.55+0.45*nightFactor);
+  const seaGrad=mctx.createLinearGradient(0,SEA_TOP,0,SEA_BOT);
+  seaGrad.addColorStop(0,rgbToCss(scaleC(seaCol,1.15)));
+  seaGrad.addColorStop(1,rgbToCss(scaleC(seaCol,0.75)));
+  mctx.fillStyle=seaGrad;mctx.fillRect(0,SEA_TOP,MW,SEA_BOT-SEA_TOP);
+
+  // ice sheet over sea if frozen
+  if((iceR>0.5||state.snowball)){
+    mctx.fillStyle=`rgba(230,245,255,${clamp(iceR,0.3,0.9)})`;
+    mctx.fillRect(0,SEA_TOP,MW,4);
+  } else {
+    // waves
+    mctx.strokeStyle='rgba(255,255,255,0.35)';mctx.lineWidth=0.7;
+    mctx.beginPath();
+    for(let x=0;x<=MW;x+=3){const y=SEA_TOP+1.5+Math.sin(x*0.2+t*2.2)*1;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
+    mctx.stroke();
+  }
+
+  // sea flecks (sparkle/foam)
+  seaFlecks.forEach((f,i)=>{
+    mctx.fillStyle=i%4===0?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.08)';
+    mctx.fillRect(f.x,f.y,1,1);
+  });
+
+  CREATURES.filter(c=>c.layer==='sea').forEach(c=>{
+    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
+    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
+    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
+  });
+
+  // ---- SEAFLOOR ----
+  const floorCol=state.surface.magma>10?'#3a1a12':'#0a1f2e';
+  mctx.fillStyle=floorCol;mctx.fillRect(0,FLOOR_TOP,MW,FLOOR_BOT-FLOOR_TOP);
+  if(state.surface.magma>3){
+    bubbles.forEach(b=>{
+      b.y=(b.y-b.speed*0.01+1)%1;
+      const bx=b.x*MW,by=FLOOR_TOP+ b.y*(SEA_BOT-FLOOR_TOP);
+      mctx.fillStyle='rgba(255,140,60,0.5)';mctx.fillRect(bx,by,1,1);
     });
+    mctx.fillStyle='rgba(255,90,40,0.6)';
+    mctx.fillRect(MW*0.5-1,FLOOR_TOP,2,2);
+  }
+
+  CREATURES.filter(c=>c.layer==='floor').forEach(c=>{
+    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
+    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
+    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
+  });
+
+  // impact flash overlay (meteor / mass extinction)
+  if(impactFlash>0.02){
+    mctx.fillStyle=`rgba(255,255,255,${Math.min(0.85,impactFlash)})`;
+    mctx.fillRect(0,0,MW,MH);
+  }
 }
 
-// ================ SMALL PLANET ================
-function drawSmallPlanet() {
-    pCtx.clearRect(0, 0, 110, 110);
-    
-    // Base
-    pCtx.fillStyle = state.temp > 30 ? '#9c4a2b' : '#1e7a4a';
-    pCtx.beginPath();
-    pCtx.arc(55, 55, 48, 0, Math.PI*2);
-    pCtx.fill();
-    
-    // Ocean tint
-    pCtx.fillStyle = 'rgba(30, 100, 180, 0.5)';
-    pCtx.beginPath();
-    pCtx.arc(55, 55, 48, 0, Math.PI*2);
-    pCtx.fill();
-    
-    // Ice caps
-    if (state.surface.ice > 5) {
-        pCtx.fillStyle = 'rgba(230,245,255,0.85)';
-        pCtx.fillRect(15, 18, 80, 14);
-        pCtx.fillRect(15, 78, 80, 12);
-    }
-}
+let uiTick=0;
+function updateUI(){
+  uiTick++;
+  const pct=Math.max(0,Math.min(100,(TOTAL_MYA-simMya)/TOTAL_MYA*100));
+  const pb=document.getElementById('progress-bar');if(pb)pb.style.width=pct.toFixed(2)+'%';
+  const pl=document.getElementById('progress-label');if(pl)pl.textContent=pct.toFixed(1)+'%';
+  const m=Math.max(0,simMya);
+  const ydEl=document.getElementById('year-display');
+  if(ydEl){if(lang==='ja')ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+'十億年前':m.toFixed(1)+'百万年前');else ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+' BYA':m.toFixed(1)+' MYA')+' ago';}
+  if(uiTick%3!==0)return;
+  const atmo=state.atmo,total=Object.values(atmo).reduce((a,b)=>a+(b||0),0)||1;
+  let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;h+=`<div class="gas-row"><span class="gas-label">${g.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
+  document.getElementById('atmo-bars').innerHTML=h;
 
-// ================ UI UPDATES ================
-function updateUI() {
-    // Atmosphere bars
-    let html = '';
-    const gases = [
-        {k:'N2', c:'#7ec8e3', l:'N₂'},
-        {k:'CO2', c:'#ff6666', l:'CO₂'},
-        {k:'O2', c:'#7cff7c', l:'O₂'},
-        {k:'H2O', c:'#87cefa', l:'H₂O'},
-        {k:'CH4', c:'#ffcc44', l:'CH₄'}
-    ];
-    
-    gases.forEach(g => {
-        const v = state.atmo[g.k] || 0;
-        html += `
-            <div style="display:flex;align-items:center;gap:6px;margin:3px 0">
-                <span style="width:28px;font-size:10px">${g.l}</span>
-                <div style="flex:1;height:6px;background:#0a1f3a">
-                    <div style="height:100%;width:${Math.min(100, v*1.4)}%;background:${g.c}"></div>
-                </div>
-                <span style="width:42px;text-align:right;font-size:10px">${v.toFixed(1)}%</span>
-            </div>`;
+  const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
+  const sf2=state.surface;
+  const pressureHpa=Math.round(1013-(state.temp-15)*0.9-(sf2.windAvg-40)*0.5+(sf2.magma>10?-15:0));
+  const isHigh=pressureHpa>=1013;
+  const pc=isHigh?'#98fb98':'#ffa07a';
+  const humidity=Math.round(clamp(state.clouds*60+(atmo.H2O||0)*4,0,100));
+  document.getElementById('env-grid').innerHTML=
+    '<div class="ec"><div class="ec-label">'+T('temp')+'</div><div class="ec-val" style="color:'+tc+'">'+Math.round(state.temp)+'°C</div></div>'+
+    '<div class="ec"><div class="ec-label">'+T('wind')+'</div><div class="ec-val" style="color:#7ec8e3">'+(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+' '+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+' m/s</div></div>'+
+    '<div class="ec"><div class="ec-label">'+T('pressure')+'</div><div class="ec-val" style="color:'+pc+'">'+pressureHpa+'hPa ('+T(isHigh?'high':'low')+')</div></div>'+
+    '<div class="ec"><div class="ec-label">'+T('humidity')+'</div><div class="ec-val" style="color:#87ceeb">'+humidity+'%</div></div>';
+
+  let bh='';
+  BIO_GROUPS_DEF.forEach(group=>{
+    const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
+    if(!active.length)return;
+    const gsum=group.members.reduce((s,m)=>s+(state.bio[m.key]||0),0)||1;
+    const gmax=Math.max(...active.map(m=>state.bio[m.key]||0),1);
+    const gtitle=T('grp_'+group.gkey);
+    bh+=`<div class="bio-group"><div class="bio-group-title" style="display:flex;justify-content:space-between;align-items:baseline">${gtitle}<span style="font-size:6px;color:#2a4a6a;letter-spacing:0">biomass %</span></div>`;
+    active.sort((a,b2)=>(state.bio[b2.key]||0)-(state.bio[a.key]||0));
+    active.forEach(m=>{
+      const v=state.bio[m.key]||0;
+      const pctv=Math.round(v/gsum*100);
+      const lbl=m[lang]||m.en;
+      bh+=`<div class="bio-row"><span class="bio-icon">${m.icon}</span><span class="bio-name">${lbl}</span><div class="bar-bg"><div class="bar-fill" style="width:${v/gmax*100}%;background:${m.color}"></div></div><span class="bio-val" style="color:${m.color}">${pctv}%</span></div>`;
     });
-    document.getElementById('atmo-bars').innerHTML = html;
-    
-    // Air panel
-    const airHTML = `
-        <div><span style="color:#ffeb3b">${T('temp')}</span><br><b style="font-size:15px">${Math.round(state.temp)}°C</b></div>
-        <div><span style="color:#7ec8e3">${T('wind')}</span><br><b>${state.wind.avg} / ${state.wind.max}</b></div>
-        <div><span style="color:#a0d8ff">${T('pressure')}</span><br><b>${state.pressure} hPa</b></div>
-        <div><span style="color:#87cefa">${T('humidity')}</span><br><b>${state.humidity}%</b></div>
-    `;
-    document.getElementById('air-info').innerHTML = airHTML;
-    
-    // Biosphere (simplified)
-    const bioDiv = document.getElementById('bio-groups');
-    bioDiv.innerHTML = `
-        <div style="font-size:9px;margin-bottom:4px;color:#4a7c9e">MICROBES</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <span>🦠 ${Math.round(state.bio.bacteria)}%</span>
-            <span>🌀 ${Math.round(state.bio.plankton)}%</span>
-        </div>
-        <div style="font-size:9px;margin:8px 0 4px;color:#4a7c9e">PLANTS</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <span>🌿 ${Math.round(state.bio.spore_plants)}%</span>
-            <span>🌲 ${Math.round(state.bio.gymnosperm)}%</span>
-        </div>
-        <div style="font-size:9px;margin:8px 0 4px;color:#4a7c9e">ANIMALS</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <span>🐟 ${Math.round(state.bio.mollusks)}%</span>
-            <span>🦀 ${Math.round(state.bio.crustaceans)}%</span>
-            <span>🪲 ${Math.round(state.bio.insects)}%</span>
-        </div>
-    `;
-    
-    drawMacro();
-    drawSmallPlanet();
+    bh+='</div>';
+  });
+  document.getElementById('bio-groups').innerHTML=bh;
 }
 
-function animate() {
-    timeOfDay = (Date.now() / 8000) % 1;
-    drawMacro();
-    requestAnimationFrame(animate);
+function buildTimeline(){
+  const tl=document.getElementById('tl-inner');tl.innerHTML='';
+  ERAS.forEach((e,i)=>{const name=e.name[lang]||e.name.en;const d=document.createElement('div');d.className='tl-era';d.id='tl-'+i;d.onclick=()=>jumpToEra(i);d.innerHTML=`<div class="tl-dot" style="background:${e.color}"></div><div class="tl-name">${name}</div>`;tl.appendChild(d);});
+}
+function updateTimeline(idx){
+  document.querySelectorAll('.tl-era').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tl-name').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  const el=document.getElementById('tl-'+idx);if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
 }
 
-// ================ EVENTS ================
-function triggerEvent(type) {
-    const log = document.getElementById('event-log');
-    
-    if (type === 'meteor') {
-        state.temp += 12;
-        state.atmo.CO2 += 8;
-        log.textContent = '☄ 大隕石衝突！大気乱れ...';
-    } else if (type === 'volcano') {
-        state.atmo.CO2 += 15;
-        state.temp += 9;
-        log.textContent = '🌋 大規模火山活動！CO₂急増';
-    } else if (type === 'ice') {
-        state.temp -= 18;
-        state.surface.ice = Math.min(90, state.surface.ice + 25);
-        log.textContent = '❄ 氷河期到来...';
-    } else if (type === 'warm') {
-        state.temp += 14;
-        state.surface.ice = Math.max(0, state.surface.ice - 15);
-        log.textContent = '☀ 急激な温暖化';
-    } else if (type === 'ext') {
-        log.textContent = '💀 大量絶滅イベント！';
-    }
-    
-    setTimeout(() => {
-        log.textContent = '惑星が生きている...';
-    }, 2800);
-    
-    updateUI();
+function loop(ts){
+  if(lastTimestamp===null)lastTimestamp=ts;
+  const ds=Math.min((ts-lastTimestamp)/1000,0.2);lastTimestamp=ts;
+  updateSim(ds);
+  drawMacro(clockT);
+  drawPlanetIcon();
+  updateUI();
+  requestAnimationFrame(loop);
 }
 
-function setSpeed(s) {
-    speed = s;
-    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('spd' + s).classList.add('active');
-}
-
-function resetSim() {
-    timeMYA = 4500;
-    state = {
-        atmo: {N2:15, CO2:80, O2:0, H2O:4, CH4:0, H2:1},
-        temp: 230,
-        wind: {avg:280, max:420},
-        pressure: 980,
-        humidity: 15,
-        surface: {ocean:5, land:35, ice:0},
-        bio: {plankton:0, bacteria:60, cyanobacteria:5, archaea:35, algae:0, spore_plants:0, fungi:0, lichen:0, gymnosperm:0, mollusks:0, crustaceans:0, echinoderms:0, trilobites:0, insects:0, arachnids:0}
-    };
-    document.getElementById('event-log').textContent = '地球誕生 — 46億年前';
-    updateUI();
-}
-
-function toggleLang() {
-    lang = lang === 'ja' ? 'en' : 'ja';
-    document.getElementById('lang-btn').textContent = lang === 'ja' ? 'ENGLISH' : '日本語';
-    updateUI();
-}
-
-// ================ INIT ================
-createCreatures();
-updateUI();
-animate();
-
-// Simulate slow evolution
-setInterval(() => {
-    if (Math.random() < 0.3) {
-        state.atmo.O2 = Math.min(35, state.atmo.O2 + 0.3);
-        state.bio.spore_plants = Math.min(60, state.bio.spore_plants + 1);
-        updateUI();
-    }
-}, 2200);
+initState(0);initOffset();initMacroStars();initMacroParticles();buildTimeline();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
