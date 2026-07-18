@@ -359,7 +359,12 @@ function initState(eIdx){
     humidityPct:mid(cl.humidity),pressureAtm:mid(cl.pressureAtm),
     clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};
 }
-function naturalVar(seed){return clamp(0.5+0.35*Math.sin(clockT*0.045+seed)+0.25*Math.sin(clockT*0.0107+seed*2.3),0,1);}
+function naturalVar(seed){
+  const fast=Math.sin(clockT*1.1 +seed*3.1)*0.14;   // ~6s ripple — visible tick every couple seconds
+  const med =Math.sin(clockT*0.16+seed)*0.28;       // ~40s swing
+  const slow=Math.sin(clockT*0.024+seed*1.7)*0.38;  // ~260s longer drift
+  return clamp(0.5+fast+med+slow,0,1);
+}
 
 function updateSim(ds){
   clockT+=ds;
@@ -394,7 +399,7 @@ function updateSim(ds){
   // fluctuation), tracked on a fast real-time constant so it feels alive regardless of sim speed —
   // separate from the slow evolutionary `blend` used for atmosphere/biosphere above.
   const cl=ERA_CLIMATE[e.id]||ERA_CLIMATE.hadean;
-  const cTau=8,cBlend=clamp(1-Math.exp(-ds/cTau),0,1);
+  const cTau=2.2,cBlend=clamp(1-Math.exp(-ds/cTau),0,1);
   const phase=eIdx*0.37;
   const tempTarget=lerp(cl.temp[0],cl.temp[1],naturalVar(1.1+phase))+offset.temp;
   state.temp=lerp(state.temp,tempTarget,cBlend);
