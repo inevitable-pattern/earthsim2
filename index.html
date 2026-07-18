@@ -9,14 +9,14 @@
 html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #scale-root{width:940px;height:640px;transform-origin:center center;position:relative}
 #wrap{display:flex;gap:0;width:940px;height:640px;background:#000;font-family:'Courier New',monospace}
-#left{width:440px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:10px;gap:6px;position:relative}
+#left{width:440px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px;gap:4px;position:relative}
 #top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
 #era-badge{font-size:13px;color:#ffec27;letter-spacing:1px;text-align:center;font-weight:bold;flex:1}
 #lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
 #lang-btn:hover{background:#1a3a5c}
 #eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
-#macro-wrap{position:relative;width:400px;height:340px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
-canvas#macro{width:400px;height:340px;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+#macro-wrap{position:relative;width:400px;height:365px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
+canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 #progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
 #progress-bar{height:100%;background:#1a5276;width:0%}
@@ -36,12 +36,16 @@ canvas#macro{width:400px;height:340px;image-rendering:pixelated;image-rendering:
 #planet-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
 canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
 .gas-row{display:flex;align-items:center;gap:4px;margin-bottom:2px}
-.gas-label{font-size:9px;color:#7ec8e3;width:36px}
+.gas-label{font-size:8px;color:#7ec8e3;width:118px;white-space:nowrap;overflow:hidden}
 .bar-bg{flex:1;height:5px;background:#071525}
 .bar-fill{height:5px}
 .gas-val{font-size:9px;width:40px;text-align:right}
 .env-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px}
 .ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
+.climate-card{flex:1;background:#071525;border:1px solid #0d2137;padding:4px 6px}
+.climate-card-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:3px}
+.climate-item{font-size:8px;display:flex;justify-content:space-between;gap:6px;margin-bottom:2px;white-space:nowrap}
+.climate-item:last-child{margin-bottom:0}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:9px;font-weight:bold;color:#7ec8e3}
 #bio-section{flex:1;overflow-y:auto;padding:5px 10px}
@@ -73,7 +77,7 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
   </div>
   <div id="eon-badge">HADEAN — 4.5 BYA</div>
   <div id="macro-wrap">
-    <canvas id="macro" width="160" height="136"></canvas>
+    <canvas id="macro" width="160" height="146"></canvas>
 
   </div>
   <div id="progress-outer">
@@ -108,9 +112,15 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
   </div>
   <div class="panel">
     <div class="ptitle" id="lbl-climate">CLIMATE</div>
-    <div style="display:flex;gap:14px">
-      <div id="air-row" style="flex:1;font-size:7px;display:flex;flex-direction:column;gap:2px;overflow:hidden"></div>
-      <div id="surface-row" style="flex:1;font-size:7px;display:flex;flex-direction:column;gap:2px;overflow:hidden"></div>
+    <div style="display:flex;gap:8px">
+      <div class="climate-card">
+        <div class="climate-card-title" id="lbl-air">AIR</div>
+        <div id="air-row"></div>
+      </div>
+      <div class="climate-card">
+        <div class="climate-card-title" id="lbl-surface">SURFACE</div>
+        <div id="surface-row"></div>
+      </div>
     </div>
   </div>
   <div id="bio-section">
@@ -151,6 +161,8 @@ function applyLang(){
   document.getElementById('lbl-speed').textContent=T('speed');
   document.getElementById('lbl-atmo').textContent=T('atmo');
   document.getElementById('lbl-climate').textContent=T('climate');
+  document.getElementById('lbl-air').textContent=T('air');
+  document.getElementById('lbl-surface').textContent=T('surface');
   document.getElementById('lbl-bio').textContent=T('bio');
   ['meteor','volcano','ice','warm','ext','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
   buildTimeline();updateTimeline(curEraIdx);
@@ -228,28 +240,28 @@ const ERA_BIO={
 };
 
 const ERA_SURFACE={
-  hadean:      {magma:60,ocean:5, land:35,ice:0, windAvg:180,windMax:350},
-  archean:     {magma:8, ocean:35,land:55,ice:0, windAvg:100,windMax:200},
-  proterozoic: {magma:1, ocean:50,land:44,ice:5, windAvg:70, windMax:140},
-  snowball:    {magma:0, ocean:2, land:8, ice:90,windAvg:180,windMax:300},
-  ediacaran:   {magma:0, ocean:60,land:36,ice:4, windAvg:55, windMax:110},
-  cambrian:    {magma:0, ocean:68,land:32,ice:0, windAvg:45, windMax:90},
-  ordovician:  {magma:0, ocean:68,land:30,ice:2, windAvg:45, windMax:85},
-  silurian:    {magma:0, ocean:65,land:34,ice:1, windAvg:40, windMax:80},
-  devonian:    {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
-  carboniferous:{magma:0,ocean:55,land:40,ice:5, windAvg:35, windMax:70},
-  permian:     {magma:0, ocean:52,land:44,ice:4, windAvg:40, windMax:80},
-  pt_ext:      {magma:3, ocean:45,land:50,ice:2, windAvg:120,windMax:250},
-  triassic_e:  {magma:1, ocean:50,land:48,ice:1, windAvg:50, windMax:100},
-  triassic_l:  {magma:0, ocean:55,land:44,ice:1, windAvg:45, windMax:90},
-  jurassic_e:  {magma:0, ocean:62,land:37,ice:1, windAvg:38, windMax:75},
-  jurassic_l:  {magma:0, ocean:65,land:34,ice:1, windAvg:35, windMax:70},
-  cretaceous_e:{magma:0, ocean:70,land:29,ice:1, windAvg:30, windMax:60},
-  cretaceous_l:{magma:0, ocean:68,land:31,ice:1, windAvg:30, windMax:60},
-  kpg_ext:     {magma:2, ocean:60,land:36,ice:2, windAvg:150,windMax:300},
-  paleogene:   {magma:0, ocean:62,land:36,ice:2, windAvg:28, windMax:55},
-  neogene:     {magma:0, ocean:60,land:33,ice:7, windAvg:25, windMax:50},
-  quaternary:  {magma:0, ocean:58,land:35,ice:7, windAvg:20, windMax:45},
+  hadean:      {magma:60,ocean:5, land:35,ice:0, windAvg:25, windMax:60},
+  archean:     {magma:8, ocean:35,land:55,ice:0, windAvg:18, windMax:45},
+  proterozoic: {magma:1, ocean:50,land:44,ice:5, windAvg:12, windMax:30},
+  snowball:    {magma:0, ocean:2, land:8, ice:90,windAvg:20, windMax:45},
+  ediacaran:   {magma:0, ocean:60,land:36,ice:4, windAvg:10, windMax:24},
+  cambrian:    {magma:0, ocean:68,land:32,ice:0, windAvg:8,  windMax:20},
+  ordovician:  {magma:0, ocean:68,land:30,ice:2, windAvg:8,  windMax:20},
+  silurian:    {magma:0, ocean:65,land:34,ice:1, windAvg:7,  windMax:18},
+  devonian:    {magma:0, ocean:62,land:37,ice:1, windAvg:7,  windMax:17},
+  carboniferous:{magma:0,ocean:55,land:40,ice:5, windAvg:6,  windMax:15},
+  permian:     {magma:0, ocean:52,land:44,ice:4, windAvg:8,  windMax:20},
+  pt_ext:      {magma:3, ocean:45,land:50,ice:2, windAvg:22, windMax:55},
+  triassic_e:  {magma:1, ocean:50,land:48,ice:1, windAvg:9,  windMax:22},
+  triassic_l:  {magma:0, ocean:55,land:44,ice:1, windAvg:8,  windMax:20},
+  jurassic_e:  {magma:0, ocean:62,land:37,ice:1, windAvg:7,  windMax:17},
+  jurassic_l:  {magma:0, ocean:65,land:34,ice:1, windAvg:7,  windMax:16},
+  cretaceous_e:{magma:0, ocean:70,land:29,ice:1, windAvg:6,  windMax:14},
+  cretaceous_l:{magma:0, ocean:68,land:31,ice:1, windAvg:6,  windMax:14},
+  kpg_ext:     {magma:2, ocean:60,land:36,ice:2, windAvg:25, windMax:60},
+  paleogene:   {magma:0, ocean:62,land:36,ice:2, windAvg:6,  windMax:14},
+  neogene:     {magma:0, ocean:60,land:33,ice:7, windAvg:5,  windMax:13},
+  quaternary:  {magma:0, ocean:58,land:35,ice:7, windAvg:4,  windMax:12},
 };
 
 const ERAS=[
@@ -283,16 +295,24 @@ ERAS.forEach(e=>{
   e.desc=ERA_DESC[e.id]||{en:'',ja:''};
 });
 
-const GASES=[{key:'N2',label:'N₂',color:'#7ec8e3'},{key:'CO2',label:'CO₂',color:'#ff6b6b'},{key:'O2',label:'O₂',color:'#98fb98'},{key:'H2O',label:'H₂O',color:'#87ceeb'},{key:'CH4',label:'CH₄',color:'#ffa500'},{key:'H2',label:'H₂',color:'#dda0dd'}];
+const GASES=[
+ {key:'N2',label:'N₂',color:'#7ec8e3',name:{en:'Nitrogen',ja:'窒素'}},
+ {key:'CO2',label:'CO₂',color:'#ff6b6b',name:{en:'Carbon Dioxide',ja:'二酸化炭素'}},
+ {key:'O2',label:'O₂',color:'#98fb98',name:{en:'Oxygen',ja:'酸素'}},
+ {key:'H2O',label:'H₂O',color:'#87ceeb',name:{en:'Water Vapor',ja:'水蒸気'}},
+ {key:'CH4',label:'CH₄',color:'#ffa500',name:{en:'Methane',ja:'メタン'}},
+ {key:'H2',label:'H₂',color:'#dda0dd',name:{en:'Hydrogen',ja:'水素'}}
+];
 
 const TOTAL_MYA=4500,REAL_SECONDS_1X=300*60,MYA_PER_SEC_1X=TOTAL_MYA/REAL_SECONDS_1X;
 let simMya=TOTAL_MYA,spd=1,state={},offset={},lastEraIdx=-1,curEraIdx=0,lastTimestamp=null;
 let ashLevel=0,impactFlash=0,lightningFlash=0,lightningTimer=0;
 
 // Macro cross-section canvas coordinate space (160x136)
-const MW=160,MH=136;
-const SKY_TOP=2,SKY_BOT=70,LAND_TOP=70,LAND_BASE=96,SEA_TOP=96,SEA_BOT=128,FLOOR_TOP=128,FLOOR_BOT=136;
+const MW=160,MH=146;
+const SKY_TOP=2,SKY_BOT=62,LAND_TOP=62,LAND_BASE=86,SEA_TOP=86,SEA_BOT=114,FLOOR_TOP=114,FLOOR_BOT=122,SUB_TOP=122,SUB_BOT=134,MANTLE_TOP=134,MANTLE_BOT=146;
 let meteorActive=false,meteorX=0,meteorY=0,meteorVY=0;
+let volcanoActive=0,craterMark=0,craterX=MW/2;
 let clockT=0; // real-time seconds accumulator, drives visual-only cycles (day/night, waves, wind)
 
 function lerp(a,b,t){return a+(b-a)*t;}
@@ -306,6 +326,8 @@ function updateSim(ds){
   ashLevel=Math.max(0,ashLevel-ds/8);
   impactFlash=Math.max(0,impactFlash-ds/1.2);
   lightningFlash=Math.max(0,lightningFlash-ds*6);
+  volcanoActive=Math.max(0,volcanoActive-ds/10);
+  craterMark=Math.max(0,craterMark-ds/14);
 
   simMya-=MYA_PER_SEC_1X*spd*ds;
   if(simMya<0)simMya=0; // present day reached — keep simulating indefinitely, no stop/ending
@@ -362,13 +384,15 @@ function updateMeteor(ds){
       meteorActive=false;
       impactFlash=1;
       ashLevel=1;
+      craterMark=1;
+      craterX=meteorX;
     }
   }
 }
 
 function doEvent(type){
-  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=2.2+Math.random()*1.2;offset.temp+=25;offset.co2+=18;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
-  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;ashLevel=1;setEvent(T('ev_volcano'));}
+  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;offset.temp+=25;offset.co2+=18;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
+  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;ashLevel=1;volcanoActive=1;setEvent(T('ev_volcano'));}
   else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
   else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;setEvent(T('ev_warm'));}
   else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;impactFlash=0.6;setEvent(T('ev_ext'));}
@@ -379,7 +403,7 @@ function setSpd(s){spd=s;[1,5,20,100].forEach(v=>{const b=document.getElementByI
 
 function resetSim(){
   simMya=TOTAL_MYA;lastEraIdx=-1;curEraIdx=0;lastTimestamp=null;
-  ashLevel=0;impactFlash=0;meteorActive=false;
+  ashLevel=0;impactFlash=0;meteorActive=false;volcanoActive=0;craterMark=0;
   initOffset();initState(0);
   setEvent(T('reset_msg'));
   document.getElementById('eon-badge').textContent=(lang==='ja'?'冥王代':'HADEAN')+' — 4.5 BYA';
@@ -446,6 +470,8 @@ function initMacroParticles(){
 // terrain fleck texture (persistent positions, color follows current biome each frame)
 const terrainFlecks=[];for(let i=0;i<55;i++)terrainFlecks.push({x:Math.random()*MW,y:LAND_TOP+8+Math.random()*(LAND_BASE-LAND_TOP-8)});
 const seaFlecks=[];for(let i=0;i<30;i++)seaFlecks.push({x:Math.random()*MW,y:SEA_TOP+4+Math.random()*(SEA_BOT-SEA_TOP-6)});
+const subDots=[];for(let i=0;i<26;i++)subDots.push({x:Math.random()*MW,y:SUB_TOP+2+Math.random()*(SUB_BOT-SUB_TOP-4),ph:Math.random()*10,seed:Math.random()});
+const mantlePlumes=[];for(let i=0;i<7;i++)mantlePlumes.push({x:Math.random()*MW,y:Math.random(),seed:Math.random()*10,speed:0.15+Math.random()*0.25});
 const mountains=[{cx:24,base:LAND_TOP+2,w:26,hMin:12,hMax:30,freq:0.0055,phase:0.4},{cx:66,base:LAND_TOP+2,w:34,hMin:16,hMax:42,freq:0.0037,phase:2.1},{cx:116,base:LAND_TOP+2,w:30,hMin:14,hMax:38,freq:0.0048,phase:4.0},{cx:145,base:LAND_TOP+2,w:22,hMin:10,hMax:34,freq:0.0062,phase:5.6}];
 
 // ---- creature particle pools driven by biomass ----
@@ -470,11 +496,28 @@ const CREATURES=[
    colorMap:{mammal:'#ec407a',primate:'#ff8a65',human:'#fff176'},beh:'walk',sz:1.6},
  {kind:'bird',layer:'sky',keys:['bird','pterosaur'],max:7,div:11,
    colorMap:{bird:'#f1c40f',pterosaur:'#8e44ad'},color:'#f1c40f',beh:'fly',sz:1.4},
- {kind:'fungi',layer:'land',keys:['fungi'],max:10,div:13,color:'#f0b27a',beh:'shroom',sz:1},
- {kind:'tree',layer:'land',keys:['gymnosperm','angiosperm','spore_plant','lichen'],max:20,div:6,
-   colorMap:{gymnosperm:'#1d6a2f',angiosperm:'#c0392b',spore_plant:'#27ae60',lichen:'#52be80'},color:'#27ae60',beh:'tree',sz:1.8},
+ {kind:'fungi',layer:'land',keys:['fungi'],max:9,div:12,color:'#f0b27a',beh:'shroom',sz:1,cluster:true},
+ {kind:'lichen',layer:'land',keys:['lichen'],max:8,div:2.2,color:'#52be80',beh:'lichenpatch',sz:1,cluster:true},
+ {kind:'lycopod',layer:'land',keys:['spore_plant'],max:16,div:4,color:'#1e7d47',beh:'lycopod',sz:1,cluster:true},
+ {kind:'conifer',layer:'land',keys:['gymnosperm'],max:16,div:4.5,color:'#1d6a2f',beh:'conifer',sz:1,cluster:true},
+ {kind:'flowering',layer:'land',keys:['angiosperm'],max:16,div:5,color:'#2e8b3d',beh:'flowering',sz:1,cluster:true},
 ];
-CREATURES.forEach(c=>{c.pool=[];for(let i=0;i<c.max;i++)c.pool.push({bx:Math.random(),by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.5+Math.random()*0.9,seed:Math.random()*20});});
+// forest patches: shared cluster centers so vegetation grows in clumps ("ところどころに"), not perfectly scattered
+const VEG_CLUSTERS=[10,28,50,72,95,118,140,152];
+CREATURES.forEach(c=>{
+  c.pool=[];
+  for(let i=0;i<c.max;i++){
+    let bx;
+    if(c.cluster){
+      const cx=VEG_CLUSTERS[i%VEG_CLUSTERS.length];
+      bx=clamp((cx+(Math.random()*2-1)*10)/MW,0.02,0.98);
+    } else {
+      bx=Math.random();
+    }
+    c.pool.push({bx,by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.5+Math.random()*0.9,seed:Math.random()*20,variant:Math.random()<0.5?0:1});
+  }
+});
+const DINO_ERA_SCALE={jurassic_e:1.3,jurassic_l:1.55,cretaceous_e:1.3,cretaceous_l:1.45};
 
 function drawTri(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x-w/2,y);ctx.lineTo(x+w/2,y);ctx.closePath();ctx.fill();}
 function drawRect(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x-w/2,y-h,w,h);}
@@ -542,7 +585,8 @@ function drawCreature(c,p,t){
       break;}
     case 'walk':{
       const x=((x0+t*0.014*p.spd*p.dir)%1+1)%1*MW;
-      const sz=(c.sz||1)*lerp(0.6,1.15,y0);
+      const eraScale=(c.kind==='dino')?(DINO_ERA_SCALE[ERAS[curEraIdx].id]||1):1;
+      const sz=(c.sz||1)*lerp(0.6,1.15,y0)*eraScale;
       const ly=LAND_TOP+3+y0*(LAND_BASE-LAND_TOP-5);
       const bob=Math.abs(Math.sin(t*5+p.seed))*0.6;
       drawRect(mctx,x,ly-bob,2*sz,1.6*sz,col);
@@ -557,20 +601,81 @@ function drawCreature(c,p,t){
       mctx.moveTo(x-2,y-flap);mctx.lineTo(x,y);mctx.lineTo(x+2,y-flap);mctx.stroke();
       break;}
     case 'shroom':{
-      const x=x0*MW;const ly=LAND_TOP+3+y0*(LAND_BASE-LAND_TOP-5);const y=ly-0.5;
-      const pulse=(0.9+Math.sin(t*1.6+p.seed)*0.15)*lerp(0.7,1.1,y0);
-      mctx.fillStyle=col;mctx.beginPath();mctx.ellipse(x,y-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0);mctx.fill();
-      mctx.fillStyle='#d5b895';mctx.fillRect(x-0.3,y-1.4*pulse,0.6,1.4*pulse);
+      const x=x0*MW;const ly=LAND_TOP+3+y0*(LAND_BASE-LAND_TOP-5);
+      const eraId=ERAS[curEraIdx].id;
+      if(eraId==='silurian'||eraId==='devonian'){
+        // Prototaxites — giant ~10m fungal trunk, towering over the early land flora
+        const depthScale=lerp(0.6,1.25,y0);
+        const h=(11+p.variant*2)*depthScale;
+        mctx.strokeStyle='#c9b18a';mctx.lineWidth=1.6*depthScale;
+        mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(x,ly-h);mctx.stroke();
+        mctx.strokeStyle='rgba(120,95,60,0.5)';mctx.lineWidth=0.4;
+        for(let r=1;r<h;r+=2.2){mctx.beginPath();mctx.moveTo(x-0.8*depthScale,ly-r);mctx.lineTo(x+0.8*depthScale,ly-r);mctx.stroke();}
+        mctx.fillStyle='#d8c49a';mctx.beginPath();mctx.ellipse(x,ly-h,1.1*depthScale,0.7*depthScale,0,0,Math.PI*2);mctx.fill();
+      } else {
+        const y=ly-0.5;
+        const pulse=(0.9+Math.sin(t*1.6+p.seed)*0.15)*lerp(0.7,1.1,y0);
+        mctx.fillStyle=col;mctx.beginPath();mctx.ellipse(x,y-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0);mctx.fill();
+        mctx.fillStyle='#d5b895';mctx.fillRect(x-0.3,y-1.4*pulse,0.6,1.4*pulse);
+      }
       break;}
-    case 'tree':{
-      const x=x0*MW;const lean=Math.sin(t*1.1+p.seed)*0.12*(1+state.surface.windAvg/200);
-      const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
+    case 'lichenpatch':{
+      // low ground-hugging moss/lichen patch — no trunk, earliest land flora
+      const x=x0*MW;const ly=LAND_TOP+3+y0*(LAND_BASE-LAND_TOP-5);
+      const depthScale=lerp(0.6,1.1,y0);
+      mctx.fillStyle=col;mctx.globalAlpha=0.85;
+      mctx.beginPath();mctx.ellipse(x,ly-0.3,2*depthScale,0.9*depthScale,0,0,Math.PI*2);mctx.fill();
+      mctx.globalAlpha=1;
+      break;}
+    case 'lycopod':{
+      // Lepidodendron / Sigillaria — tall unbranched scale-barked trunk with a small spiky crown tuft (Carboniferous giant clubmoss)
+      const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
+      const depthScale=lerp(0.55,1.25,y0);
+      const lean=Math.sin(t*0.8+p.seed)*0.04*(1+state.surface.windAvg/12);
+      const h=(9+p.variant*3)*depthScale;
+      const topX=x+lean*h;
+      mctx.strokeStyle=col;mctx.lineWidth=1.5*depthScale;
+      mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(topX,ly-h);mctx.stroke();
+      // diamond scale-bark texture
+      mctx.strokeStyle='rgba(0,0,0,0.25)';mctx.lineWidth=0.3;
+      for(let r=2;r<h-1;r+=2.4){const rx=lerp(x,topX,r/h);mctx.beginPath();mctx.moveTo(rx-0.7,ly-r);mctx.lineTo(rx+0.7,ly-r+1.1);mctx.moveTo(rx+0.7,ly-r);mctx.lineTo(rx-0.7,ly-r+1.1);mctx.stroke();}
+      // sparse crown tuft (variant 0: rounded, variant 1: spiky Sigillaria rosette)
+      mctx.fillStyle=col;
+      if(p.variant===0){mctx.beginPath();mctx.ellipse(topX,ly-h-0.8*depthScale,1.6*depthScale,1*depthScale,0,0,Math.PI*2);mctx.fill();}
+      else{for(let a=-2;a<=2;a++){mctx.beginPath();mctx.moveTo(topX,ly-h);mctx.lineTo(topX+a*0.9*depthScale,ly-h-2.2*depthScale);mctx.lineTo(topX+a*0.9*depthScale+0.4,ly-h);mctx.fill();}}
+      break;}
+    case 'conifer':{
+      // gymnosperm — conical stacked evergreen silhouette
+      const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
       const depthScale=lerp(0.55,1.2,y0);
-      const h=(3+2*(c.sz||1))*depthScale;
+      const lean=Math.sin(t*1.1+p.seed)*0.08*(1+state.surface.windAvg/12);
+      const h=(6+p.variant*2)*depthScale;
+      mctx.strokeStyle='#6b4a2b';mctx.lineWidth=0.6*depthScale;
+      mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(x+lean*h,ly-h*0.3);mctx.stroke();
+      mctx.fillStyle=col;
+      for(let tier=0;tier<3;tier++){
+        const ty=ly-h*0.25-tier*h*0.32;
+        const tw=(2.6-tier*0.6)*depthScale;
+        drawTri(mctx,x+lean*h*(tier/3),ty,tw,h*0.42*depthScale,col);
+      }
+      break;}
+    case 'flowering':{
+      // angiosperm — rounded leafy canopy (green) with small accent flowers, NOT a solid-color tree
+      const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
+      const depthScale=lerp(0.55,1.2,y0);
+      const lean=Math.sin(t*1.15+p.seed)*0.1*(1+state.surface.windAvg/12);
+      const h=(4.5+p.variant*1.6)*depthScale;
       mctx.strokeStyle='#6b4a2b';mctx.lineWidth=0.7*depthScale;
       mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(x+lean*h,ly-h);mctx.stroke();
-      mctx.fillStyle=col;mctx.beginPath();
-      mctx.ellipse(x+lean*h,ly-h-1.4*depthScale,2.2*depthScale,2.4*depthScale,0,0,Math.PI*2);mctx.fill();
+      const cx=x+lean*h,cy=ly-h-1.3*depthScale;
+      mctx.fillStyle=col;mctx.beginPath();mctx.ellipse(cx,cy,2*depthScale,2.1*depthScale,0,0,Math.PI*2);mctx.fill();
+      const flowerCols=['#f8c8d4','#f7dc6f','#ffffff'];
+      const fc=flowerCols[Math.floor(p.seed)%flowerCols.length];
+      mctx.fillStyle=fc;
+      for(let k=0;k<3;k++){
+        const ang=p.seed+k*2.1;
+        mctx.beginPath();mctx.arc(cx+Math.cos(ang)*1.3*depthScale,cy+Math.sin(ang)*1.1*depthScale,0.45*depthScale,0,Math.PI*2);mctx.fill();
+      }
       break;}
   }
 }
@@ -636,15 +741,27 @@ function drawMacro(t){
   }
 
   if(!skyClouds.length) initMacroParticles();
-  // clouds
+  // clouds — speed now visibly driven by wind
+  const windFactor=clamp(state.surface.windAvg/9,0.35,4.5);
   skyClouds.forEach(c=>{
-    c.x=(c.x+c.speed*(0.3+h2of)*0.02)%1;
+    c.x=(c.x+c.speed*(0.3+h2of)*0.02*windFactor)%1;
     const cx=c.x*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
     mctx.globalAlpha=c.alpha*(0.3+state.clouds*0.9)*(0.5+0.5*nightFactor);
     mctx.fillStyle='#f4f7fb';
     mctx.beginPath();mctx.ellipse(cx,cy,c.w*0.5,c.w*0.22,0,0,Math.PI*2);mctx.fill();
     mctx.globalAlpha=1;
   });
+
+  // wind streaks — visible gust lines when wind is strong
+  if(state.surface.windAvg>12){
+    const gustA=clamp((state.surface.windAvg-12)/30,0.15,0.6);
+    mctx.strokeStyle=`rgba(255,255,255,${gustA})`;mctx.lineWidth=0.5;
+    for(let i=0;i<5;i++){
+      const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(SKY_BOT-SKY_TOP-16));
+      const gx=(i*37+t*windFactor*50)%MW;
+      mctx.beginPath();mctx.moveTo(gx,gy);mctx.lineTo(gx-6,gy+1.4);mctx.stroke();
+    }
+  }
 
   // ash particles
   if(ashLevel>0.05){
@@ -665,11 +782,29 @@ function drawMacro(t){
     mctx.lineTo(lx+4,SKY_TOP+18);mctx.lineTo(lx-3,SKY_TOP+30);mctx.lineTo(lx+2,LAND_TOP-4);mctx.stroke();
   }
 
-  // meteor
+  // meteor — bigger, clearer fireball with glowing trail
   if(meteorActive){
-    mctx.strokeStyle='rgba(255,190,80,0.9)';mctx.lineWidth=1.4;
-    mctx.beginPath();mctx.moveTo(meteorX-8,meteorY-14);mctx.lineTo(meteorX,meteorY);mctx.stroke();
-    mctx.fillStyle='rgba(255,140,40,0.95)';mctx.beginPath();mctx.arc(meteorX,meteorY,1.8,0,Math.PI*2);mctx.fill();
+    for(let i=0;i<6;i++){
+      const tx=meteorX-i*2.2,ty=meteorY-i*3.2;
+      mctx.fillStyle=`rgba(255,${170-i*15},${60-i*8<0?0:60-i*8},${0.7-i*0.11})`;
+      mctx.beginPath();mctx.arc(tx,ty,2.6-i*0.35,0,Math.PI*2);mctx.fill();
+    }
+    const glow=mctx.createRadialGradient(meteorX,meteorY,0,meteorX,meteorY,5);
+    glow.addColorStop(0,'rgba(255,240,200,0.95)');glow.addColorStop(0.5,'rgba(255,160,50,0.6)');glow.addColorStop(1,'rgba(255,120,30,0)');
+    mctx.fillStyle=glow;mctx.beginPath();mctx.arc(meteorX,meteorY,5,0,Math.PI*2);mctx.fill();
+    mctx.fillStyle='#fff6dd';mctx.beginPath();mctx.arc(meteorX,meteorY,1.6,0,Math.PI*2);mctx.fill();
+  }
+
+  // crater + smoke aftermath from a recent meteor impact
+  if(craterMark>0.02){
+    const cy=LAND_BASE-1;
+    mctx.fillStyle=`rgba(40,30,25,${craterMark*0.8})`;
+    mctx.beginPath();mctx.ellipse(craterX,cy,5*craterMark+2,1.6,0,0,Math.PI*2);mctx.fill();
+    for(let i=0;i<4;i++){
+      const sx=craterX+Math.sin(t*1.5+i)*3,sy=cy-3-i*4*craterMark-((1-craterMark)*6);
+      mctx.fillStyle=`rgba(120,120,120,${craterMark*0.5})`;
+      mctx.beginPath();mctx.arc(sx,sy,1.6+i*0.4,0,Math.PI*2);mctx.fill();
+    }
   }
 
   // birds
@@ -694,10 +829,11 @@ function drawMacro(t){
   mctx.fillRect(0,LAND_TOP,MW,LAND_BASE-LAND_TOP);
 
   // mountains (poke into sky band) — height shifts over hundreds of millions of years: tectonic uplift & erosion
+  let tallestM=null,tallestH=-1;
   mountains.forEach(m=>{
     const tectonic=0.5+0.5*Math.sin(simMya*m.freq+m.phase);
     let h=lerp(m.hMin,m.hMax,tectonic);
-    h*=clamp(1-(state.surface.windAvg-40)/380,0.72,1.15); // wind/rain erosion wears peaks down over time
+    h*=clamp(1-(state.surface.windAvg-10)/55,0.72,1.15); // wind/rain erosion wears peaks down over time
     h+=Math.min(6,state.surface.magma/12); // active volcanism builds mountains up
     const peakY=m.base-h;
     let mc=biome==='snow'?'#dfeaf2':(biome==='desert'?'#b98f57':'#6e7a72');
@@ -707,7 +843,27 @@ function drawMacro(t){
       mctx.fillStyle='rgba(255,255,255,0.85)';
       drawTri(mctx,m.cx,peakY+7,m.w*0.35,7,'rgba(255,255,255,0.85)');
     }
+    if(h>tallestH){tallestH=h;tallestM={cx:m.cx,peakY};}
   });
+
+  // volcano eruption — clear, recognizable plume + lava fountain at the tallest peak
+  if(volcanoActive>0.02 && tallestM){
+    const ex=tallestM.cx,ey=tallestM.peakY;
+    for(let i=0;i<5;i++){
+      const sx=ex+Math.sin(t*1.3+i*1.7)*(2+i*1.4);
+      const sy=ey-i*5-((1-volcanoActive)*10);
+      mctx.fillStyle=`rgba(90,90,90,${volcanoActive*0.55})`;
+      mctx.beginPath();mctx.arc(sx,sy,2+i*0.9,0,Math.PI*2);mctx.fill();
+    }
+    mctx.fillStyle=`rgba(255,${100+Math.round(80*Math.sin(t*4))},30,${0.6+0.35*volcanoActive})`;
+    mctx.beginPath();mctx.moveTo(ex-2,ey);mctx.lineTo(ex,ey-6-4*volcanoActive);mctx.lineTo(ex+2,ey);mctx.closePath();mctx.fill();
+    for(let i=0;i<3;i++){
+      const ang=-Math.PI/2+(Math.sin(t*6+i)*0.9);
+      const dist=3+Math.abs(Math.sin(t*5+i))*4*volcanoActive;
+      mctx.fillStyle='rgba(255,140,40,0.85)';
+      mctx.beginPath();mctx.arc(ex+Math.cos(ang)*dist,ey+Math.sin(ang)*dist,0.8,0,Math.PI*2);mctx.fill();
+    }
+  }
 
   // land texture flecks
   terrainFlecks.forEach((f,i)=>{
@@ -814,6 +970,39 @@ function drawMacro(t){
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
 
+  // ---- SUBSURFACE (deep biosphere: chemosynthetic microbes in the rock) ----
+  mctx.fillStyle='#150e0c';mctx.fillRect(0,SUB_TOP,MW,SUB_BOT-SUB_TOP);
+  mctx.strokeStyle='rgba(60,45,35,0.5)';mctx.lineWidth=0.4;
+  for(let x=6;x<MW;x+=14){mctx.beginPath();mctx.moveTo(x,SUB_TOP);mctx.lineTo(x+3,SUB_BOT);mctx.stroke();}
+  const microbeF=clamp(sumBio(['archaea','bacteria'])/90,0,1);
+  const subCount=Math.round(4+microbeF*22);
+  for(let i=0;i<subCount;i++){
+    const d=subDots[i%subDots.length];
+    const glow=0.3+0.5*Math.abs(Math.sin(t*0.8+d.ph));
+    mctx.fillStyle=`rgba(120,220,160,${glow*0.8})`;
+    mctx.fillRect(d.x,d.y,1,1);
+  }
+
+  // ---- MANTLE (molten interior — activity reflects the planet's internal heat, highest early, cooling over deep time) ----
+  const mantleHeat=clamp((state.surface.magma||0)/60,0.08,1);
+  const mgrad=mctx.createLinearGradient(0,MANTLE_TOP,0,MANTLE_BOT);
+  mgrad.addColorStop(0,rgbToCss(scaleC(hexToRgb('#2a0e05'),1)));
+  mgrad.addColorStop(1,rgbToCss(mixC(hexToRgb('#1a0805'),hexToRgb('#ff8c2e'),mantleHeat*0.9)));
+  mctx.fillStyle=mgrad;mctx.fillRect(0,MANTLE_TOP,MW,MANTLE_BOT-MANTLE_TOP);
+  mantlePlumes.forEach((pl,i)=>{
+    pl.y=(pl.y-pl.speed*0.012+1)%1;
+    const px=pl.x, py=MANTLE_TOP+pl.y*(MANTLE_BOT-MANTLE_TOP);
+    const glow=(0.3+0.6*mantleHeat)*(0.5+0.5*Math.sin(t*2+pl.seed));
+    mctx.fillStyle=`rgba(255,${Math.round(120+90*mantleHeat)},40,${glow})`;
+    mctx.fillRect(px,py,1.6,1.6);
+  });
+  // bright veins pulsing with heat
+  mctx.strokeStyle=`rgba(255,150,50,${0.25+0.35*mantleHeat*(0.5+0.5*Math.sin(t*1.5))})`;
+  mctx.lineWidth=0.8;
+  mctx.beginPath();
+  for(let x=0;x<=MW;x+=4){const y=MANTLE_TOP+3+Math.sin(x*0.15+t*1.2)*2+ (MANTLE_BOT-MANTLE_TOP-6)*0.5;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
+  mctx.stroke();
+
   // impact flash overlay (meteor / mass extinction)
   if(impactFlash>0.02){
     mctx.fillStyle=`rgba(255,255,255,${Math.min(0.85,impactFlash)})`;
@@ -832,24 +1021,24 @@ function updateUI(){
   if(ydEl){if(lang==='ja')ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+'十億年前':m.toFixed(1)+'百万年前');else ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+' BYA':m.toFixed(1)+' MYA')+' ago';}
   if(uiTick%3!==0)return;
   const atmo=state.atmo,total=Object.values(atmo).reduce((a,b)=>a+(b||0),0)||1;
-  let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;h+=`<div class="gas-row"><span class="gas-label">${g.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
+  let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;const nm=g.name[lang]||g.name.en;h+=`<div class="gas-row"><span class="gas-label">${nm} (${g.label})</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
   document.getElementById('atmo-bars').innerHTML=h;
 
   const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
   const sf2=state.surface;
-  const pressureHpa=Math.round(1013-(state.temp-15)*0.9-(sf2.windAvg-40)*0.5+(sf2.magma>10?-15:0));
+  const pressureHpa=Math.round(1013-(state.temp-15)*0.9-(sf2.windAvg-10)*1.3+(sf2.magma>10?-15:0));
   const isHigh=pressureHpa>=1013;
   const pc=isHigh?'#98fb98':'#ffa07a';
   const humidity=Math.round(clamp(state.clouds*60+(atmo.H2O||0)*4,0,100));
 
   const airItems=[
-    {color:tc,icon:'🌡',txt:T('temp')+' '+Math.round(state.temp)+'°C'},
-    {color:'#7ec8e3',icon:'💨',txt:T('wind')+' '+(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+' '+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+'m/s'},
-    {color:pc,icon:isHigh?'⬆':'⬇',txt:T('pressure')+' '+pressureHpa+'hPa('+T(isHigh?'high':'low')+')'},
-    {color:'#87ceeb',icon:'💧',txt:T('humidity')+' '+humidity+'%'}
+    {color:tc,icon:'🌡',lbl:T('temp'),val:Math.round(state.temp)+'°C'},
+    {color:'#7ec8e3',icon:'💨',lbl:T('wind'),val:(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+'/'+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+'m/s'},
+    {color:pc,icon:isHigh?'⬆':'⬇',lbl:T('pressure'),val:pressureHpa+'hPa ('+T(isHigh?'high':'low')+')'},
+    {color:'#87ceeb',icon:'💧',lbl:T('humidity'),val:humidity+'%'}
   ];
-  const airHtml=airItems.map(x=>'<span style="color:'+x.color+'">'+x.icon+' '+x.txt+'</span>').join(' <span style="color:#2a4a6a">|</span> ');
-  document.getElementById('air-row').innerHTML=airHtml;
+  document.getElementById('air-row').innerHTML=airItems.map(x=>
+    `<div class="climate-item"><span style="color:${x.color}">${x.icon} ${x.lbl}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
 
   const surfItems=[
     {v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},
@@ -857,8 +1046,8 @@ function updateUI(){
     {v:sf2.land, color:'#82e0aa',icon:'🏔',lbl:T('land')},
     {v:sf2.ice,  color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}
   ].filter(x=>x.v>0.5);
-  const surfHtml=surfItems.map(x=>'<span style="color:'+x.color+'">'+x.icon+' '+x.lbl+' '+Math.round(x.v)+'%</span>').join(' <span style="color:#2a4a6a">|</span> ');
-  document.getElementById('surface-row').innerHTML=surfHtml;
+  document.getElementById('surface-row').innerHTML=surfItems.map(x=>
+    `<div class="climate-item"><span style="color:${x.color}">${x.icon} ${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
 
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
