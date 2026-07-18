@@ -44,8 +44,10 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
 .ec{background:#071525;padding:3px 5px;border:1px solid #0d2137}
 .climate-card{flex:1;background:#071525;border:1px solid #0d2137;padding:4px 6px}
 .climate-card-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:3px}
-.climate-item{font-size:8px;display:flex;justify-content:space-between;gap:6px;margin-bottom:2px;white-space:nowrap}
+.climate-item{font-size:8px;line-height:1.3;display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;white-space:nowrap}
 .climate-item:last-child{margin-bottom:0}
+.ci-icon{font-size:9px;display:inline-block;width:12px;text-align:center;flex-shrink:0}
+.ci-label{display:flex;align-items:center;gap:2px}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:9px;font-weight:bold;color:#7ec8e3}
 #bio-section{flex:1;overflow-y:auto;padding:5px 10px}
@@ -92,6 +94,8 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
     <button class="ebtn" id="btn-ice" onclick="doEvent('ice')">❄ ICE AGE</button>
     <button class="ebtn" id="btn-warm" onclick="doEvent('warm')">☀ WARMING</button>
     <button class="ebtn" id="btn-ext" onclick="doEvent('mass_ext')">💀 MASS EXT</button>
+    <button class="ebtn" id="btn-quake" onclick="doEvent('earthquake')">🌐 QUAKE</button>
+    <button class="ebtn" id="btn-typhoon" onclick="doEvent('typhoon')">🌀 TYPHOON</button>
     <button class="ebtn" id="btn-reset" onclick="resetSim()">↺ RESET</button>
   </div>
   <div id="speed-row">
@@ -149,8 +153,8 @@ autoScale();
 
 // ---- 言語 ----
 const LANG={
-  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',air:'AIR',surface:'SURFACE',climate:'CLIMATE',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES'},
-  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',air:'気象',surface:'地表',climate:'気候',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物'},
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',air:'AIR',surface:'SURFACE',climate:'CLIMATE',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES'},
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',air:'気象',surface:'地表',climate:'気候',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物'},
 };
 let lang='en';
 function T(k){return LANG[lang][k]||LANG.en[k]||k;}
@@ -164,7 +168,7 @@ function applyLang(){
   document.getElementById('lbl-air').textContent=T('air');
   document.getElementById('lbl-surface').textContent=T('surface');
   document.getElementById('lbl-bio').textContent=T('bio');
-  ['meteor','volcano','ice','warm','ext','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
+  ['meteor','volcano','ice','warm','ext','quake','typhoon','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
   buildTimeline();updateTimeline(curEraIdx);
 }
 
@@ -342,6 +346,7 @@ const MW=160,MH=146;
 const SKY_TOP=2,SKY_BOT=62,LAND_TOP=62,LAND_BASE=86,SEA_TOP=86,SEA_BOT=114,FLOOR_TOP=114,FLOOR_BOT=122,SUB_TOP=122,SUB_BOT=134,MANTLE_TOP=134,MANTLE_BOT=146;
 let meteorActive=false,meteorX=0,meteorY=0,meteorVY=0;
 let volcanoActive=0,craterMark=0,craterX=MW/2;
+let quakeActive=0,typhoonActive=0;
 let clockT=0; // real-time seconds accumulator, drives visual-only cycles (day/night, waves, wind)
 
 function lerp(a,b,t){return a+(b-a)*t;}
@@ -373,6 +378,8 @@ function updateSim(ds){
   lightningFlash=Math.max(0,lightningFlash-ds*6);
   volcanoActive=Math.max(0,volcanoActive-ds/10);
   craterMark=Math.max(0,craterMark-ds/14);
+  quakeActive=Math.max(0,quakeActive-ds/6);
+  typhoonActive=Math.max(0,typhoonActive-ds/16);
 
   simMya-=MYA_PER_SEC_1X*spd*ds;
   if(simMya<0)simMya=0; // present day reached — keep simulating indefinitely, no stop/ending
@@ -459,6 +466,8 @@ function doEvent(type){
   else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;offset.windAvg+=22;offset.humidity-=20;offset.pressureAtm+=0.05;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
   else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;offset.windAvg-=4;offset.humidity+=15;offset.pressureAtm-=0.03;setEvent(T('ev_warm'));}
   else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;offset.windAvg+=25;offset.humidity-=10;impactFlash=0.6;setEvent(T('ev_ext'));}
+  else if(type==='earthquake'){quakeActive=1;ashLevel=Math.max(ashLevel,0.35);offset.windAvg+=6;setEvent(T('ev_quake'));}
+  else if(type==='typhoon'){typhoonActive=1;offset.windAvg+=65;offset.humidity+=30;offset.pressureAtm-=0.04;setEvent(T('ev_typhoon'));}
 }
 
 function setEvent(msg){const el=document.getElementById('event-log');if(el)el.textContent=msg;}
@@ -466,7 +475,7 @@ function setSpd(s){spd=s;[1,5,20,100].forEach(v=>{const b=document.getElementByI
 
 function resetSim(){
   simMya=TOTAL_MYA;lastEraIdx=-1;curEraIdx=0;lastTimestamp=null;
-  ashLevel=0;impactFlash=0;meteorActive=false;volcanoActive=0;craterMark=0;
+  ashLevel=0;impactFlash=0;meteorActive=false;volcanoActive=0;craterMark=0;quakeActive=0;typhoonActive=0;
   initOffset();initState(0);
   setEvent(T('reset_msg'));
   document.getElementById('eon-badge').textContent=(lang==='ja'?'冥王代':'HADEAN')+' — 4.5 BYA';
@@ -596,7 +605,7 @@ function drawCreature(c,p,t){
       mctx.globalAlpha=0.55;mctx.fillRect(x,y,1,1);mctx.globalAlpha=1;
       break;}
     case 'kelp':{
-      const x=x0*MW;const baseY=FLOOR_TOP;const sway=Math.sin(t*1.1+p.seed)*3;
+      const x=x0*MW;const baseY=FLOOR_TOP+1+y0*(FLOOR_BOT-FLOOR_TOP-2);const sway=Math.sin(t*1.1+p.seed)*3;
       mctx.strokeStyle=col;mctx.lineWidth=1;mctx.beginPath();
       mctx.moveTo(x,baseY);mctx.quadraticCurveTo(x+sway,baseY-5,x+sway*1.6,baseY-9);mctx.stroke();
       break;}
@@ -762,6 +771,12 @@ function drawMacro(t){
   const nightFactor=(Math.sin(dayPhase*Math.PI*2-Math.PI/2)+1)/2; // 0=night,1=day
 
   mctx.clearRect(0,0,MW,MH);
+  if(quakeActive>0.02){
+    const shakeMag=quakeActive*2.6;
+    const sx=(Math.sin(t*41)+Math.sin(t*67))*shakeMag*0.5;
+    const sy=(Math.cos(t*53)+Math.sin(t*79))*shakeMag*0.35;
+    mctx.save();mctx.translate(sx,sy);
+  }
 
   // ---- SKY ----
   let sky=hexToRgb('#6fa8dc');
@@ -804,26 +819,37 @@ function drawMacro(t){
   }
 
   if(!skyClouds.length) initMacroParticles();
-  // clouds — speed now visibly driven by wind
+  // clouds — density now driven by live humidity as well as era cloud baseline; speed driven by wind
   const windFactor=clamp(windRatio(),0.3,6);
-  skyClouds.forEach(c=>{
+  const cloudDensity=clamp(state.clouds*0.4+(state.humidityPct/100)*0.85,0,1.3);
+  const visibleCloudCount=Math.max(2,Math.round(skyClouds.length*clamp(cloudDensity,0.15,1)));
+  skyClouds.forEach((c,ci)=>{
     c.x=(c.x+c.speed*(0.3+h2of)*0.02*windFactor)%1;
+    if(ci>=visibleCloudCount) return;
     const cx=c.x*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
-    mctx.globalAlpha=c.alpha*(0.3+state.clouds*0.9)*(0.5+0.5*nightFactor);
+    mctx.globalAlpha=c.alpha*(0.3+cloudDensity*0.9)*(0.5+0.5*nightFactor);
     mctx.fillStyle='#f4f7fb';
     mctx.beginPath();mctx.ellipse(cx,cy,c.w*0.5,c.w*0.22,0,0,Math.PI*2);mctx.fill();
     mctx.globalAlpha=1;
   });
 
-  // wind streaks — visible gust lines when wind is strong
-  if(windRatio()>1.25){
-    const gustA=clamp((windRatio()-1.25)*0.35,0.15,0.6);
-    mctx.strokeStyle=`rgba(255,255,255,${gustA})`;mctx.lineWidth=0.5;
-    for(let i=0;i<5;i++){
-      const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(SKY_BOT-SKY_TOP-16));
-      const gx=(i*37+t*windFactor*50)%MW;
-      mctx.beginPath();mctx.moveTo(gx,gy);mctx.lineTo(gx-6,gy+1.4);mctx.stroke();
+  // typhoon — distinctive rotating spiral cloud band, clearly recognizable as a cyclone
+  if(typhoonActive>0.03){
+    const tcx=MW*0.5,tcy=SKY_TOP+18;
+    mctx.globalAlpha=Math.min(0.7,typhoonActive);
+    for(let arm=0;arm<3;arm++){
+      mctx.strokeStyle='#eef3f8';mctx.lineWidth=2.4;
+      mctx.beginPath();
+      for(let a=0;a<2.6;a+=0.2){
+        const ang=a+arm*2.1+t*1.8;
+        const r=3+a*7;
+        const px=tcx+Math.cos(ang)*r,py=tcy+Math.sin(ang)*r*0.55;
+        if(a===0)mctx.moveTo(px,py);else mctx.lineTo(px,py);
+      }
+      mctx.stroke();
     }
+    mctx.fillStyle='rgba(80,100,120,0.6)';mctx.beginPath();mctx.arc(tcx,tcy,2,0,Math.PI*2);mctx.fill();
+    mctx.globalAlpha=1;
   }
 
   // ash particles
@@ -928,6 +954,34 @@ function drawMacro(t){
     }
   }
 
+  // wind streaks — visible gust lines when wind is strong (drawn after mountains so they don't hide behind peaks)
+  if(windRatio()>1.25){
+    const gustA=clamp((windRatio()-1.25)*0.35,0.15,0.6);
+    mctx.strokeStyle=`rgba(255,255,255,${gustA})`;mctx.lineWidth=0.5;
+    for(let i=0;i<5;i++){
+      const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(SKY_BOT-SKY_TOP-16));
+      const gx=(i*37+t*windFactor*50)%MW;
+      mctx.beginPath();mctx.moveTo(gx,gy);mctx.lineTo(gx-6,gy+1.4);mctx.stroke();
+    }
+  }
+
+  // earthquake — jagged ground cracks + dust, fading as the tremor settles
+  if(quakeActive>0.03){
+    mctx.strokeStyle=`rgba(20,15,10,${quakeActive*0.8})`;mctx.lineWidth=0.7;
+    for(let c=0;c<3;c++){
+      const cx0=20+c*55+Math.sin(c*7)*10;
+      mctx.beginPath();mctx.moveTo(cx0,LAND_TOP+4);
+      let cx=cx0;
+      for(let seg=0;seg<4;seg++){cx+=Math.sin(t*3+c*2+seg)*3;mctx.lineTo(cx,LAND_TOP+4+seg*5);}
+      mctx.stroke();
+    }
+    for(let i=0;i<5;i++){
+      const dx=30+i*26+Math.sin(t*2+i)*4,dy=LAND_BASE-1-Math.abs(Math.sin(t*6+i))*2;
+      mctx.fillStyle=`rgba(150,140,120,${quakeActive*0.4})`;
+      mctx.beginPath();mctx.arc(dx,dy,1.4+quakeActive,0,Math.PI*2);mctx.fill();
+    }
+  }
+
   // land texture flecks
   terrainFlecks.forEach((f,i)=>{
     let fc;
@@ -945,18 +999,19 @@ function drawMacro(t){
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
 
-  // precipitation
+  // precipitation — each drop has its own persistent x so it rains evenly across the whole land, not a diagonal band
   const precip = tempC<2 ? 'snow' : (h2of>0.45 ? 'rain':'none');
   if(precip!=='none'){
     const intensity=clamp(h2of,0.2,1);
-    mctx.strokeStyle=precip==='snow'?'rgba(255,255,255,0.8)':'rgba(180,210,240,0.55)';
-    mctx.lineWidth=0.6;
-    const n=Math.round(20*intensity);
+    const n=Math.round(28*intensity);
+    const spanTop=SKY_TOP+6,spanH=LAND_BASE-spanTop;
     for(let i=0;i<n;i++){
-      const px=(i*23+t*40*(precip==='snow'?0.3:1))%MW;
-      const py=SKY_TOP+((i*31+t*60*(precip==='snow'?0.3:1.4))%(LAND_BASE-SKY_TOP));
+      const d=rainDrops[i%rainDrops.length];
+      const speed=(precip==='snow'?16:42)*(0.7+d.seed*0.05);
+      const py=spanTop+((d.seed*23+t*speed)%spanH);
+      const px=precip==='snow'?(d.x*MW+Math.sin(t*0.8+d.seed)*3+MW)%MW:d.x*MW;
       if(precip==='snow'){mctx.fillStyle='rgba(255,255,255,0.8)';mctx.fillRect(px,py,1,1);}
-      else{mctx.beginPath();mctx.moveTo(px,py);mctx.lineTo(px-1,py+3);mctx.stroke();}
+      else{mctx.strokeStyle='rgba(180,210,240,0.55)';mctx.lineWidth=0.6;mctx.beginPath();mctx.moveTo(px,py);mctx.lineTo(px-1,py+3);mctx.stroke();}
     }
   }
 
@@ -1067,6 +1122,7 @@ function drawMacro(t){
   mctx.stroke();
 
   // impact flash overlay (meteor / mass extinction)
+  if(quakeActive>0.02){ mctx.restore(); }
   if(impactFlash>0.02){
     mctx.fillStyle=`rgba(255,255,255,${Math.min(0.85,impactFlash)})`;
     mctx.fillRect(0,0,MW,MH);
@@ -1103,7 +1159,7 @@ function updateUI(){
     {color:'#87ceeb',icon:'💧',lbl:T('humidity'),val:humidity+'%'}
   ];
   document.getElementById('air-row').innerHTML=airItems.map(x=>
-    `<div class="climate-item"><span style="color:${x.color}">${x.icon} ${x.lbl}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
 
   const surfItems=[
     {v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},
@@ -1112,7 +1168,7 @@ function updateUI(){
     {v:sf2.ice,  color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}
   ].filter(x=>x.v>0.5);
   document.getElementById('surface-row').innerHTML=surfItems.map(x=>
-    `<div class="climate-item"><span style="color:${x.color}">${x.icon} ${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
 
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
