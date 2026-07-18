@@ -240,28 +240,57 @@ const ERA_BIO={
 };
 
 const ERA_SURFACE={
-  hadean:      {magma:60,ocean:5, land:35,ice:0, windAvg:25, windMax:60},
-  archean:     {magma:8, ocean:35,land:55,ice:0, windAvg:18, windMax:45},
-  proterozoic: {magma:1, ocean:50,land:44,ice:5, windAvg:12, windMax:30},
-  snowball:    {magma:0, ocean:2, land:8, ice:90,windAvg:20, windMax:45},
-  ediacaran:   {magma:0, ocean:60,land:36,ice:4, windAvg:10, windMax:24},
-  cambrian:    {magma:0, ocean:68,land:32,ice:0, windAvg:8,  windMax:20},
-  ordovician:  {magma:0, ocean:68,land:30,ice:2, windAvg:8,  windMax:20},
-  silurian:    {magma:0, ocean:65,land:34,ice:1, windAvg:7,  windMax:18},
-  devonian:    {magma:0, ocean:62,land:37,ice:1, windAvg:7,  windMax:17},
-  carboniferous:{magma:0,ocean:55,land:40,ice:5, windAvg:6,  windMax:15},
-  permian:     {magma:0, ocean:52,land:44,ice:4, windAvg:8,  windMax:20},
-  pt_ext:      {magma:3, ocean:45,land:50,ice:2, windAvg:22, windMax:55},
-  triassic_e:  {magma:1, ocean:50,land:48,ice:1, windAvg:9,  windMax:22},
-  triassic_l:  {magma:0, ocean:55,land:44,ice:1, windAvg:8,  windMax:20},
-  jurassic_e:  {magma:0, ocean:62,land:37,ice:1, windAvg:7,  windMax:17},
-  jurassic_l:  {magma:0, ocean:65,land:34,ice:1, windAvg:7,  windMax:16},
-  cretaceous_e:{magma:0, ocean:70,land:29,ice:1, windAvg:6,  windMax:14},
-  cretaceous_l:{magma:0, ocean:68,land:31,ice:1, windAvg:6,  windMax:14},
-  kpg_ext:     {magma:2, ocean:60,land:36,ice:2, windAvg:25, windMax:60},
-  paleogene:   {magma:0, ocean:62,land:36,ice:2, windAvg:6,  windMax:14},
-  neogene:     {magma:0, ocean:60,land:33,ice:7, windAvg:5,  windMax:13},
-  quaternary:  {magma:0, ocean:58,land:35,ice:7, windAvg:4,  windMax:12},
+  hadean:      {magma:60,ocean:5, land:35,ice:0},
+  archean:     {magma:8, ocean:35,land:55,ice:0},
+  proterozoic: {magma:1, ocean:50,land:44,ice:5},
+  snowball:    {magma:0, ocean:2, land:8, ice:90},
+  ediacaran:   {magma:0, ocean:60,land:36,ice:4},
+  cambrian:    {magma:0, ocean:68,land:32,ice:0},
+  ordovician:  {magma:0, ocean:68,land:30,ice:2},
+  silurian:    {magma:0, ocean:65,land:34,ice:1},
+  devonian:    {magma:0, ocean:62,land:37,ice:1},
+  carboniferous:{magma:0,ocean:55,land:40,ice:5},
+  permian:     {magma:0, ocean:52,land:44,ice:4},
+  pt_ext:      {magma:3, ocean:45,land:50,ice:2},
+  triassic_e:  {magma:1, ocean:50,land:48,ice:1},
+  triassic_l:  {magma:0, ocean:55,land:44,ice:1},
+  jurassic_e:  {magma:0, ocean:62,land:37,ice:1},
+  jurassic_l:  {magma:0, ocean:65,land:34,ice:1},
+  cretaceous_e:{magma:0, ocean:70,land:29,ice:1},
+  cretaceous_l:{magma:0, ocean:68,land:31,ice:1},
+  kpg_ext:     {magma:2, ocean:60,land:36,ice:2},
+  paleogene:   {magma:0, ocean:62,land:36,ice:2},
+  neogene:     {magma:0, ocean:60,land:33,ice:7},
+  quaternary:  {magma:0, ocean:58,land:35,ice:7},
+};
+
+// Estimated real-world ranges per era (wind m/s, temp °C, relative humidity %, pressure in atm).
+// Values fluctuate live within these ranges (see naturalVar) to reflect ongoing situational variation,
+// on top of which specific events (volcano/meteor/ice age/etc) push temporary spikes — these are
+// design estimates based on commonly cited paleoclimate figures, not precise measurements.
+const ERA_CLIMATE={
+  hadean:      {windAvg:[120,180],windMax:[250,350],temp:[200,300],humidity:[95,100],pressureAtm:[50,150]},
+  archean:     {windAvg:[20,40], windMax:[80,150], temp:[50,80],  humidity:[80,100],pressureAtm:[2,10]},
+  proterozoic: {windAvg:[10,25], windMax:[40,80],  temp:[15,35],  humidity:[70,90], pressureAtm:[1.2,2]},
+  snowball:    {windAvg:[30,60], windMax:[150,250],temp:[-60,-40],humidity:[40,70], pressureAtm:[1,1.5]},
+  ediacaran:   {windAvg:[10,20], windMax:[40,70],  temp:[15,25],  humidity:[70,90], pressureAtm:[0.95,1.05]},
+  cambrian:    {windAvg:[8,18],  windMax:[35,60],  temp:[20,25],  humidity:[70,90], pressureAtm:[0.95,1.05]},
+  ordovician:  {windAvg:[8,18],  windMax:[35,60],  temp:[20,26],  humidity:[75,90], pressureAtm:[0.95,1.05]},
+  silurian:    {windAvg:[8,15],  windMax:[30,50],  temp:[17,22],  humidity:[70,85], pressureAtm:[0.95,1.05]},
+  devonian:    {windAvg:[8,15],  windMax:[30,50],  temp:[18,24],  humidity:[70,85], pressureAtm:[0.95,1.05]},
+  carboniferous:{windAvg:[5,12], windMax:[25,40],  temp:[12,18],  humidity:[80,95], pressureAtm:[0.9,1]},
+  permian:     {windAvg:[10,25], windMax:[50,80],  temp:[18,28],  humidity:[30,60], pressureAtm:[0.95,1.05]},
+  pt_ext:      {windAvg:[25,40], windMax:[80,150], temp:[35,45],  humidity:[50,80], pressureAtm:[1,1.3]},
+  triassic_e:  {windAvg:[15,30], windMax:[60,100], temp:[25,35],  humidity:[30,60], pressureAtm:[0.95,1.05]},
+  triassic_l:  {windAvg:[12,25], windMax:[50,80],  temp:[22,30],  humidity:[40,70], pressureAtm:[0.95,1.05]},
+  jurassic_e:  {windAvg:[10,20], windMax:[40,70],  temp:[18,25],  humidity:[60,80], pressureAtm:[0.95,1.05]},
+  jurassic_l:  {windAvg:[8,18],  windMax:[35,60],  temp:[17,23],  humidity:[70,85], pressureAtm:[0.95,1.05]},
+  cretaceous_e:{windAvg:[8,18],  windMax:[35,60],  temp:[20,28],  humidity:[70,90], pressureAtm:[0.95,1.05]},
+  cretaceous_l:{windAvg:[8,18],  windMax:[35,60],  temp:[22,30],  humidity:[75,90], pressureAtm:[0.95,1.05]},
+  kpg_ext:     {windAvg:[40,70], windMax:[150,250],temp:[5,35],   humidity:[50,90], pressureAtm:[0.95,1.05]},
+  paleogene:   {windAvg:[10,18], windMax:[35,60],  temp:[20,27],  humidity:[70,90], pressureAtm:[0.95,1.05]},
+  neogene:     {windAvg:[8,15],  windMax:[30,50],  temp:[14,20],  humidity:[60,80], pressureAtm:[0.95,1.05]},
+  quaternary:  {windAvg:[5,15],  windMax:[25,50],  temp:[-5,15],  humidity:[60,85], pressureAtm:[0.95,1.05]},
 };
 
 const ERAS=[
@@ -317,9 +346,20 @@ let clockT=0; // real-time seconds accumulator, drives visual-only cycles (day/n
 
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function windRatio(){return clamp((state.surface.windAvg||10)/15,0.15,14);} // 15 m/s ~= calm-Phanerozoic baseline
 function getEraIdx(mya){for(let i=0;i<ERAS.length;i++){if(mya<=ERAS[i].mya&&mya>ERAS[i].endMya)return i;}return ERAS.length-1;}
-function initOffset(){const bio={};bioKeys().forEach(k=>bio[k]=0);offset={temp:0,co2:0,o2:0,iceRatio:0,bio};}
-function initState(eIdx){const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);const sf=e.surface||ERA_SURFACE.hadean;state={atmo:{...e.atmo},temp:e.temp,surface:{magma:sf.magma,ocean:sf.ocean,land:sf.land,ice:sf.ice,windAvg:sf.windAvg,windMax:sf.windMax},clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};}
+function initOffset(){const bio={};bioKeys().forEach(k=>bio[k]=0);offset={temp:0,co2:0,o2:0,iceRatio:0,windAvg:0,humidity:0,pressureAtm:0,bio};}
+function initState(eIdx){
+  const e=ERAS[eIdx||0];const bio={};bioKeys().forEach(k=>bio[k]=e.bio[k]||0);
+  const sf=e.surface||ERA_SURFACE.hadean;
+  const cl=ERA_CLIMATE[e.id]||ERA_CLIMATE.hadean;
+  const mid=r=>(r[0]+r[1])/2;
+  state={atmo:{...e.atmo},temp:mid(cl.temp),
+    surface:{magma:sf.magma,ocean:sf.ocean,land:sf.land,ice:sf.ice,windAvg:mid(cl.windAvg),windMax:mid(cl.windMax)},
+    humidityPct:mid(cl.humidity),pressureAtm:mid(cl.pressureAtm),
+    clouds:e.clouds,snowball:e.snowball,gc:e.gc,bio};
+}
+function naturalVar(seed){return clamp(0.5+0.35*Math.sin(clockT*0.045+seed)+0.25*Math.sin(clockT*0.0107+seed*2.3),0,1);}
 
 function updateSim(ds){
   clockT+=ds;
@@ -339,7 +379,6 @@ function updateSim(ds){
   Object.keys(e.atmo).forEach(k=>state.atmo[k]=lerp(state.atmo[k]||0,e.atmo[k],blend));
   state.atmo.CO2=clamp(state.atmo.CO2+offset.co2*0.01,0,90);
   state.atmo.O2=clamp(state.atmo.O2+offset.o2*0.01,0,40);
-  state.temp=lerp(state.temp,e.temp+offset.temp,blend);
   const sf=e.surface||ERA_SURFACE.hadean;
   state.surface.magma =lerp(state.surface.magma, sf.magma, blend);
   const targetIce=clamp(sf.ice+offset.iceRatio*100,0,100);
@@ -347,14 +386,33 @@ function updateSim(ds){
   state.surface.ice   =lerp(state.surface.ice,   targetIce, blend);
   state.surface.ocean =lerp(state.surface.ocean, clamp(sf.ocean-iceDelta*0.7,0,100), blend);
   state.surface.land  =lerp(state.surface.land,  clamp(sf.land -iceDelta*0.3,0,100), blend);
-  state.surface.windAvg=lerp(state.surface.windAvg,sf.windAvg,blend);
-  state.surface.windMax=lerp(state.surface.windMax,sf.windMax,blend);
   state.clouds=lerp(state.clouds,e.clouds,blend);
-  state.gc=e.gc;state.snowball=e.snowball||(state.surface.ice>80);
+  state.gc=e.gc;
   bioKeys().forEach(k=>{const tgt=clamp((e.bio[k]||0)+(offset.bio[k]||0),0,100);state.bio[k]=lerp(state.bio[k]||0,tgt,blend);});
+
+  // Weather/climate: continuously varies within this era's estimated real-world range (situational
+  // fluctuation), tracked on a fast real-time constant so it feels alive regardless of sim speed —
+  // separate from the slow evolutionary `blend` used for atmosphere/biosphere above.
+  const cl=ERA_CLIMATE[e.id]||ERA_CLIMATE.hadean;
+  const cTau=8,cBlend=clamp(1-Math.exp(-ds/cTau),0,1);
+  const phase=eIdx*0.37;
+  const tempTarget=lerp(cl.temp[0],cl.temp[1],naturalVar(1.1+phase))+offset.temp;
+  state.temp=lerp(state.temp,tempTarget,cBlend);
+  const windAvgTarget=lerp(cl.windAvg[0],cl.windAvg[1],naturalVar(2.7+phase))+offset.windAvg;
+  state.surface.windAvg=lerp(state.surface.windAvg,Math.max(0,windAvgTarget),cBlend);
+  const windMaxTarget=lerp(cl.windMax[0],cl.windMax[1],naturalVar(3.9+phase))+offset.windAvg*2.4;
+  state.surface.windMax=lerp(state.surface.windMax,Math.max(state.surface.windAvg,windMaxTarget),cBlend);
+  const humidityTarget=clamp(lerp(cl.humidity[0],cl.humidity[1],naturalVar(4.4+phase))+offset.humidity,0,100);
+  state.humidityPct=lerp(state.humidityPct,humidityTarget,cBlend);
+  const pressureTarget=Math.max(0.1,lerp(cl.pressureAtm[0],cl.pressureAtm[1],naturalVar(5.6+phase))+offset.pressureAtm);
+  state.pressureAtm=lerp(state.pressureAtm,pressureTarget,cBlend);
+  state.snowball=e.snowball||(state.surface.ice>80);
+
   const df=Math.exp(-ds/90);
   offset.temp*=df;offset.co2*=df;offset.o2*=df;offset.iceRatio*=df;
   bioKeys().forEach(k=>offset.bio[k]*=df);
+  const dfWeather=Math.exp(-ds/25); // storm-like event effects on wind/humidity/pressure pass faster
+  offset.windAvg*=dfWeather;offset.humidity*=dfWeather;offset.pressureAtm*=dfWeather;
 
   // ambient ash from high volcanism
   if(state.surface.magma>15) ashLevel=Math.max(ashLevel,Math.min(0.6,state.surface.magma/150));
@@ -391,11 +449,11 @@ function updateMeteor(ds){
 }
 
 function doEvent(type){
-  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;offset.temp+=25;offset.co2+=18;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
-  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;ashLevel=1;volcanoActive=1;setEvent(T('ev_volcano'));}
-  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
-  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;setEvent(T('ev_warm'));}
-  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;impactFlash=0.6;setEvent(T('ev_ext'));}
+  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;offset.temp+=25;offset.co2+=18;offset.windAvg+=45;offset.humidity-=15;offset.pressureAtm+=0.03;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
+  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;offset.windAvg+=18;offset.humidity+=10;offset.pressureAtm-=0.02;ashLevel=1;volcanoActive=1;setEvent(T('ev_volcano'));}
+  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;offset.windAvg+=22;offset.humidity-=20;offset.pressureAtm+=0.05;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
+  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;offset.windAvg-=4;offset.humidity+=15;offset.pressureAtm-=0.03;setEvent(T('ev_warm'));}
+  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;offset.windAvg+=25;offset.humidity-=10;impactFlash=0.6;setEvent(T('ev_ext'));}
 }
 
 function setEvent(msg){const el=document.getElementById('event-log');if(el)el.textContent=msg;}
@@ -631,7 +689,7 @@ function drawCreature(c,p,t){
       // Lepidodendron / Sigillaria — tall unbranched scale-barked trunk with a small spiky crown tuft (Carboniferous giant clubmoss)
       const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
       const depthScale=lerp(0.55,1.25,y0);
-      const lean=Math.sin(t*0.8+p.seed)*0.04*(1+state.surface.windAvg/12);
+      const lean=Math.sin(t*0.8+p.seed)*0.04*clamp(windRatio(),0.3,3.5);
       const h=(9+p.variant*3)*depthScale;
       const topX=x+lean*h;
       mctx.strokeStyle=col;mctx.lineWidth=1.5*depthScale;
@@ -648,7 +706,7 @@ function drawCreature(c,p,t){
       // gymnosperm — conical stacked evergreen silhouette
       const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
       const depthScale=lerp(0.55,1.2,y0);
-      const lean=Math.sin(t*1.1+p.seed)*0.08*(1+state.surface.windAvg/12);
+      const lean=Math.sin(t*1.1+p.seed)*0.08*clamp(windRatio(),0.3,3.5);
       const h=(6+p.variant*2)*depthScale;
       mctx.strokeStyle='#6b4a2b';mctx.lineWidth=0.6*depthScale;
       mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(x+lean*h,ly-h*0.3);mctx.stroke();
@@ -663,7 +721,7 @@ function drawCreature(c,p,t){
       // angiosperm — rounded leafy canopy (green) with small accent flowers, NOT a solid-color tree
       const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
       const depthScale=lerp(0.55,1.2,y0);
-      const lean=Math.sin(t*1.15+p.seed)*0.1*(1+state.surface.windAvg/12);
+      const lean=Math.sin(t*1.15+p.seed)*0.1*clamp(windRatio(),0.3,3.5);
       const h=(4.5+p.variant*1.6)*depthScale;
       mctx.strokeStyle='#6b4a2b';mctx.lineWidth=0.7*depthScale;
       mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(x+lean*h,ly-h);mctx.stroke();
@@ -742,7 +800,7 @@ function drawMacro(t){
 
   if(!skyClouds.length) initMacroParticles();
   // clouds — speed now visibly driven by wind
-  const windFactor=clamp(state.surface.windAvg/9,0.35,4.5);
+  const windFactor=clamp(windRatio(),0.3,6);
   skyClouds.forEach(c=>{
     c.x=(c.x+c.speed*(0.3+h2of)*0.02*windFactor)%1;
     const cx=c.x*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
@@ -753,8 +811,8 @@ function drawMacro(t){
   });
 
   // wind streaks — visible gust lines when wind is strong
-  if(state.surface.windAvg>12){
-    const gustA=clamp((state.surface.windAvg-12)/30,0.15,0.6);
+  if(windRatio()>1.25){
+    const gustA=clamp((windRatio()-1.25)*0.35,0.15,0.6);
     mctx.strokeStyle=`rgba(255,255,255,${gustA})`;mctx.lineWidth=0.5;
     for(let i=0;i<5;i++){
       const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(SKY_BOT-SKY_TOP-16));
@@ -833,7 +891,7 @@ function drawMacro(t){
   mountains.forEach(m=>{
     const tectonic=0.5+0.5*Math.sin(simMya*m.freq+m.phase);
     let h=lerp(m.hMin,m.hMax,tectonic);
-    h*=clamp(1-(state.surface.windAvg-10)/55,0.72,1.15); // wind/rain erosion wears peaks down over time
+    h*=clamp(1-(windRatio()-1)*0.16,0.55,1.3); // wind/rain erosion wears peaks down over time
     h+=Math.min(6,state.surface.magma/12); // active volcanism builds mountains up
     const peakY=m.base-h;
     let mc=biome==='snow'?'#dfeaf2':(biome==='desert'?'#b98f57':'#6e7a72');
@@ -1026,15 +1084,17 @@ function updateUI(){
 
   const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
   const sf2=state.surface;
-  const pressureHpa=Math.round(1013-(state.temp-15)*0.9-(sf2.windAvg-10)*1.3+(sf2.magma>10?-15:0));
-  const isHigh=pressureHpa>=1013;
+  const curClimate=ERA_CLIMATE[ERAS[curEraIdx].id]||ERA_CLIMATE.hadean;
+  const pMid=(curClimate.pressureAtm[0]+curClimate.pressureAtm[1])/2;
+  const isHigh=state.pressureAtm>=pMid;
   const pc=isHigh?'#98fb98':'#ffa07a';
-  const humidity=Math.round(clamp(state.clouds*60+(atmo.H2O||0)*4,0,100));
+  const humidity=Math.round(state.humidityPct);
+  const atmDisplay=state.pressureAtm>=10?Math.round(state.pressureAtm)+' atm':state.pressureAtm.toFixed(2)+' atm';
 
   const airItems=[
     {color:tc,icon:'🌡',lbl:T('temp'),val:Math.round(state.temp)+'°C'},
     {color:'#7ec8e3',icon:'💨',lbl:T('wind'),val:(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+'/'+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+'m/s'},
-    {color:pc,icon:isHigh?'⬆':'⬇',lbl:T('pressure'),val:pressureHpa+'hPa ('+T(isHigh?'high':'low')+')'},
+    {color:pc,icon:isHigh?'⬆':'⬇',lbl:T('pressure'),val:atmDisplay+' ('+T(isHigh?'high':'low')+')'},
     {color:'#87ceeb',icon:'💧',lbl:T('humidity'),val:humidity+'%'}
   ];
   document.getElementById('air-row').innerHTML=airItems.map(x=>
