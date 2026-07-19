@@ -298,8 +298,8 @@ const ERA_CLIMATE={
 };
 
 const ERAS=[
-  {id:'hadean',color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},temp:230,gc:'#8b0000',clouds:0.1,snowball:false},
-  {id:'archean',color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},temp:70,gc:'#2c3e50',clouds:0.3,snowball:false},
+  {id:'hadean',color:'#8b0000',mya:4500,endMya:4000,atmo:{N2:15,CO2:80,H2O:4,H2:0.5,O2:0,CH4:0,Ar:0.5},temp:230,gc:'#8b0000',clouds:0.9,snowball:false},
+  {id:'archean',color:'#6e2c00',mya:4000,endMya:2500,atmo:{N2:70,CO2:15,H2O:10,H2:2,O2:0,CH4:2,Ar:1},temp:70,gc:'#2c3e50',clouds:0.75,snowball:false},
   {id:'proterozoic',color:'#7d6608',mya:2500,endMya:720,atmo:{N2:78,CO2:5,H2O:2,H2:0.2,O2:5,CH4:0.5,Ar:1},temp:30,gc:'#1a5276',clouds:0.4,snowball:false},
   {id:'snowball',color:'#aed6f1',mya:720,endMya:635,atmo:{N2:78,CO2:0.1,H2O:0.5,H2:0,O2:5,CH4:0,Ar:1},temp:-50,gc:'#d6eaf8',clouds:0.8,snowball:true},
   {id:'ediacaran',color:'#1a5276',mya:635,endMya:538,atmo:{N2:78,CO2:1,H2O:2,H2:0,O2:10,CH4:0,Ar:1},temp:20,gc:'#1f618d',clouds:0.5,snowball:false},
@@ -347,6 +347,7 @@ const SKY_TOP=2,SKY_BOT=62,LAND_TOP=62,LAND_BASE=86,SEA_TOP=86,SEA_BOT=114,FLOOR
 let meteorActive=false,meteorX=0,meteorY=0,meteorVY=0;
 let volcanoActive=0,craterMark=0,craterX=MW/2;
 let quakeActive=0,typhoonActive=0;
+let meteorAmbientTimer=8;
 let clockT=0; // real-time seconds accumulator, drives visual-only cycles (day/night, waves, wind)
 
 function lerp(a,b,t){return a+(b-a)*t;}
@@ -429,15 +430,24 @@ function updateSim(ds){
   // ambient ash from high volcanism
   if(state.surface.magma>15) ashLevel=Math.max(ashLevel,Math.min(0.6,state.surface.magma/150));
 
-  // ambient lightning during humid/stormy conditions
+  // ambient lightning during humid/stormy conditions — heavily volcanic eras (Hadean) get frequent storms
   lightningTimer-=ds;
   const h2ofAmb=clamp((state.atmo.H2O||0)/8,0,1);
+  const stormFactor=clamp(h2ofAmb+(state.surface.magma/70),0,1.8);
   if(lightningTimer<=0){
-    lightningTimer=2+Math.random()*6;
-    if(h2ofAmb>0.35 && Math.random()<h2ofAmb) lightningFlash=1;
+    lightningTimer=Math.max(0.5,(2+Math.random()*6)/(1+stormFactor));
+    if(stormFactor>0.3 && Math.random()<stormFactor) lightningFlash=1;
+  }
+
+  // ambient meteor showers — Hadean Earth was under near-constant bombardment
+  meteorAmbientTimer-=ds;
+  if(e.id==='hadean' && !meteorActive && meteorAmbientTimer<=0){
+    meteorAmbientTimer=5+Math.random()*8;
+    meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;
   }
 
   updateMeteor(ds);
+  updateRain(ds);
 
   if(eIdx!==lastEraIdx){
     lastEraIdx=eIdx;
@@ -445,6 +455,35 @@ function updateSim(ds){
     document.getElementById('eon-badge').textContent=(e.name[lang]||e.name.en).toUpperCase()+' — '+(e.mya>=1000?(e.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):e.mya+(lang==='ja'?'百万年前':' MYA'));
     updateTimeline(eIdx);
   }
+}
+
+function initRainDrops(){
+  rainDrops=[];
+  for(let i=0;i<32;i++){
+    rainDrops.push({
+      x:Math.random()*MW,
+      y:SKY_TOP+Math.random()*(LAND_BASE-SKY_TOP),
+      landY:LAND_TOP+Math.random()*(LAND_BASE-LAND_TOP), // lands at a random depth across the whole land, not always the land-sea line
+      speed:26+Math.random()*22,
+      seed:Math.random()*10
+    });
+  }
+}
+function updateRain(ds){
+  if(!rainDrops.length) initRainDrops();
+  const h2ofNow=clamp((state.atmo.H2O||0)/8,0,1);
+  const active = state.temp<2 || h2ofNow>0.45;
+  if(!active) return;
+  const isSnow = state.temp<2;
+  rainDrops.forEach(d=>{
+    d.y+=d.speed*(isSnow?0.35:1)*ds;
+    if(d.y>=d.landY){
+      d.y=SKY_TOP+Math.random()*8;
+      d.x=Math.random()*MW;
+      d.landY=LAND_TOP+Math.random()*(LAND_BASE-LAND_TOP);
+      d.speed=26+Math.random()*22;
+    }
+  });
 }
 
 function updateMeteor(ds){
@@ -533,10 +572,39 @@ let _macroStars=null;
 function initMacroStars(){_macroStars=[];for(let i=0;i<50;i++)_macroStars.push({x:Math.random()*MW,y:SKY_TOP+Math.random()*(SKY_BOT-SKY_TOP-6),r:Math.random()<0.8?1:2,ph:Math.random()*10});}
 
 let skyClouds=[],birds=[],bubbles=[],rainDrops=[];
+const settlements=[];for(let i=0;i<8;i++)settlements.push({bx:(i+0.5)/8+ (Math.random()-0.5)*0.06,by:Math.random(),seed:Math.random()*10});
+function drawSettlement(p,t){
+  const x=p.bx*MW;const ly=LAND_TOP+3+p.by*(LAND_BASE-LAND_TOP-5);
+  mctx.fillStyle='#8a6d4a';mctx.fillRect(x-1.4,ly-1.8,2.8,1.8);
+  mctx.fillStyle='#5c4033';mctx.beginPath();mctx.moveTo(x-1.8,ly-1.8);mctx.lineTo(x,ly-3.4);mctx.lineTo(x+1.8,ly-1.8);mctx.closePath();mctx.fill();
+  if(p.seed%3<1){mctx.fillStyle=`rgba(255,220,120,${0.5+0.5*Math.sin(t*2+p.seed)})`;mctx.fillRect(x-0.3,ly-1.3,0.6,0.6);}
+}
+const marineReptiles=[];for(let i=0;i<3;i++)marineReptiles.push({bx:Math.random(),by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.35+Math.random()*0.35,seed:Math.random()*20});
+const MARINE_REPTILE_ERA={triassic_l:'plesiosaur',jurassic_e:'plesiosaur',jurassic_l:'plesiosaur',cretaceous_e:'plesiosaur',cretaceous_l:'mosasaur'};
+function drawMarineReptile(p,t,style){
+  const x=((p.bx+t*0.012*p.spd*p.dir)%1+1)%1*MW;
+  const y=SEA_TOP+10+p.by*(SEA_BOT-SEA_TOP-18)+Math.sin(t*0.9+p.seed)*2;
+  const dir=p.dir;
+  mctx.fillStyle='rgba(50,70,60,0.85)';
+  if(style==='plesiosaur'){
+    mctx.beginPath();mctx.ellipse(x,y,4,1.6,0,0,Math.PI*2);mctx.fill();
+    const neckLen=5,headX=x-dir*neckLen,headY=y-2.2;
+    mctx.strokeStyle='rgba(50,70,60,0.85)';mctx.lineWidth=1.1;
+    mctx.beginPath();mctx.moveTo(x-dir*2,y-0.6);mctx.quadraticCurveTo(x-dir*3.5,y-2.5,headX,headY);mctx.stroke();
+    mctx.beginPath();mctx.arc(headX-dir*0.8,headY,0.9,0,Math.PI*2);mctx.fill();
+    mctx.fillRect(x-1,y+1.2,1.6,0.8);mctx.fillRect(x+dir*1.5,y+1.2,1.6,0.8);
+  } else {
+    // mosasaur — long sinuous serpentine body
+    mctx.strokeStyle='rgba(45,60,55,0.9)';mctx.lineWidth=2.4;
+    mctx.beginPath();
+    for(let s=-5;s<=5;s++){const sx=x+dir*s*1.4,sy=y+Math.sin(t*2+s*0.6+p.seed)*1.4;if(s===-5)mctx.moveTo(sx,sy);else mctx.lineTo(sx,sy);}
+    mctx.stroke();
+    mctx.fillStyle='rgba(45,60,55,0.9)';mctx.beginPath();mctx.ellipse(x+dir*7,y,1.8,1,0,0,Math.PI*2);mctx.fill();
+  }
+}
 function initMacroParticles(){
   skyClouds=[];for(let i=0;i<9;i++)skyClouds.push({x:Math.random(),y:0.05+Math.random()*0.55,w:8+Math.random()*14,speed:0.004+Math.random()*0.006,alpha:0.35+Math.random()*0.35});
   bubbles=[];for(let i=0;i<5;i++)bubbles.push({x:Math.random(),y:Math.random(),speed:0.15+Math.random()*0.2,seed:Math.random()*10});
-  rainDrops=[];for(let i=0;i<40;i++)rainDrops.push({x:Math.random(),y:Math.random(),seed:Math.random()*10});
 }
 
 // terrain fleck texture (persistent positions, color follows current biome each frame)
@@ -570,7 +638,7 @@ const CREATURES=[
    colorMap:{bird:'#f1c40f',pterosaur:'#8e44ad'},color:'#f1c40f',beh:'fly',sz:1.4},
  {kind:'fungi',layer:'land',keys:['fungi'],max:9,div:12,color:'#f0b27a',beh:'shroom',sz:1,cluster:true},
  {kind:'lichen',layer:'land',keys:['lichen'],max:8,div:2.2,color:'#52be80',beh:'lichenpatch',sz:1,cluster:true},
- {kind:'lycopod',layer:'land',keys:['spore_plant'],max:16,div:4,color:'#1e7d47',beh:'lycopod',sz:1,cluster:true},
+ {kind:'lycopod',layer:'land',keys:['spore_plant'],max:26,div:1.8,color:'#1e7d47',beh:'lycopod',sz:1,cluster:true},
  {kind:'conifer',layer:'land',keys:['gymnosperm'],max:16,div:4.5,color:'#1d6a2f',beh:'conifer',sz:1,cluster:true},
  {kind:'flowering',layer:'land',keys:['angiosperm'],max:16,div:5,color:'#2e8b3d',beh:'flowering',sz:1,cluster:true},
 ];
@@ -586,10 +654,11 @@ CREATURES.forEach(c=>{
     } else {
       bx=Math.random();
     }
-    c.pool.push({bx,by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.5+Math.random()*0.9,seed:Math.random()*20,variant:Math.random()<0.5?0:1});
+    c.pool.push({bx,by:Math.random(),dir:Math.random()<0.5?1:-1,spd:0.5+Math.random()*0.9,seed:Math.random()*20,variant:Math.floor(Math.random()*3)});
   }
 });
 const DINO_ERA_SCALE={jurassic_e:1.3,jurassic_l:1.55,cretaceous_e:1.3,cretaceous_l:1.45};
+const BUG_ERA_SCALE={carboniferous:2.4,permian:1.7};
 
 function drawTri(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x-w/2,y);ctx.lineTo(x+w/2,y);ctx.closePath();ctx.fill();}
 function drawRect(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x-w/2,y-h,w,h);}
@@ -657,7 +726,8 @@ function drawCreature(c,p,t){
       break;}
     case 'walk':{
       const x=((x0+t*0.014*p.spd*p.dir)%1+1)%1*MW;
-      const eraScale=(c.kind==='dino')?(DINO_ERA_SCALE[ERAS[curEraIdx].id]||1):1;
+      const curEraId=ERAS[curEraIdx].id;
+      const eraScale=c.kind==='dino'?(DINO_ERA_SCALE[curEraId]||1):(c.kind==='bug'?(BUG_ERA_SCALE[curEraId]||1):1);
       const sz=(c.sz||1)*lerp(0.6,1.15,y0)*eraScale;
       const ly=LAND_TOP+3+y0*(LAND_BASE-LAND_TOP-5);
       const bob=Math.abs(Math.sin(t*5+p.seed))*0.6;
@@ -700,12 +770,25 @@ function drawCreature(c,p,t){
       mctx.globalAlpha=1;
       break;}
     case 'lycopod':{
-      // Lepidodendron / Sigillaria — tall unbranched scale-barked trunk with a small spiky crown tuft (Carboniferous giant clubmoss)
+      // Lepidodendron / Sigillaria / giant tree-fern — Carboniferous megaflora, 3 distinct silhouettes
       const x=x0*MW;const ly=LAND_TOP+2+y0*(LAND_BASE-LAND_TOP-4);
       const depthScale=lerp(0.55,1.25,y0);
       const lean=Math.sin(t*0.8+p.seed)*0.04*clamp(windRatio(),0.3,3.5);
       const h=(9+p.variant*3)*depthScale;
       const topX=x+lean*h;
+      if(p.variant===2){
+        // giant fern — short trunk, arching fronds radiating from the crown
+        const fh=h*0.55;
+        mctx.strokeStyle=col;mctx.lineWidth=1.3*depthScale;
+        mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(topX,ly-fh);mctx.stroke();
+        for(let a=-3;a<=3;a++){
+          const ang=-Math.PI/2+a*0.28;
+          const fx=topX+Math.cos(ang)*4.2*depthScale,fy=(ly-fh)+Math.sin(ang)*3*depthScale;
+          mctx.strokeStyle=col;mctx.lineWidth=0.6*depthScale;
+          mctx.beginPath();mctx.moveTo(topX,ly-fh);mctx.quadraticCurveTo(topX+Math.cos(ang)*2.2*depthScale,(ly-fh)+Math.sin(ang)*1.2*depthScale,fx,fy);mctx.stroke();
+        }
+        break;
+      }
       mctx.strokeStyle=col;mctx.lineWidth=1.5*depthScale;
       mctx.beginPath();mctx.moveTo(x,ly);mctx.lineTo(topX,ly-h);mctx.stroke();
       // diamond scale-bark texture
@@ -828,7 +911,8 @@ function drawMacro(t){
     if(ci>=visibleCloudCount) return;
     const cx=c.x*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
     mctx.globalAlpha=c.alpha*(0.3+cloudDensity*0.9)*(0.5+0.5*nightFactor);
-    mctx.fillStyle='#f4f7fb';
+    const cloudCol=mixC(hexToRgb('#f4f7fb'),hexToRgb('#2b2622'),Math.min(1,ashLevel*1.4));
+    mctx.fillStyle=rgbToCss(cloudCol);
     mctx.beginPath();mctx.ellipse(cx,cy,c.w*0.5,c.w*0.22,0,0,Math.PI*2);mctx.fill();
     mctx.globalAlpha=1;
   });
@@ -905,13 +989,13 @@ function drawMacro(t){
 
   // ---- LAND ----
   const biome=computeLandBiome();
+  const landPlantSum=clamp(sumBio(['lichen','spore_plant','gymnosperm','angiosperm'])/110,0,1);
   let landCol;
   if(biome==='snow') landCol=mixC(hexToRgb('#eef6fb'),hexToRgb('#c7dde8'),0.3);
   else if(biome==='desert') landCol=mixC(hexToRgb('#d9b877'),hexToRgb('#c99a52'),0.4);
   else if(biome==='barren') landCol=mixC(hexToRgb('#5b4636'),hexToRgb('#3a2c22'),0.4);
   else {
-    const plantSum=clamp(sumBio(['algae','lichen','spore_plant','gymnosperm','angiosperm'])/120,0,1);
-    landCol=mixC(hexToRgb('#8a7a4a'),hexToRgb('#2e7d3e'),plantSum*0.7+o2f*0.3);
+    landCol=mixC(hexToRgb('#8a7a4a'),hexToRgb('#2e7d3e'),landPlantSum);
   }
   landCol=scaleC(landCol,0.5+0.5*nightFactor);
   mctx.fillStyle=rgbToCss(landCol);
@@ -959,7 +1043,7 @@ function drawMacro(t){
     const gustA=clamp((windRatio()-1.25)*0.35,0.15,0.6);
     mctx.strokeStyle=`rgba(255,255,255,${gustA})`;mctx.lineWidth=0.5;
     for(let i=0;i<5;i++){
-      const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(SKY_BOT-SKY_TOP-16));
+      const gy=SKY_TOP+8+((i*13+t*windFactor*30)%(LAND_BASE-SKY_TOP-10));
       const gx=(i*37+t*windFactor*50)%MW;
       mctx.beginPath();mctx.moveTo(gx,gy);mctx.lineTo(gx-6,gy+1.4);mctx.stroke();
     }
@@ -988,7 +1072,7 @@ function drawMacro(t){
     if(biome==='snow') fc='rgba(255,255,255,0.5)';
     else if(biome==='desert') fc=(i%2===0)?'rgba(150,110,50,0.35)':'rgba(230,210,150,0.3)';
     else if(biome==='barren') fc='rgba(20,15,10,0.4)';
-    else fc=(i%3===0)?'rgba(20,60,20,0.4)':'rgba(140,200,110,0.3)';
+    else fc=landPlantSum<0.08?((i%2===0)?'rgba(90,80,65,0.35)':'rgba(150,135,110,0.3)'):((i%3===0)?'rgba(20,60,20,0.4)':'rgba(140,200,110,0.3)');
     mctx.fillStyle=fc;mctx.fillRect(f.x,f.y,1,1);
   });
 
@@ -998,20 +1082,24 @@ function drawMacro(t){
     const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
+  const settleCount=clamp(Math.round((state.bio.human||0)/0.15),0,settlements.length);
+  for(let i=0;i<settleCount;i++) drawSettlement(settlements[i],t);
 
-  // precipitation — each drop has its own persistent x so it rains evenly across the whole land, not a diagonal band
+  // precipitation — positions come from the persistent simulation in updateRain (real falling motion,
+  // landing at varied depths across the whole land rather than always at one line)
   const precip = tempC<2 ? 'snow' : (h2of>0.45 ? 'rain':'none');
   if(precip!=='none'){
-    const intensity=clamp(h2of,0.2,1);
-    const n=Math.round(28*intensity);
-    const spanTop=SKY_TOP+6,spanH=LAND_BASE-spanTop;
-    for(let i=0;i<n;i++){
-      const d=rainDrops[i%rainDrops.length];
-      const speed=(precip==='snow'?16:42)*(0.7+d.seed*0.05);
-      const py=spanTop+((d.seed*23+t*speed)%spanH);
-      const px=precip==='snow'?(d.x*MW+Math.sin(t*0.8+d.seed)*3+MW)%MW:d.x*MW;
-      if(precip==='snow'){mctx.fillStyle='rgba(255,255,255,0.8)';mctx.fillRect(px,py,1,1);}
-      else{mctx.strokeStyle='rgba(180,210,240,0.55)';mctx.lineWidth=0.6;mctx.beginPath();mctx.moveTo(px,py);mctx.lineTo(px-1,py+3);mctx.stroke();}
+    const intensity=clamp(h2of,0.3,1);
+    const activeCount=Math.round(rainDrops.length*intensity);
+    for(let i=0;i<activeCount;i++){
+      const d=rainDrops[i];
+      if(precip==='snow'){
+        const px=(d.x+Math.sin(t*0.8+d.seed)*3+MW)%MW;
+        mctx.fillStyle='rgba(255,255,255,0.8)';mctx.fillRect(px,d.y,1,1);
+      } else {
+        mctx.strokeStyle='rgba(180,210,240,0.55)';mctx.lineWidth=0.6;
+        mctx.beginPath();mctx.moveTo(d.x,d.y);mctx.lineTo(d.x-1,d.y+3);mctx.stroke();
+      }
     }
   }
 
@@ -1068,6 +1156,8 @@ function drawMacro(t){
     const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
+  const mrStyle=MARINE_REPTILE_ERA[ERAS[curEraIdx].id];
+  if(mrStyle){marineReptiles.forEach(p=>drawMarineReptile(p,t,mrStyle));}
 
   // ---- SEAFLOOR ----
   const floorCol=state.surface.magma>10?'#3a1a12':'#0a1f2e';
@@ -1209,7 +1299,7 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-initState(0);initOffset();initMacroStars();initMacroParticles();buildTimeline();
+initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();
 requestAnimationFrame(loop);
 </script>
 </body>
