@@ -16,7 +16,7 @@ html,body{width:100%;height:100%;background:#000;display:flex;align-items:center
 #lang-btn:hover{background:#1a3a5c}
 #eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
 #macro-wrap{position:relative;width:400px;height:365px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
-canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 #progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
 #progress-bar{height:100%;background:#1a5276;width:0%}
@@ -35,6 +35,15 @@ canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:
 #atmo-head{display:flex;align-items:center;gap:8px}
 #planet-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
 canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
+#worldmap-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#04101c;border:1px solid #0d2137;padding:4px}
+canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+#tabbed-panel{flex:1;display:flex;flex-direction:column;min-height:0;padding:5px 10px 0}
+#tab-buttons{display:flex;gap:2px;margin-bottom:4px;flex-shrink:0}
+.tab-btn{flex:1;font-family:'Courier New',monospace;font-size:8px;letter-spacing:1px;padding:4px 2px;background:#071525;color:#4a7c9e;border:1px solid #0d2137;cursor:pointer}
+.tab-btn:hover{background:#0d2137;color:#7ec8e3}
+.tab-btn.active{background:#1a3a5c;color:#ffec27;border-color:#ffec27}
+#tab-content{flex:1;overflow-y:auto;padding-bottom:5px}
+.tab-pane{width:100%}
 .gas-row{display:flex;align-items:center;gap:4px;margin-bottom:2px}
 .gas-label{font-size:8px;color:#7ec8e3;width:118px;white-space:nowrap;overflow:hidden}
 .bar-bg{flex:1;height:5px;background:#071525}
@@ -50,7 +59,6 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
 .ci-label{display:flex;align-items:center;gap:2px}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:9px;font-weight:bold;color:#7ec8e3}
-#bio-section{flex:1;overflow-y:auto;padding:5px 10px}
 .bio-group{margin-bottom:5px}
 .bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:2px;border-bottom:1px solid #0d2137;padding-bottom:1px}
 .bio-row{display:flex;align-items:center;gap:3px;margin-bottom:1px}
@@ -108,28 +116,39 @@ canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
 </div>
 <div id="right">
   <div class="panel">
-    <div class="ptitle" id="lbl-atmo">ATMOSPHERE</div>
+    <div class="ptitle" id="lbl-earthmap">EARTH MAP</div>
     <div id="atmo-head">
       <div id="planet-wrap"><canvas id="planet-icon" width="52" height="52"></canvas></div>
-      <div id="atmo-bars" style="flex:1"></div>
+      <div id="worldmap-wrap"><canvas id="world-map" width="64" height="32"></canvas></div>
     </div>
   </div>
-  <div class="panel">
-    <div class="ptitle" id="lbl-climate">CLIMATE</div>
-    <div style="display:flex;gap:8px">
-      <div class="climate-card">
-        <div class="climate-card-title" id="lbl-air">AIR</div>
-        <div id="air-row"></div>
+  <div class="panel" id="tabbed-panel">
+    <div id="tab-buttons">
+      <button class="tab-btn active" id="tab-btn-climate" onclick="setTab('climate')">CLIMATE</button>
+      <button class="tab-btn" id="tab-btn-bio" onclick="setTab('bio')">BIOSPHERE</button>
+      <button class="tab-btn" id="tab-btn-crust" onclick="setTab('crust')">CRUST</button>
+    </div>
+    <div id="tab-content">
+      <div id="tab-climate" class="tab-pane">
+        <div class="climate-card">
+          <div class="climate-card-title" id="lbl-air">AIR</div>
+          <div id="air-row"></div>
+        </div>
+        <div class="climate-card" style="margin-top:6px">
+          <div class="climate-card-title" id="lbl-atmo">ATMOSPHERE</div>
+          <div id="atmo-bars"></div>
+        </div>
       </div>
-      <div class="climate-card">
-        <div class="climate-card-title" id="lbl-surface">SURFACE</div>
-        <div id="surface-row"></div>
+      <div id="tab-bio" class="tab-pane" style="display:none">
+        <div id="bio-groups"></div>
+      </div>
+      <div id="tab-crust" class="tab-pane" style="display:none">
+        <div class="climate-card">
+          <div class="climate-card-title" id="lbl-surface">SURFACE</div>
+          <div id="surface-row"></div>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="bio-section">
-    <div class="ptitle" id="lbl-bio" style="margin-bottom:4px">BIOSPHERE</div>
-    <div id="bio-groups"></div>
   </div>
   <div id="timeline">
     <div class="tl-inner" id="tl-inner"></div>
@@ -151,10 +170,30 @@ function autoScale(){
 window.addEventListener('resize',autoScale);
 autoScale();
 
+// ---- タブ切り替え ----
+let activeTab='climate';
+function setTab(tab){
+  activeTab=tab;
+  ['climate','bio','crust'].forEach(t=>{
+    const pane=document.getElementById('tab-'+t),btn=document.getElementById('tab-btn-'+t);
+    if(pane)pane.style.display=(t===tab)?'block':'none';
+    if(btn)btn.classList.toggle('active',t===tab);
+  });
+}
+// clicking the macro cross-section jumps to the related tab: sky->climate, land/sea->biosphere, underground->crust
+document.getElementById('macro').addEventListener('click',(ev)=>{
+  const rect=ev.currentTarget.getBoundingClientRect();
+  const relY=(ev.clientY-rect.top)/rect.height;
+  const iy=relY*MH;
+  if(iy<LAND_TOP) setTab('climate');
+  else if(iy<FLOOR_BOT) setTab('bio');
+  else setTab('crust');
+});
+
 // ---- 言語 ----
 const LANG={
-  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',air:'AIR',surface:'SURFACE',climate:'CLIMATE',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES'},
-  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',air:'気象',surface:'地表',climate:'気候',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物'},
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES'},
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物'},
 };
 let lang='en';
 function T(k){return LANG[lang][k]||LANG.en[k]||k;}
@@ -163,11 +202,13 @@ function applyLang(){
   document.getElementById('era-badge').textContent=T('title');
   document.getElementById('lang-btn').textContent=T('langBtn');
   document.getElementById('lbl-speed').textContent=T('speed');
+  document.getElementById('lbl-earthmap').textContent=T('earthmap');
   document.getElementById('lbl-atmo').textContent=T('atmo');
-  document.getElementById('lbl-climate').textContent=T('climate');
   document.getElementById('lbl-air').textContent=T('air');
   document.getElementById('lbl-surface').textContent=T('surface');
-  document.getElementById('lbl-bio').textContent=T('bio');
+  document.getElementById('tab-btn-climate').textContent=T('climate');
+  document.getElementById('tab-btn-bio').textContent=T('bio');
+  document.getElementById('tab-btn-crust').textContent=T('crust');
   ['meteor','volcano','ice','warm','ext','quake','typhoon','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
   buildTimeline();updateTimeline(curEraIdx);
 }
@@ -562,6 +603,56 @@ function drawPlanetIcon(){
   }
   const sg=pictx.createRadialGradient(cx+9,cy+7,r*0.2,cx,cy,r);sg.addColorStop(0,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,0.5)');
   pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=sg;pictx.fill();
+}
+
+// ---- World map: simple bitmap-style continents that drift over deep time (plate tectonics) ----
+const wmv=document.getElementById('world-map'),wmctx=wmv.getContext('2d');
+wmctx.imageSmoothingEnabled=false;
+const WM_W=64,WM_H=32,WM_CENTER={x:32,y:16};
+// scattered "modern-day-like" blob positions; they converge toward the center (Pangaea) near the
+// Permian-Triassic boundary, then drift back apart — a simplified, stylized plate-tectonics cycle
+const worldBlobs=[{sx:12,sy:9},{sx:24,sy:7},{sx:36,sy:15},{sx:50,sy:9},{sx:18,sy:22},{sx:44,sy:23},{sx:56,sy:19}];
+function drawWorldMap(t){
+  wmctx.clearRect(0,0,WM_W,WM_H);
+  const magmaF=clamp((state.surface.magma||0)/55,0,1);
+  const iceR=state.surface.ice/100;
+  let oceanCol=hexToRgb('#1a5276');
+  oceanCol=mixC(oceanCol,hexToRgb('#c0392b'),magmaF);
+  if(state.snowball||iceR>0.6) oceanCol=mixC(oceanCol,hexToRgb('#eaf4fb'),0.85);
+  wmctx.fillStyle=rgbToCss(oceanCol);
+  wmctx.fillRect(0,0,WM_W,WM_H);
+
+  const pangaeaFactor=clamp(1-Math.abs(simMya-252)/900,0,1);
+  const landPct=clamp((state.surface.land||30)/100,0,1);
+  let landCol=hexToRgb('#4a7c3e');
+  if(state.snowball||iceR>0.6) landCol=hexToRgb('#eef6fb');
+  else if(magmaF>0.3) landCol=mixC(hexToRgb('#5b2e1a'),hexToRgb('#c0392b'),magmaF);
+  wmctx.fillStyle=rgbToCss(landCol);
+  worldBlobs.forEach((b,i)=>{
+    const mx=lerp(b.sx,WM_CENTER.x+(i-3)*2.6,pangaeaFactor);
+    const my=lerp(b.sy,WM_CENTER.y+Math.sin(i*2)*3,pangaeaFactor);
+    const r=2.2+landPct*4.2;
+    wmctx.beginPath();wmctx.arc(mx,my,r,0,Math.PI*2);wmctx.fill();
+  });
+
+  // ice caps
+  if(iceR>0.1 && !state.snowball){
+    wmctx.fillStyle=`rgba(240,250,255,${clamp(iceR,0.2,0.9)})`;
+    wmctx.fillRect(0,0,WM_W,2+iceR*3);
+    wmctx.fillRect(0,WM_H-2-iceR*3,WM_W,2+iceR*3);
+  }
+
+  // typhoon swirl overlay
+  if(typeof typhoonActive!=='undefined' && typhoonActive>0.05){
+    const tx=WM_CENTER.x+Math.sin(t*0.3)*10,ty=WM_CENTER.y+Math.cos(t*0.3)*6;
+    wmctx.strokeStyle=`rgba(255,255,255,${Math.min(0.85,typhoonActive)})`;wmctx.lineWidth=1;
+    wmctx.beginPath();wmctx.arc(tx,ty,3+Math.sin(t*3)*0.8,0,Math.PI*1.6);wmctx.stroke();
+  }
+  // lightning flicker in a hyper-volcanic world
+  if(typeof lightningFlash!=='undefined' && lightningFlash>0.5){
+    wmctx.fillStyle=`rgba(255,255,255,${(lightningFlash-0.5)*0.5})`;
+    wmctx.fillRect(0,0,WM_W,WM_H);
+  }
 }
 
 // ---- Macro cross-section pixel view ----
@@ -1295,6 +1386,7 @@ function loop(ts){
   updateSim(ds);
   drawMacro(clockT);
   drawPlanetIcon();
+  drawWorldMap(clockT);
   updateUI();
   requestAnimationFrame(loop);
 }
