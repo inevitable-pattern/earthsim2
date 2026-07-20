@@ -36,6 +36,17 @@ canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:
 #planet-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
 canvas#planet-icon{width:52px;height:52px;border-radius:50%;display:block}
 #worldmap-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#04101c;border:1px solid #0d2137;padding:4px}
+#companion-panel{width:118px;flex-shrink:0;display:flex;flex-direction:column;gap:3px}
+#companion-head{display:flex;justify-content:space-between;align-items:flex-start;gap:2px}
+#companion-avatar-wrap{width:48px;height:48px;background:#04101c;border:1px solid #0d2137;flex-shrink:0}
+#companion-switcher{display:flex;flex-direction:column;gap:2px}
+.char-btn{font-size:9px;line-height:1;background:#071525;border:1px solid #0d2137;color:#4a7c9e;padding:2px 3px;cursor:pointer}
+.char-btn:hover{border-color:#4a7c9e}
+.char-btn.active{border-color:#ffec27;background:#0d2137}
+#companion-name{font-size:7px;color:#4a7c9e;letter-spacing:1px}
+#companion-bubble{position:relative;background:#000;border:1px solid #1a3a5c;padding:5px 6px;min-height:40px;font-family:'Courier New',monospace;font-size:7px;color:#4ecb71;cursor:pointer;line-height:1.5;box-shadow:0 0 6px rgba(78,203,113,0.2) inset;word-break:break-word}
+#companion-cursor{display:inline-block;visibility:hidden;color:#4ecb71;animation:blink-cursor 0.9s steps(1) infinite}
+@keyframes blink-cursor{50%{opacity:0}}
 canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 #tabbed-panel{flex:1;display:flex;flex-direction:column;min-height:0;padding:5px 10px 0}
 #tab-buttons{display:flex;gap:2px;margin-bottom:4px;flex-shrink:0}
@@ -116,16 +127,33 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
 </div>
 <div id="right">
   <div class="panel">
-    <div class="ptitle" id="lbl-earthmap">EARTH MAP</div>
-    <div id="atmo-head">
-      <div id="planet-wrap"><canvas id="planet-icon" width="52" height="52"></canvas></div>
-      <div id="worldmap-wrap"><canvas id="world-map" width="64" height="32"></canvas></div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div class="ptitle" id="lbl-earthmap">EARTH MAP</div>
+        <div id="atmo-head">
+          <div id="planet-wrap"><canvas id="planet-icon" width="52" height="52"></canvas></div>
+          <div id="worldmap-wrap"><canvas id="world-map" width="64" height="32"></canvas></div>
+        </div>
+      </div>
+      <div id="companion-panel">
+        <div id="companion-head">
+          <div id="companion-avatar-wrap"><canvas id="companion-avatar" width="48" height="48"></canvas></div>
+          <div id="companion-switcher">
+            <button class="char-btn active" data-char="ark" onclick="switchCharacter('ark')" title="ARK">🤖</button>
+            <button class="char-btn" data-char="pico" onclick="switchCharacter('pico')" title="PICO">🛸</button>
+            <button class="char-btn" data-char="aiko" onclick="switchCharacter('aiko')" title="AIKO">😴</button>
+          </div>
+        </div>
+        <div id="companion-name"></div>
+        <div id="companion-bubble" onclick="advanceDialogue()"><span id="companion-text"></span><span id="companion-cursor">▾</span></div>
+      </div>
     </div>
   </div>
   <div class="panel" id="tabbed-panel">
     <div id="tab-buttons">
       <button class="tab-btn active" id="tab-btn-climate" onclick="setTab('climate')">CLIMATE</button>
-      <button class="tab-btn" id="tab-btn-bio" onclick="setTab('bio')">BIOSPHERE</button>
+      <button class="tab-btn" id="tab-btn-bio" onclick="setTab('bio')">ORGANISMS</button>
+      <button class="tab-btn" id="tab-btn-ocean" onclick="setTab('ocean')">OCEAN</button>
       <button class="tab-btn" id="tab-btn-crust" onclick="setTab('crust')">CRUST</button>
     </div>
     <div id="tab-content">
@@ -142,18 +170,31 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
       <div id="tab-bio" class="tab-pane" style="display:none">
         <div id="bio-groups"></div>
       </div>
+      <div id="tab-ocean" class="tab-pane" style="display:none">
+        <div class="climate-card">
+          <div class="climate-card-title" id="lbl-ocean-prop">🌊 OCEAN PROPERTIES</div>
+          <div id="ocean-prop-row"></div>
+        </div>
+        <div class="climate-card" style="margin-top:6px">
+          <div class="climate-card-title" id="lbl-ocean-comp">🧪 OCEAN COMPOSITION</div>
+          <div id="ocean-comp-row"></div>
+        </div>
+        <div class="climate-card" style="margin-top:6px">
+          <div class="climate-card-title" id="lbl-ocean-dyn">🌍 OCEAN DYNAMICS</div>
+          <div id="ocean-dyn-row"></div>
+        </div>
+      </div>
       <div id="tab-crust" class="tab-pane" style="display:none">
         <div class="climate-card">
           <div class="climate-card-title" id="lbl-surface">SURFACE</div>
-          <div id="surface-row"></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div id="surface-row" style="flex:1"></div>
+            <canvas id="surface-pie" width="70" height="70" style="flex-shrink:0"></canvas>
+          </div>
         </div>
         <div class="climate-card" style="margin-top:6px">
-          <div class="climate-card-title" id="lbl-magma">MAGMA</div>
-          <div id="magma-row"></div>
-        </div>
-        <div class="climate-card" style="margin-top:6px">
-          <div class="climate-card-title" id="lbl-tectonics">PLATE TECTONICS</div>
-          <div id="tectonics-row"></div>
+          <div class="climate-card-title" id="lbl-crustact">CRUSTAL ACTIVITY</div>
+          <div id="crustact-row"></div>
         </div>
         <div class="climate-card" style="margin-top:6px">
           <div class="climate-card-title" id="lbl-composition">PLANET COMPOSITION</div>
@@ -186,7 +227,7 @@ autoScale();
 let activeTab='climate';
 function setTab(tab){
   activeTab=tab;
-  ['climate','bio','crust'].forEach(t=>{
+  ['climate','bio','ocean','crust'].forEach(t=>{
     const pane=document.getElementById('tab-'+t),btn=document.getElementById('tab-btn-'+t);
     if(pane)pane.style.display=(t===tab)?'block':'none';
     if(btn)btn.classList.toggle('active',t===tab);
@@ -202,18 +243,136 @@ document.getElementById('macro').addEventListener('click',(ev)=>{
   else setTab('crust');
 });
 
+// ---- コンパニオン（ARK / PICO / AIKO） ----
+const COMPANIONS={
+  ark:{name:'ARK',color:'#4ecb71',lines:{
+    en:['HELLO!','WELCOME BACK.','I AM ARK.','I WATCH THIS PLANET WITH YOU.','TIP: CLICK THE SKY, LAND, OR CORE ON THE LEFT TO JUMP TABS.','YOU CAN JUMP ERAS FROM THE TIMELINE BELOW.','TRY THE EVENT BUTTONS. SEE WHAT HAPPENS.','THE CRUST TAB SHOWS PLATE ACTIVITY PER ERA.'],
+    ja:['HELLO!','おかえり。','僕はARK。','この星を君と一緒に見てる。','ヒント：左の空・陸・地下をクリックするとタブが切り替わるよ。','下のタイムラインから時代へジャンプできる。','イベントボタンも試してみて。','CRUSTタブでは時代ごとのプレート活動が見れる。']},
+    draw:(ctx,cx,cy,t)=>{
+      ctx.fillStyle='#3a4a5a';ctx.fillRect(cx-12,cy-12,24,22);
+      ctx.strokeStyle='#3a4a5a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy-12);ctx.lineTo(cx,cy-17);ctx.stroke();
+      ctx.fillStyle='#e74c3c';ctx.beginPath();ctx.arc(cx,cy-18,2,0,Math.PI*2);ctx.fill();
+      const blink=Math.sin(t*2)>0.96;
+      ctx.fillStyle=blink?'#1a232c':'#4ecb71';
+      ctx.fillRect(cx-8,cy-6,5,4);ctx.fillRect(cx+3,cy-6,5,4);
+      ctx.fillStyle='#7ec8e3';ctx.fillRect(cx-2,cy+4,4,2);
+    }},
+  pico:{name:'PICO',color:'#f7dc6f',lines:{
+    en:['HELLO!','WELCOME BACK.','PICO HERE. BEEP.','SMALL BUT USEFUL.','TIP: WATCH THE MAGMA LEVEL IN THE CRUST TAB.','WEATHER CHANGES MOMENT TO MOMENT. LOOK CLOSELY.','THE OCEAN TAB HAS ITS OWN DYNAMICS TO EXPLORE.'],
+    ja:['HELLO!','おかえり。','PICOだよ。ピッ。','小さいけど役に立つ。','ヒント：CRUSTタブでマグマの活動レベルが見られるよ。','天気は刻一刻と変わってる。よく見てみて。','OCEANタブにも独自のデータがあるよ。']},
+    draw:(ctx,cx,cy,t)=>{
+      ctx.fillStyle='#e6c65c';ctx.beginPath();ctx.ellipse(cx,cy,14,12,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e67e22';ctx.beginPath();ctx.arc(cx,cy-14,1.6,0,Math.PI*2);ctx.fill();
+      const blink=Math.sin(t*2.4)>0.96;
+      ctx.fillStyle=blink?'#c9a227':'#2c2c2c';
+      ctx.beginPath();ctx.arc(cx-5,cy-1,2,0,Math.PI*2);ctx.arc(cx+5,cy-1,2,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#c9a227';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy+4,4,0,Math.PI);ctx.stroke();
+    }},
+  aiko:{name:'AIKO',color:'#ec407a',lines:{
+    en:['... zzz ...','(AIKO is asleep.)','... zzz ...','(She dreams of ancient oceans.)','... zzz ...','(Maybe she will wake up someday.)'],
+    ja:['……すぴー……','（AIKOは眠っている）','……すぴー……','（太古の海の夢を見ているみたい）','……すぴー……','（いつか目を覚ますのかもしれない）']},
+    draw:(ctx,cx,cy,t)=>{
+      ctx.fillStyle='#ffe0bd';ctx.beginPath();ctx.ellipse(cx,cy,11,13,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#6b4226';ctx.beginPath();ctx.ellipse(cx,cy-9,12,8,0,Math.PI,0);ctx.fill();
+      ctx.fillStyle='#6b4226';ctx.beginPath();ctx.ellipse(cx-11,cy,3,7,0,0,Math.PI*2);ctx.ellipse(cx+11,cy,3,7,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#4a3018';ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(cx-6,cy-2);ctx.lineTo(cx-2,cy-2);ctx.moveTo(cx+2,cy-2);ctx.lineTo(cx+6,cy-2);ctx.stroke();
+      ctx.strokeStyle='#c96b6b';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy+5,2.4,0,Math.PI);ctx.stroke();
+      const zBob=Math.sin(t*1.2)*2;
+      ctx.fillStyle='rgba(126,200,227,0.85)';ctx.font='7px monospace';
+      ctx.fillText('z',cx+13,cy-15+zBob);
+      ctx.font='5px monospace';ctx.fillText('z',cx+17,cy-19+zBob*0.7);
+    }},
+};
+let currentChar='ark',dialogueIndex=0;
+let typingState={text:'',target:'',charIndex:0,done:true};
+let typeTimer=0;
+const cav=document.getElementById('companion-avatar'),cactx=cav.getContext('2d');
+const spv=document.getElementById('surface-pie'),spctx=spv.getContext('2d');
+function drawSurfacePie(items){
+  const s=70,cx=35,cy=35,r=30;
+  spctx.clearRect(0,0,s,s);
+  const total=items.reduce((a,x)=>a+Math.max(0,x.v),0)||1;
+  let ang=-Math.PI/2;
+  items.forEach(x=>{
+    if(x.v<=0.05)return;
+    const slice=(x.v/total)*Math.PI*2;
+    spctx.beginPath();spctx.moveTo(cx,cy);spctx.arc(cx,cy,r,ang,ang+slice);spctx.closePath();
+    spctx.fillStyle=x.color;spctx.fill();
+    const midAng=ang+slice/2,labelR=r*0.65;
+    if(slice>0.35){
+      spctx.fillStyle='#04101c';
+      spctx.font='8px monospace';spctx.textAlign='center';spctx.textBaseline='middle';
+      spctx.fillText(Math.round(x.v)+'%',cx+Math.cos(midAng)*labelR,cy+Math.sin(midAng)*labelR);
+    }
+    ang+=slice;
+  });
+  spctx.beginPath();spctx.arc(cx,cy,r,0,Math.PI*2);spctx.strokeStyle='#0d2137';spctx.lineWidth=1.5;spctx.stroke();
+}
+function startTyping(text){
+  typingState={text:'',target:text,charIndex:0,done:false};
+  typeTimer=0;
+  const te=document.getElementById('companion-text');if(te)te.textContent='';
+  const cu=document.getElementById('companion-cursor');if(cu)cu.style.visibility='hidden';
+}
+function typewriterTick(ds){
+  if(typingState.done)return;
+  typeTimer+=ds;
+  const interval=0.045;
+  while(typeTimer>=interval && typingState.charIndex<typingState.target.length){
+    typeTimer-=interval;typingState.charIndex++;
+  }
+  typingState.text=typingState.target.slice(0,typingState.charIndex);
+  const te=document.getElementById('companion-text');if(te)te.textContent=typingState.text;
+  if(typingState.charIndex>=typingState.target.length){
+    typingState.done=true;
+    const cu=document.getElementById('companion-cursor');if(cu)cu.style.visibility='visible';
+  }
+}
+function advanceDialogue(){
+  if(!typingState.done){
+    typingState.charIndex=typingState.target.length;
+    typingState.text=typingState.target;typingState.done=true;
+    const te=document.getElementById('companion-text');if(te)te.textContent=typingState.text;
+    const cu=document.getElementById('companion-cursor');if(cu)cu.style.visibility='visible';
+    return;
+  }
+  const lines=COMPANIONS[currentChar].lines[lang];
+  dialogueIndex=(dialogueIndex+1)%lines.length;
+  startTyping(lines[dialogueIndex]);
+}
+function switchCharacter(name){
+  if(!COMPANIONS[name])return;
+  currentChar=name;dialogueIndex=0;
+  startTyping(COMPANIONS[name].lines[lang][0]);
+  const nameEl=document.getElementById('companion-name');if(nameEl)nameEl.textContent=COMPANIONS[name].name;
+  document.querySelectorAll('.char-btn').forEach(b=>b.classList.toggle('active',b.dataset.char===name));
+}
+function drawCompanionAvatar(t){
+  cactx.clearRect(0,0,48,48);
+  COMPANIONS[currentChar].draw(cactx,24,27,t);
+}
+
 // ---- 言語 ----
 const LANG={
-  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'BIOSPHERE',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',
-   magma_card:'MAGMA',tectonics:'PLATE TECTONICS',composition:'PLANET COMPOSITION',
-   plate_activity:'🌍 Plate Activity',volcanic_activity:'🌋 Volcanic Activity',mountain_building:'⛰ Mountain Building',seafloor_spreading:'🌊 Seafloor Spreading',subduction:'♻ Subduction',continental_drift:'🪨 Continental Drift',
-   magma_level:'Activity level',magma_extreme:'EXTREME',magma_high:'HIGH',magma_moderate:'MODERATE',magma_low:'LOW',magma_dormant:'DORMANT',
-   c_water:'💧 Water',c_silicates:'🪨 Silicates',c_iron:'🧲 Iron',c_nickel:'⚙ Nickel',c_mg:'⛰ Mg Minerals',c_volatiles:'🌫 Volatiles',c_carbon:'🌑 Carbon',c_nitrogen:'💨 Nitrogen',c_sulfur:'🟡 Sulfur'},
-  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物圏',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',
-   magma_card:'マグマ',tectonics:'プレートテクトニクス',composition:'惑星組成',
-   plate_activity:'🌍 プレート活動',volcanic_activity:'🌋 火山活動',mountain_building:'⛰ 山脈形成',seafloor_spreading:'🌊 海底拡大',subduction:'♻ 沈み込み',continental_drift:'🪨 大陸移動',
-   magma_level:'活動レベル',magma_extreme:'極めて活発',magma_high:'活発',magma_moderate:'中程度',magma_low:'低調',magma_dormant:'休止',
-   c_water:'💧 水',c_silicates:'🪨 ケイ酸塩',c_iron:'🧲 鉄',c_nickel:'⚙ ニッケル',c_mg:'⛰ マグネシウム鉱物',c_volatiles:'🌫 揮発性成分',c_carbon:'🌑 炭素',c_nitrogen:'💨 窒素',c_sulfur:'🟡 硫黄'},
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'ORGANISMS',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',
+   crustact:'CRUSTAL ACTIVITY',composition:'PLANET COMPOSITION',
+   plate_activity:'🌍 Plate Activity',volcanic_activity:'🌋 Volcanic Activity',mountain_building:'⛰ Mountain Building',seafloor_spreading:'🌊 Seafloor Spreading',subduction:'♻ Subduction',continental_drift:'🪨 Continental Drift',magma_level:'🌋 Magma Activity',subsurface_bio:'🦠 Subsurface Biosphere',
+   tier1:'Low',tier2:'Moderate',tier3:'Active',tier4:'Very Active',tier5:'Extreme',
+   c_water:'💧 Water',c_silicates:'🪨 Silicates',c_iron:'🧲 Iron',c_nickel:'⚙ Nickel',c_mg:'⛰ Mg Minerals',c_volatiles:'🌫 Volatiles',c_carbon:'🌑 Carbon',c_nitrogen:'💨 Nitrogen',c_sulfur:'🟡 Sulfur',
+   ocean_tab:'OCEAN',ocean_prop:'🌊 OCEAN PROPERTIES',ocean_comp:'🧪 OCEAN COMPOSITION',ocean_dyn:'🌍 OCEAN DYNAMICS',
+   oc_coverage:'🌊 Ocean Coverage',oc_sealevel:'📏 Sea Level',oc_volume:'🧊 Ocean Volume',oc_depth:'📉 Average Depth',oc_seatemp:'🌡 Average Temperature',
+   oc_water:'💧 Water',oc_salt:'🧂 Salt (Salinity)',oc_o2:'🫧 Dissolved Oxygen',oc_carbon:'⚫ Carbon',oc_nitrogen:'💨 Nitrogen',oc_sulfur:'🟡 Sulfur',oc_minerals:'🪨 Minerals',
+   oc_current:'🌊 Ocean Current',oc_upwelling:'⬆ Upwelling',oc_mixing:'🔃 Vertical Mixing',oc_tide:'🌙 Tide',oc_wave:'🌊 Wave Activity'},
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',
+   crustact:'地殻活動',composition:'惑星組成',
+   plate_activity:'🌍 プレート活動',volcanic_activity:'🌋 火山活動',mountain_building:'⛰ 山脈形成',seafloor_spreading:'🌊 海底拡大',subduction:'♻ 沈み込み',continental_drift:'🪨 大陸移動',magma_level:'🌋 マグマ活動',subsurface_bio:'🦠 地下生物圏',
+   tier1:'低調',tier2:'中程度',tier3:'活発',tier4:'非常に活発',tier5:'極めて活発',
+   c_water:'💧 水',c_silicates:'🪨 ケイ酸塩',c_iron:'🧲 鉄',c_nickel:'⚙ ニッケル',c_mg:'⛰ マグネシウム鉱物',c_volatiles:'🌫 揮発性成分',c_carbon:'🌑 炭素',c_nitrogen:'💨 窒素',c_sulfur:'🟡 硫黄',
+   ocean_tab:'海洋',ocean_prop:'🌊 海洋特性',ocean_comp:'🧪 海水組成',ocean_dyn:'🌍 海洋ダイナミクス',
+   oc_coverage:'🌊 海洋面積',oc_sealevel:'📏 海面高度',oc_volume:'🧊 海水量',oc_depth:'📉 平均水深',oc_seatemp:'🌡 平均海水温',
+   oc_water:'💧 水',oc_salt:'🧂 塩分',oc_o2:'🫧 溶存酸素',oc_carbon:'⚫ 炭素',oc_nitrogen:'💨 窒素',oc_sulfur:'🟡 硫黄',oc_minerals:'🪨 鉱物',
+   oc_current:'🌊 海流',oc_upwelling:'⬆ 湧昇流',oc_mixing:'🔃 鉛直循環',oc_tide:'🌙 潮汐',oc_wave:'🌊 波浪'},
 };
 let lang='en';
 function T(k){return LANG[lang][k]||LANG.en[k]||k;}
@@ -226,42 +385,26 @@ function applyLang(){
   document.getElementById('lbl-atmo').textContent=T('atmo');
   document.getElementById('lbl-air').textContent=T('air');
   document.getElementById('lbl-surface').textContent=T('surface');
-  document.getElementById('lbl-magma').textContent=T('magma_card');
-  document.getElementById('lbl-tectonics').textContent=T('tectonics');
+  document.getElementById('lbl-crustact').textContent=T('crustact');
   document.getElementById('lbl-composition').textContent=T('composition');
+  document.getElementById('lbl-ocean-prop').textContent=T('ocean_prop');
+  document.getElementById('lbl-ocean-comp').textContent=T('ocean_comp');
+  document.getElementById('lbl-ocean-dyn').textContent=T('ocean_dyn');
   renderComposition();
   document.getElementById('tab-btn-climate').textContent=T('climate');
   document.getElementById('tab-btn-bio').textContent=T('bio');
+  document.getElementById('tab-btn-ocean').textContent=T('ocean_tab');
   document.getElementById('tab-btn-crust').textContent=T('crust');
   ['meteor','volcano','ice','warm','ext','quake','typhoon','reset'].forEach(k=>{const b=document.getElementById('btn-'+k);if(b)b.textContent=T('btn_'+k);});
+  if(typeof COMPANIONS!=='undefined'){
+    document.getElementById('companion-name').textContent=COMPANIONS[currentChar].name;
+    startTyping(COMPANIONS[currentChar].lines[lang][Math.min(dialogueIndex,COMPANIONS[currentChar].lines[lang].length-1)]);
+  }
   buildTimeline();updateTimeline(curEraIdx);
 }
 
 // ---- 生物グループ ----
 const BIO_GROUPS_DEF=[
-  {gkey:'microbe',members:[
-    {key:'archaea',en:'Archaea',ja:'古細菌',color:'#9b59b6',icon:'🔬'},
-    {key:'bacteria',en:'Bacteria',ja:'バクテリア',color:'#7fb3d3',icon:'🦠'},
-    {key:'cyanobact',en:'Cyanobacteria',ja:'シアノバクテリア',color:'#1abc9c',icon:'💧'},
-    {key:'plankton',en:'Plankton',ja:'プランクトン',color:'#5dade2',icon:'🌀'},
-  ]},
-  {gkey:'plant',members:[
-    {key:'algae',en:'Algae',ja:'藻類',color:'#82e0aa',icon:'🌊'},
-    {key:'lichen',en:'Lichen/Moss',ja:'地衣・コケ',color:'#2ecc71',icon:'🌱'},
-    {key:'spore_plant',en:'Spore plants',ja:'シダ植物',color:'#27ae60',icon:'🌿'},
-    {key:'gymnosperm',en:'Gymnosperms',ja:'裸子植物',color:'#1d6a2f',icon:'🌲'},
-    {key:'angiosperm',en:'Angiosperms',ja:'被子植物',color:'#e74c3c',icon:'🌸'},
-    {key:'fungi',en:'Fungi',ja:'菌類',color:'#f0b27a',icon:'🍄'},
-  ]},
-  {gkey:'invert',members:[
-    {key:'jellyfish',en:'Jellyfish/Worm',ja:'クラゲ・ワーム',color:'#f8c8d4',icon:'🪼'},
-    {key:'trilobite',en:'Trilobites',ja:'三葉虫',color:'#a04000',icon:'🦂'},
-    {key:'mollusk',en:'Mollusks/Clams',ja:'軟体・貝類',color:'#8e6c88',icon:'🐚'},
-    {key:'crustacean',en:'Crustaceans',ja:'甲殻類',color:'#e67e22',icon:'🦀'},
-    {key:'insect',en:'Insects',ja:'昆虫類',color:'#f7dc6f',icon:'🦟'},
-    {key:'arachnid',en:'Arachnids',ja:'クモ形類',color:'#922b21',icon:'🕷'},
-    {key:'echinoderm',en:'Echinoderms',ja:'棘皮動物',color:'#d98880',icon:'⭐'},
-  ]},
   {gkey:'vert',members:[
     {key:'jawless_fish',en:'Jawless Fish',ja:'無顎魚類',color:'#aed6f1',icon:'🐡'},
     {key:'jawed_fish',en:'Jawed Fish',ja:'有顎魚類',color:'#5dade2',icon:'🐟'},
@@ -275,6 +418,29 @@ const BIO_GROUPS_DEF=[
     {key:'mammal',en:'Mammals',ja:'哺乳類',color:'#ec407a',icon:'🐾'},
     {key:'primate',en:'Primates',ja:'霊長類',color:'#ff8a65',icon:'🐒'},
     {key:'human',en:'Humans',ja:'人類',color:'#fff176',icon:'👤'},
+  ]},
+  {gkey:'invert',members:[
+    {key:'jellyfish',en:'Jellyfish/Worm',ja:'クラゲ・ワーム',color:'#f8c8d4',icon:'🪼'},
+    {key:'trilobite',en:'Trilobites',ja:'三葉虫',color:'#a04000',icon:'🦂'},
+    {key:'mollusk',en:'Mollusks/Clams',ja:'軟体・貝類',color:'#8e6c88',icon:'🐚'},
+    {key:'crustacean',en:'Crustaceans',ja:'甲殻類',color:'#e67e22',icon:'🦀'},
+    {key:'insect',en:'Insects',ja:'昆虫類',color:'#f7dc6f',icon:'🦟'},
+    {key:'arachnid',en:'Arachnids',ja:'クモ形類',color:'#922b21',icon:'🕷'},
+    {key:'echinoderm',en:'Echinoderms',ja:'棘皮動物',color:'#d98880',icon:'⭐'},
+  ]},
+  {gkey:'plant',members:[
+    {key:'algae',en:'Algae',ja:'藻類',color:'#82e0aa',icon:'🌊'},
+    {key:'lichen',en:'Lichen/Moss',ja:'地衣・コケ',color:'#2ecc71',icon:'🌱'},
+    {key:'spore_plant',en:'Spore plants',ja:'シダ植物',color:'#27ae60',icon:'🌿'},
+    {key:'gymnosperm',en:'Gymnosperms',ja:'裸子植物',color:'#1d6a2f',icon:'🌲'},
+    {key:'angiosperm',en:'Angiosperms',ja:'被子植物',color:'#e74c3c',icon:'🌸'},
+    {key:'fungi',en:'Fungi',ja:'菌類',color:'#f0b27a',icon:'🍄'},
+  ]},
+  {gkey:'microbe',members:[
+    {key:'archaea',en:'Archaea',ja:'古細菌',color:'#9b59b6',icon:'🔬'},
+    {key:'bacteria',en:'Bacteria',ja:'バクテリア',color:'#7fb3d3',icon:'🦠'},
+    {key:'cyanobact',en:'Cyanobacteria',ja:'シアノバクテリア',color:'#1abc9c',icon:'💧'},
+    {key:'plankton',en:'Plankton',ja:'プランクトン',color:'#5dade2',icon:'🌀'},
   ]},
 ];
 const ALL_BIO=[];BIO_GROUPS_DEF.forEach(g=>g.members.forEach(m=>ALL_BIO.push(m)));
@@ -428,20 +594,20 @@ ERAS.forEach(e=>{
 });
 
 const COMPOSITION=[
-  {key:'c_water',pct:'<0.1%',color:'#5dade2'},
-  {key:'c_silicates',pct:'~45%',color:'#a9cce3'},
-  {key:'c_iron',pct:'~32%',color:'#e59866'},
-  {key:'c_nickel',pct:'~2%',color:'#bdc3c7'},
-  {key:'c_mg',pct:'~15%',color:'#82e0aa'},
-  {key:'c_volatiles',pct:'~2%',color:'#d2b4de'},
-  {key:'c_carbon',pct:'~0.1%',color:'#95a5a6'},
-  {key:'c_nitrogen',pct:'<0.01%',color:'#aed6f1'},
-  {key:'c_sulfur',pct:'~2.9%',color:'#f7dc6f'},
+  {key:'c_water',pct:'0.1%',color:'#5dade2'},
+  {key:'c_silicates',pct:'45%',color:'#a9cce3'},
+  {key:'c_iron',pct:'32%',color:'#e59866'},
+  {key:'c_nickel',pct:'2%',color:'#bdc3c7'},
+  {key:'c_mg',pct:'15%',color:'#82e0aa'},
+  {key:'c_volatiles',pct:'2%',color:'#d2b4de'},
+  {key:'c_carbon',pct:'0.1%',color:'#95a5a6'},
+  {key:'c_nitrogen',pct:'0.01%',color:'#aed6f1'},
+  {key:'c_sulfur',pct:'2.9%',color:'#f7dc6f'},
 ];
 function renderComposition(){
   const note=lang==='ja'
-    ?'※惑星全体のおおよその概算組成（設計上の目安値）。水は質量比では微量だが地表・生命への影響が大きいため掲載。'
-    :'Approximate whole-planet composition (illustrative estimate). Water is a tiny mass fraction but shown for its outsized surface/life impact.';
+    ?'惑星全体のおおよその概算組成。水は質量比では微量だが、地表と生命への影響が大きいため掲載している。'
+    :'Approximate whole-planet composition. Water is a tiny mass fraction, but is included for its outsized impact on the surface and on life.';
   document.getElementById('composition-row').innerHTML=COMPOSITION.map(x=>
     `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.pct}</span></div>`).join('')
     +`<div style="font-size:6px;color:#2a4a6a;margin-top:3px;line-height:1.3">${note}</div>`;
@@ -659,27 +825,21 @@ function darken(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgb(${Ma
 
 // ---- Planet icon (small, next to ATMOSPHERE title) ----
 const picv=document.getElementById('planet-icon'),pictx=picv.getContext('2d');
-function drawPlanetIcon(){
+function drawPlanetIcon(t){
   const s=52,cx=26,cy=26,r=24;
   pictx.clearRect(0,0,s,s);
-  const o2f=clamp((state.atmo.O2||0)/25,0,1),co2f=clamp((state.atmo.CO2||0)/20,0,1);
-  const grad=pictx.createRadialGradient(cx-8,cy-8,3,cx,cy,r);
-  let base=state.gc||'#1a5276';
-  if(state.snowball){grad.addColorStop(0,'#eaf4fd');grad.addColorStop(0.5,'#aed6f1');grad.addColorStop(1,'#5dade2');}
-  else{grad.addColorStop(0,lighten(base,45));grad.addColorStop(0.6,base);grad.addColorStop(1,darken(base,40));}
-  pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=grad;pictx.fill();
-  // co2/o2 halo tint
-  const ag=pictx.createRadialGradient(cx,cy,r-3,cx,cy,r+5);
-  ag.addColorStop(0,`rgba(${Math.round(80+co2f*160)},${Math.round(140+o2f*90)},${Math.round(210-co2f*90)},0.6)`);ag.addColorStop(1,'rgba(0,0,0,0)');
-  pictx.beginPath();pictx.arc(cx,cy,r+5,0,Math.PI*2);pictx.fillStyle=ag;pictx.fill();
-  if(state.surface.ice>1){
-    pictx.save();pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.clip();
-    const ih=state.surface.ice/100*r*1.9;
-    pictx.fillStyle=`rgba(220,240,255,${0.6+state.surface.ice/100*0.3})`;
-    pictx.beginPath();pictx.ellipse(cx,cy-r+ih/2,r*0.6*state.surface.ice/100+4,ih/2,0,0,Math.PI*2);pictx.fill();
-    pictx.beginPath();pictx.ellipse(cx,cy+r-ih/2,r*0.6*state.surface.ice/100+4,ih/2,0,0,Math.PI*2);pictx.fill();
-    pictx.restore();
-  }
+  pictx.save();
+  pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.clip();
+  pictx.imageSmoothingEnabled=false;
+  const scale=(r*2)/WM_H;
+  const drawW=WM_W*scale;
+  const scrollPx=((t*1.1)%WM_W+WM_W)%WM_W;
+  pictx.drawImage(wmv,cx-r-scrollPx*scale,cy-r,drawW,r*2);
+  pictx.drawImage(wmv,cx-r-scrollPx*scale+drawW,cy-r,drawW,r*2);
+  pictx.restore();
+  const sg1=pictx.createRadialGradient(cx-8,cy-8,2,cx,cy,r);
+  sg1.addColorStop(0,'rgba(255,255,255,0.3)');sg1.addColorStop(0.6,'rgba(255,255,255,0)');sg1.addColorStop(1,'rgba(0,0,0,0.3)');
+  pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=sg1;pictx.fill();
   const sg=pictx.createRadialGradient(cx+9,cy+7,r*0.2,cx,cy,r);sg.addColorStop(0,'rgba(0,0,0,0)');sg.addColorStop(1,'rgba(0,0,0,0.5)');
   pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.fillStyle=sg;pictx.fill();
 }
@@ -700,7 +860,10 @@ const worldBlobs=[{sx:12,sy:9},{sx:24,sy:7},{sx:36,sy:15},{sx:50,sy:9},{sx:18,sy
   return b;
 });
 const wmIslands=[];for(let i=0;i<10;i++)wmIslands.push({x:Math.random()*WM_W,y:Math.random()*WM_H,seed:Math.random()*10});
-const wmClouds=[];for(let i=0;i<7;i++)wmClouds.push({x:Math.random(),y:Math.random()*WM_H,w:4+Math.random()*5,seed:Math.random()*10});
+const wmClouds=[];for(let i=0;i<14;i++)wmClouds.push({
+  x:Math.random(),y:2+Math.random()*(WM_H-4),seed:Math.random()*10,
+  parts:[{dx:-2,dy:0,r:1.6,ph:Math.random()*6},{dx:0.5,dy:-0.6,r:1.3,ph:Math.random()*6},{dx:2,dy:0.4,r:1.4,ph:Math.random()*6}]
+});
 
 function drawWorldMap(t){
   wmctx.clearRect(0,0,WM_W,WM_H);
@@ -726,16 +889,17 @@ function drawWorldMap(t){
   wmctx.fillStyle=rgbToCss(landCol);
 
   const pangaeaFactor=clamp(1-Math.abs(simMya-252)/900,0,1);
-  const landPct=clamp((state.surface.land||30)/100,0,1);
+  // blob radius sized so total land area actually approximates surface.land% of the map
+  const landPct=clamp((state.surface.land||30)/100,0.02,1);
+  const blobR=clamp(Math.sqrt(landPct*(WM_W*WM_H)/(worldBlobs.length*Math.PI))*1.15,2,13);
   const blobCenters=[];
   worldBlobs.forEach((b,i)=>{
     const mx=lerp(b.sx,WM_CENTER.x+(i-3)*2.6,pangaeaFactor);
     const my=lerp(b.sy,WM_CENTER.y+Math.sin(i*2)*3,pangaeaFactor);
-    const r=2.2+landPct*4.2;
     // organic cluster of offset circles instead of one perfect circle
-    wmctx.beginPath();wmctx.arc(mx,my,r,0,Math.PI*2);wmctx.fill();
-    b.parts.forEach(p=>{wmctx.beginPath();wmctx.arc(mx+p.dx,my+p.dy,r*p.rf,0,Math.PI*2);wmctx.fill();});
-    blobCenters.push({mx,my,r});
+    wmctx.beginPath();wmctx.arc(mx,my,blobR,0,Math.PI*2);wmctx.fill();
+    b.parts.forEach(p=>{wmctx.beginPath();wmctx.arc(mx+p.dx*(blobR/4),my+p.dy*(blobR/4),blobR*p.rf,0,Math.PI*2);wmctx.fill();});
+    blobCenters.push({mx,my,r:blobR});
   });
 
   // islands / island arcs — more numerous when seafloor spreading is highly active (new volcanic crust)
@@ -748,21 +912,28 @@ function drawWorldMap(t){
     wmctx.beginPath();wmctx.arc(ix,iy,0.8,0,Math.PI*2);wmctx.fill();
   }
 
-  // ice caps
-  if(iceR>0.1 && !state.snowball){
-    wmctx.fillStyle=`rgba(240,250,255,${clamp(iceR,0.2,0.9)})`;
-    wmctx.fillRect(0,0,WM_W,2+iceR*3);
-    wmctx.fillRect(0,WM_H-2-iceR*3,WM_W,2+iceR*3);
+  // polar ice — always a thin band at the poles regardless of ice% (map-projection convention: high
+  // latitudes read as ice-white at a glance), growing thicker as global ice% rises
+  if(!state.snowball){
+    const iceBand=1.5+iceR*4.5;
+    wmctx.fillStyle=`rgba(240,250,255,${clamp(0.55+iceR*0.35,0.55,0.92)})`;
+    wmctx.fillRect(0,0,WM_W,iceBand);
+    wmctx.fillRect(0,WM_H-iceBand,WM_W,iceBand);
   }
 
-  // cloud overlay — same humidity/wind driving the cross-section's clouds
+  // cloud overlay — same humidity/wind driving the cross-section's clouds, but far slower (global
+  // scale) and built from small overlapping puffs that slowly reshape, like a real weather map
   const cloudDensityWM=clamp(state.clouds*0.4+(state.humidityPct/100)*0.85,0,1.3);
   const windFactorWM=clamp(windRatio(),0.3,6);
   wmClouds.forEach(c=>{
-    c.x=(c.x+0.0025*windFactorWM)%1;
-    wmctx.globalAlpha=clamp(cloudDensityWM*0.5,0,0.65);
-    wmctx.fillStyle=magmaF>0.4?'rgba(60,55,50,0.7)':'rgba(240,244,248,0.8)';
-    wmctx.beginPath();wmctx.ellipse(c.x*WM_W,c.y,c.w,c.w*0.4,0,0,Math.PI*2);wmctx.fill();
+    c.x=(c.x+0.00028*windFactorWM)%1;
+    wmctx.globalAlpha=clamp(cloudDensityWM*0.55,0,0.7);
+    wmctx.fillStyle=magmaF>0.4?'rgba(60,55,50,0.7)':'rgba(240,244,248,0.85)';
+    const cx=c.x*WM_W,cy=c.y;
+    c.parts.forEach(p=>{
+      const rr=p.r*(0.8+0.25*Math.sin(t*0.6+p.ph));
+      wmctx.beginPath();wmctx.ellipse(cx+p.dx,cy+p.dy,rr,rr*0.6,0,0,Math.PI*2);wmctx.fill();
+    });
     wmctx.globalAlpha=1;
   });
 
@@ -1206,13 +1377,6 @@ function drawMacro(t){
     }
   }
 
-  // birds
-  CREATURES.filter(c=>c.layer==='sky').forEach(c=>{
-    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
-    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
-    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
-  });
-
   // ---- LAND ----
   const biome=computeLandBiome();
   const landPlantSum=clamp(sumBio(['lichen','spore_plant','gymnosperm','angiosperm'])/110,0,1);
@@ -1236,6 +1400,7 @@ function drawMacro(t){
     let h=lerp(m.hMin,m.hMax,tectonic)*mountainFactor;
     h*=clamp(1-(windRatio()-1)*0.16,0.55,1.3); // wind/rain erosion wears peaks down over time
     h+=Math.min(6,state.surface.magma/12); // active volcanism builds mountains up
+    h=Math.min(h,(LAND_TOP-SKY_TOP)*0.4); // never taller than ~40% of the sky's height
     const peakY=m.base-h;
     let mc=biome==='snow'?'#dfeaf2':(biome==='desert'?'#b98f57':'#6e7a72');
     mc=rgbToCss(scaleC(hexToRgb(mc),0.5+0.5*nightFactor));
@@ -1264,6 +1429,24 @@ function drawMacro(t){
       mctx.fillStyle='rgba(255,140,40,0.85)';
       mctx.beginPath();mctx.arc(ex+Math.cos(ang)*dist,ey+Math.sin(ang)*dist,0.8,0,Math.PI*2);mctx.fill();
     }
+  }
+
+  // birds — drawn after mountains so they're never hidden behind a peak
+  CREATURES.filter(c=>c.layer==='sky').forEach(c=>{
+    if(c.colorMap) c.color=dominantColor(c.colorMap,c.color);
+    const bm=sumBio(c.keys);const count=clamp(Math.round(bm/c.div),0,c.max);
+    for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
+  });
+
+  // a small UFO, quietly hovering — because why not
+  {
+    const ux=MW*0.5+Math.sin(t*0.2)*10,uy=SKY_TOP+16+Math.sin(t*0.35)*2;
+    mctx.fillStyle='rgba(120,220,180,0.9)';
+    mctx.beginPath();mctx.ellipse(ux,uy,4,1.3,0,0,Math.PI*2);mctx.fill();
+    mctx.fillStyle='rgba(200,230,220,0.7)';
+    mctx.beginPath();mctx.ellipse(ux,uy-1,2,1.2,0,Math.PI,0);mctx.fill();
+    mctx.fillStyle=`rgba(255,255,150,${0.5+0.5*Math.sin(t*4)})`;
+    mctx.beginPath();mctx.arc(ux-2,uy+0.3,0.5,0,Math.PI*2);mctx.arc(ux,uy+0.5,0.5,0,Math.PI*2);mctx.arc(ux+2,uy+0.3,0.5,0,Math.PI*2);mctx.fill();
   }
 
   // wind streaks — visible gust lines when wind is strong (drawn after mountains so they don't hide behind peaks)
@@ -1366,11 +1549,17 @@ function drawMacro(t){
       mctx.fillStyle=`rgba(255,200,80,${0.3+0.3*Math.sin(t*3+i)})`;mctx.fillRect(gx,gy,1.6,1.6);
     }
   } else {
-    // waves
+    // waves — amplitude and choppiness scale with wind (and spike further during typhoons)
+    const seaState=clamp(windRatio()*0.6+(typeof typhoonActive!=='undefined'?typhoonActive*2:0),0.4,3.5);
+    const waveAmp=1+seaState*1.8;
     mctx.strokeStyle='rgba(255,255,255,0.35)';mctx.lineWidth=0.7;
     mctx.beginPath();
-    for(let x=0;x<=MW;x+=3){const y=SEA_TOP+1.5+Math.sin(x*0.2+t*2.2)*1;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
+    for(let x=0;x<=MW;x+=2){const y=SEA_TOP+1.5+Math.sin(x*0.22+t*2.2)*waveAmp+Math.sin(x*0.5+t*3.7)*waveAmp*0.4;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
     mctx.stroke();
+    if(seaState>1.3){
+      mctx.fillStyle=`rgba(255,255,255,${clamp((seaState-1.3)*0.4,0,0.6)})`;
+      for(let x=0;x<MW;x+=6){const y=SEA_TOP+1.5+Math.sin(x*0.22+t*2.2)*waveAmp;mctx.fillRect(x,y-1,1.4,1.4);}
+    }
   }
 
   // sea flecks (sparkle/foam)
@@ -1479,44 +1668,91 @@ function updateUI(){
   document.getElementById('air-row').innerHTML=airItems.map(x=>
     `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
 
-  const surfItems=[
+  const surfItemsAll=[
     {v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},
     {v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean')},
     {v:sf2.land, color:'#82e0aa',icon:'🏔',lbl:T('land')},
     {v:sf2.ice,  color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}
-  ].filter(x=>x.v>0.5);
-  document.getElementById('surface-row').innerHTML=surfItems.map(x=>
-    `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
-
-  const magmaLevel=sf2.magma;
-  const magmaTierKey=magmaLevel>45?'magma_extreme':magmaLevel>20?'magma_high':magmaLevel>5?'magma_moderate':magmaLevel>0.5?'magma_low':'magma_dormant';
-  const magmaColor=magmaLevel>45?'#ff6b6b':magmaLevel>20?'#ffa07a':magmaLevel>5?'#f7dc6f':'#7ec8e3';
-  document.getElementById('magma-row').innerHTML=
-    `<div class="climate-item"><span class="ci-label" style="color:${magmaColor}"><span class="ci-icon">🌋</span>${T('magma_level')}</span><span style="color:${magmaColor}">${T(magmaTierKey)} (${Math.round(magmaLevel)}%)</span></div>`;
-
-  const tec=deriveTectonics(ERAS[curEraIdx].id);
-  const starBar=v=>'★'.repeat(v)+'☆'.repeat(5-v);
-  const tecItems=[
-    {v:tec.activity,key:'plate_activity'},{v:tec.volcanic,key:'volcanic_activity'},
-    {v:tec.mountain,key:'mountain_building'},{v:tec.seafloor,key:'seafloor_spreading'},
-    {v:tec.subduction,key:'subduction'},{v:tec.drift,key:'continental_drift'}
   ];
-  document.getElementById('tectonics-row').innerHTML=tecItems.map(x=>
-    `<div class="climate-item"><span class="ci-label" style="color:#7ec8e3">${T(x.key)}</span><span style="color:#ffec27">${starBar(x.v)}</span></div>`).join('');
+  document.getElementById('surface-row').innerHTML=surfItemsAll.filter(x=>x.v>0.5).map(x=>
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
+  drawSurfacePie(surfItemsAll);
+
+  const tierWord=v=>T('tier'+clamp(Math.round(v),1,5));
+  const tierColor=v=>['#7ec8e3','#f7dc6f','#ffa07a','#ff8c5a','#ff6b6b'][clamp(Math.round(v),1,5)-1];
+  const magmaLevel=sf2.magma;
+  const magmaTierNum=magmaLevel>50?5:magmaLevel>25?4:magmaLevel>10?3:magmaLevel>2?2:1; // mantle heat never fully "dormant"
+  const tec=deriveTectonics(ERAS[curEraIdx].id);
+  const microbeF=clamp(sumBio(['archaea','bacteria'])/90,0,1)*5;
+  const subsurfTier=clamp(Math.round(1+microbeF),1,5);
+  const crustItems=[
+    {v:magmaLevel,key:'magma_level',word:tierWord(magmaTierNum),color:tierColor(magmaTierNum)},
+    {v:tec.activity,key:'plate_activity',word:tierWord(tec.activity),color:tierColor(tec.activity)},
+    {v:tec.volcanic,key:'volcanic_activity',word:tierWord(tec.volcanic),color:tierColor(tec.volcanic)},
+    {v:tec.mountain,key:'mountain_building',word:tierWord(tec.mountain),color:tierColor(tec.mountain)},
+    {v:tec.seafloor,key:'seafloor_spreading',word:tierWord(tec.seafloor),color:tierColor(tec.seafloor)},
+    {v:tec.subduction,key:'subduction',word:tierWord(tec.subduction),color:tierColor(tec.subduction)},
+    {v:tec.drift,key:'continental_drift',word:tierWord(tec.drift),color:tierColor(tec.drift)},
+    {v:subsurfTier,key:'subsurface_bio',word:tierWord(subsurfTier),color:tierColor(subsurfTier)},
+  ];
+  document.getElementById('crustact-row').innerHTML=crustItems.map(x=>
+    `<div class="climate-item"><span class="ci-label" style="color:#7ec8e3">${T(x.key)}</span><span style="color:${x.color}">${x.word}</span></div>`).join('');
+
+  // ---- OCEAN tab ----
+  const oceanCovPct=sf2.ocean;
+  const seaLevel=Math.round((oceanCovPct-58)*2);
+  const oceanVolume=(1.3*(oceanCovPct/58)).toFixed(2);
+  const avgDepth=clamp(3.7*(58/Math.max(10,oceanCovPct))*0.9,0.3,7).toFixed(1);
+  const seaTemp=Math.round(clamp(state.temp*0.55+3,-2,42));
+  const propItems=[
+    {key:'oc_coverage',val:Math.round(oceanCovPct)+'%',color:'#5dade2'},
+    {key:'oc_sealevel',val:(seaLevel>=0?'+':'')+seaLevel+' m',color:'#7ec8e3'},
+    {key:'oc_volume',val:oceanVolume+' ×10⁹ km³',color:'#5dade2'},
+    {key:'oc_depth',val:avgDepth+' km',color:'#2471a3'},
+    {key:'oc_seatemp',val:seaTemp+'°C',color:seaTemp>25?'#ff6b6b':seaTemp<5?'#87ceeb':'#98fb98'},
+  ];
+  document.getElementById('ocean-prop-row').innerHTML=propItems.map(x=>
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
+
+  const o2Diss=(clamp((state.atmo.O2||0)/25,0,1)*0.9).toFixed(2);
+  const carbonDiss=(clamp((state.atmo.CO2||0)/20,0,1)*1.2).toFixed(2);
+  const compItems=[
+    {key:'oc_water',val:'96.5%',color:'#5dade2'},
+    {key:'oc_salt',val:(3.5-clamp(state.surface.ice/100,0,1)*0.4).toFixed(1)+'%',color:'#f4f6f7'},
+    {key:'oc_o2',val:o2Diss+'%',color:'#98fb98'},
+    {key:'oc_carbon',val:carbonDiss+'%',color:'#95a5a6'},
+    {key:'oc_nitrogen',val:'0.01%',color:'#aed6f1'},
+    {key:'oc_sulfur',val:'0.05%',color:'#f7dc6f'},
+    {key:'oc_minerals',val:'0.02%',color:'#e59866'},
+  ];
+  document.getElementById('ocean-comp-row').innerHTML=compItems.map(x=>
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
+
+  const wr=windRatio();
+  const seaStateNow=clamp(wr*0.6+(typeof typhoonActive!=='undefined'?typhoonActive*2:0),0.4,3.5);
+  const dynWord=v=>v>2.4?tierWord(5):v>1.7?tierWord(4):v>1.1?tierWord(3):v>0.6?tierWord(2):tierWord(1);
+  const dynColor=v=>tierColor(v>2.4?5:v>1.7?4:v>1.1?3:v>0.6?2:1);
+  const mixWord=state.temp>25?tierWord(1):state.temp>10?tierWord(3):tierWord(5);
+  const dynItems=[
+    {key:'oc_current',word:dynWord(wr),color:dynColor(wr)},
+    {key:'oc_upwelling',word:dynWord(wr*0.9),color:dynColor(wr*0.9)},
+    {key:'oc_mixing',word:mixWord,color:state.temp>25?'#ffa07a':state.temp>10?'#f7dc6f':'#7ec8e3'},
+    {key:'oc_tide',word:tierWord(3),color:tierColor(3)},
+    {key:'oc_wave',word:dynWord(seaStateNow),color:dynColor(seaStateNow)},
+  ];
+  document.getElementById('ocean-dyn-row').innerHTML=dynItems.map(x=>
+    `<div class="climate-item"><span class="ci-label" style="color:#7ec8e3">${T(x.key)}</span><span style="color:${x.color}">${x.word}</span></div>`).join('');
 
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
-    const active=group.members.filter(m=>(state.bio[m.key]||0)>0.5);
-    if(!active.length)return;
-    const gsum=group.members.reduce((s,m)=>s+(state.bio[m.key]||0),0)||1;
     const gtitle=T('grp_'+group.gkey);
-    bh+=`<div class="bio-group"><div class="bio-group-title" style="display:flex;justify-content:space-between;align-items:baseline">${gtitle}<span style="font-size:6px;color:#2a4a6a;letter-spacing:0">biomass %</span></div>`;
-    active.sort((a,b2)=>(state.bio[b2.key]||0)-(state.bio[a.key]||0));
-    active.forEach(m=>{
-      const v=state.bio[m.key]||0;
-      const pctv=Math.round(v/gsum*100);
+    bh+=`<div class="bio-group"><div class="bio-group-title">${gtitle}</div>`;
+    const sorted=[...group.members].sort((a,b2)=>(state.bio[b2.key]||0)-(state.bio[a.key]||0));
+    sorted.forEach(m=>{
+      const v=clamp(state.bio[m.key]||0,0,100);
+      const barWidth=v<0.05?0:Math.max(3,v);
       const lbl=m[lang]||m.en;
-      bh+=`<div class="bio-row"><span class="bio-icon">${m.icon}</span><span class="bio-name" style="flex:1">${lbl}</span><span class="bio-val" style="color:${m.color}">${pctv}%</span></div>`;
+      bh+=`<div class="bio-row"><span class="bio-icon">${m.icon}</span><span class="bio-name">${lbl}</span><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:${barWidth}%;background:${m.color}"></div></div></div>`;
     });
     bh+='</div>';
   });
@@ -1538,13 +1774,17 @@ function loop(ts){
   const ds=Math.min((ts-lastTimestamp)/1000,0.2);lastTimestamp=ts;
   updateSim(ds);
   drawMacro(clockT);
-  drawPlanetIcon();
   drawWorldMap(clockT);
+  drawPlanetIcon(clockT);
+  typewriterTick(ds);
+  drawCompanionAvatar(clockT);
   updateUI();
   requestAnimationFrame(loop);
 }
 
 initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();renderComposition();
+document.getElementById('companion-name').textContent=COMPANIONS[currentChar].name;
+startTyping(COMPANIONS[currentChar].lines[lang][0]);
 requestAnimationFrame(loop);
 </script>
 </body>
