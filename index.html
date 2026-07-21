@@ -9,14 +9,15 @@
 html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #scale-root{width:940px;height:640px;transform-origin:center center;position:relative}
 #wrap{display:flex;gap:0;width:940px;height:640px;background:#000;font-family:'Courier New',monospace}
-#left{width:440px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px;gap:4px;position:relative}
+#left{width:484px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px;gap:4px;position:relative}
 #top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
+#title-logo{height:18px;width:18px;flex-shrink:0;border-radius:50%}
 #era-badge{font-size:13px;color:#ffec27;letter-spacing:1px;text-align:center;font-weight:bold;flex:1}
 #lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
 #lang-btn:hover{background:#1a3a5c}
 #eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
-#macro-wrap{position:relative;width:400px;height:365px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
-canvas#macro{width:400px;height:365px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer}
+#macro-wrap{position:relative;width:440px;height:401px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
+canvas#macro{width:440px;height:401px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 #progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
 #progress-bar{height:100%;background:#1a5276;width:0%}
@@ -70,12 +71,23 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
 .ci-label{display:flex;align-items:center;gap:2px}
 .ec-label{font-size:7px;color:#4a7c9e;letter-spacing:1px}
 .ec-val{font-size:9px;font-weight:bold;color:#7ec8e3}
-.bio-group{margin-bottom:5px}
-.bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:2px;border-bottom:1px solid #0d2137;padding-bottom:1px}
-.bio-row{display:flex;align-items:center;gap:3px;margin-bottom:1px}
-.bio-icon{font-size:10px;width:14px;text-align:center}
-.bio-name{font-size:8px;color:#7ec8e3;width:80px;white-space:nowrap;overflow:hidden}
-.bio-val{font-size:8px;width:26px;text-align:right}
+.bio-group{margin-bottom:8px}
+.bio-group-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:3px;border-bottom:1px solid #0d2137;padding-bottom:1px}
+.bio-cols{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}
+.bio-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:20px}
+.bio-col-barbg{width:9px;height:22px;background:#000;border:1px solid #0d2137;display:flex;align-items:flex-end}
+.bio-col-barfill{width:100%}
+.bio-col-icon{font-size:10px;margin-top:2px}
+.bio-col-name{writing-mode:vertical-rl;text-orientation:mixed;font-size:6px;color:#7ec8e3;margin-top:2px;height:46px;letter-spacing:0.5px}
+.log-entry{display:flex;gap:6px;font-size:7px;padding:2px 0;border-bottom:1px solid #071525}
+.log-entry .log-mya{color:#4a7c9e;flex-shrink:0;white-space:nowrap}
+.log-entry .log-text{color:#7ec8e3}
+.bio-cat-row{display:flex;flex-wrap:wrap;gap:5px}
+.bio-col{display:flex;flex-direction:column;align-items:center;width:20px}
+.bio-col-bar-wrap{height:28px;width:9px;display:flex;align-items:flex-end;background:#000;border:1px solid #0d2137}
+.bio-col-bar-fill{width:100%}
+.bio-col-icon{font-size:10px;margin-top:2px;line-height:1}
+.bio-col-name{writing-mode:vertical-rl;text-orientation:mixed;font-size:6.5px;color:#7ec8e3;margin-top:2px;letter-spacing:0.5px;max-height:56px;overflow:hidden}
 #timeline{padding:4px 6px 4px;background:#040e1c;border-top:1px solid #0d2137;overflow-x:auto;flex-shrink:0}
 #timeline::-webkit-scrollbar{height:4px;background:#040e1c}
 #timeline::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:2px}
@@ -93,6 +105,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
 <div id="wrap">
 <div id="left">
   <div id="top-row">
+    <img id="title-logo" src="data:image/png;base64,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" alt="logo">
     <div id="era-badge">EARTH SIMULATOR</div>
     <button id="lang-btn" onclick="toggleLang()">日本語</button>
   </div>
@@ -119,6 +132,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
   </div>
   <div id="speed-row">
     <span id="lbl-speed">SPEED:</span>
+    <button id="b0" onclick="setSpd(0)">⏸</button>
     <button id="b1" onclick="setSpd(1)" class="active">1x</button>
     <button id="b5" onclick="setSpd(5)">5x</button>
     <button id="b20" onclick="setSpd(20)">20x</button>
@@ -136,6 +150,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
         </div>
       </div>
       <div id="companion-panel">
+        <div class="ptitle" id="lbl-spaceship" style="margin-bottom:2px">SPACESHIP</div>
         <div id="companion-head">
           <div id="companion-avatar-wrap"><canvas id="companion-avatar" width="48" height="48"></canvas></div>
           <div id="companion-switcher">
@@ -155,6 +170,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
       <button class="tab-btn" id="tab-btn-bio" onclick="setTab('bio')">ORGANISMS</button>
       <button class="tab-btn" id="tab-btn-ocean" onclick="setTab('ocean')">OCEAN</button>
       <button class="tab-btn" id="tab-btn-crust" onclick="setTab('crust')">CRUST</button>
+      <button class="tab-btn" id="tab-btn-log" onclick="setTab('log')">LOG</button>
     </div>
     <div id="tab-content">
       <div id="tab-climate" class="tab-pane">
@@ -176,12 +192,12 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
           <div id="ocean-prop-row"></div>
         </div>
         <div class="climate-card" style="margin-top:6px">
-          <div class="climate-card-title" id="lbl-ocean-comp">🧪 OCEAN COMPOSITION</div>
-          <div id="ocean-comp-row"></div>
-        </div>
-        <div class="climate-card" style="margin-top:6px">
           <div class="climate-card-title" id="lbl-ocean-dyn">🌍 OCEAN DYNAMICS</div>
           <div id="ocean-dyn-row"></div>
+        </div>
+        <div class="climate-card" style="margin-top:6px">
+          <div class="climate-card-title" id="lbl-ocean-comp">🧪 OCEAN COMPOSITION</div>
+          <div id="ocean-comp-row"></div>
         </div>
       </div>
       <div id="tab-crust" class="tab-pane" style="display:none">
@@ -200,6 +216,17 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
           <div class="climate-card-title" id="lbl-composition">PLANET COMPOSITION</div>
           <div id="composition-row"></div>
         </div>
+      </div>
+      <div id="tab-log" class="tab-pane" style="display:none">
+        <div class="climate-card" style="margin-bottom:6px">
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="ebtn" onclick="saveGame()" id="btn-save">💾 SAVE</button>
+            <button class="ebtn" onclick="loadGame()" id="btn-load">📂 LOAD</button>
+            <button class="ebtn" onclick="toggleMusic()" id="btn-music">🎵 OFF</button>
+          </div>
+        </div>
+        <div class="climate-card-title" id="lbl-log">LOG</div>
+        <div id="log-list"></div>
       </div>
     </div>
   </div>
@@ -227,7 +254,7 @@ autoScale();
 let activeTab='climate';
 function setTab(tab){
   activeTab=tab;
-  ['climate','bio','ocean','crust'].forEach(t=>{
+  ['climate','bio','ocean','crust','log'].forEach(t=>{
     const pane=document.getElementById('tab-'+t),btn=document.getElementById('tab-btn-'+t);
     if(pane)pane.style.display=(t===tab)?'block':'none';
     if(btn)btn.classList.toggle('active',t===tab);
@@ -358,30 +385,48 @@ const LANG={
   en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'ORGANISMS',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_microbe:'MICROBES',grp_plant:'PLANTS & ALGAE',grp_invert:'INVERTEBRATES',grp_vert:'VERTEBRATES',
    crustact:'CRUSTAL ACTIVITY',composition:'PLANET COMPOSITION',
    plate_activity:'🌍 Plate Activity',volcanic_activity:'🌋 Volcanic Activity',mountain_building:'⛰ Mountain Building',seafloor_spreading:'🌊 Seafloor Spreading',subduction:'♻ Subduction',continental_drift:'🪨 Continental Drift',magma_level:'🌋 Magma Activity',subsurface_bio:'🦠 Subsurface Biosphere',
+   crust_heat:'Internal Heat',crust_tectonics:'Plate Tectonics',crust_biosphere:'Deep Biosphere',
+   crust_heat_desc:'Generates magma and powers volcanic activity.',
+   crust_tectonics_desc:'Drives volcanism, continental drift, and mountain building.',
+   crust_biosphere_desc:'Microbial life living beneath the surface.',
+   deepbio1:'Barely detectable',deepbio2:'Sparse',deepbio3:'Present',deepbio4:'Slowly increasing',deepbio5:'Well established',
    tier1:'Low',tier2:'Moderate',tier3:'Active',tier4:'Very Active',tier5:'Extreme',
    c_water:'💧 Water',c_silicates:'🪨 Silicates',c_iron:'🧲 Iron',c_nickel:'⚙ Nickel',c_mg:'⛰ Mg Minerals',c_volatiles:'🌫 Volatiles',c_carbon:'🌑 Carbon',c_nitrogen:'💨 Nitrogen',c_sulfur:'🟡 Sulfur',
+   lc_forest:'🌲 Forest',lc_grassland:'🌾 Grassland',lc_savanna:'🌿 Savanna',lc_desert:'🏜 Desert',lc_barren:'🪨 Barren Rock',
    ocean_tab:'OCEAN',ocean_prop:'🌊 OCEAN PROPERTIES',ocean_comp:'🧪 OCEAN COMPOSITION',ocean_dyn:'🌍 OCEAN DYNAMICS',
    oc_coverage:'🌊 Ocean Coverage',oc_sealevel:'📏 Sea Level',oc_volume:'🧊 Ocean Volume',oc_depth:'📉 Average Depth',oc_seatemp:'🌡 Average Temperature',
    oc_water:'💧 Water',oc_salt:'🧂 Salt (Salinity)',oc_o2:'🫧 Dissolved Oxygen',oc_carbon:'⚫ Carbon',oc_nitrogen:'💨 Nitrogen',oc_sulfur:'🟡 Sulfur',oc_minerals:'🪨 Minerals',
-   oc_current:'🌊 Ocean Current',oc_upwelling:'⬆ Upwelling',oc_mixing:'🔃 Vertical Mixing',oc_tide:'🌙 Tide',oc_wave:'🌊 Wave Activity'},
+   oc_current:'🌊 Ocean Current',oc_upwelling:'⬆ Upwelling',oc_mixing:'🔃 Vertical Mixing',oc_tide:'🌙 Tide',oc_wave:'🌊 Wave Activity',
+   spaceship:'SPACESHIP',log:'LOG',save_ok:'Game saved.',save_fail:'Save failed.',load_ok:'Game loaded.',load_fail:'No save data found.',mya_short:' Mya'},
   ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_microbe:'微生物',grp_plant:'植物・藻類',grp_invert:'無脊椎動物',grp_vert:'脊椎動物',
    crustact:'地殻活動',composition:'惑星組成',
    plate_activity:'🌍 プレート活動',volcanic_activity:'🌋 火山活動',mountain_building:'⛰ 山脈形成',seafloor_spreading:'🌊 海底拡大',subduction:'♻ 沈み込み',continental_drift:'🪨 大陸移動',magma_level:'🌋 マグマ活動',subsurface_bio:'🦠 地下生物圏',
+   crust_heat:'内部熱',crust_tectonics:'プレートテクトニクス',crust_biosphere:'地下生物圏',
+   crust_heat_desc:'マグマを生み出し、火山活動の源となる。',
+   crust_tectonics_desc:'火山活動・大陸移動・山脈形成を引き起こす。',
+   crust_biosphere_desc:'地下に生息する微生物。',
+   deepbio1:'ほとんど確認されない',deepbio2:'少なめ',deepbio3:'存在する',deepbio4:'少しずつ増加',deepbio5:'定着している',
    tier1:'低調',tier2:'中程度',tier3:'活発',tier4:'非常に活発',tier5:'極めて活発',
    c_water:'💧 水',c_silicates:'🪨 ケイ酸塩',c_iron:'🧲 鉄',c_nickel:'⚙ ニッケル',c_mg:'⛰ マグネシウム鉱物',c_volatiles:'🌫 揮発性成分',c_carbon:'🌑 炭素',c_nitrogen:'💨 窒素',c_sulfur:'🟡 硫黄',
+   lc_forest:'🌲 森林',lc_grassland:'🌾 草原',lc_savanna:'🌿 サバンナ',lc_desert:'🏜 砂漠',lc_barren:'🪨 裸岩',
    ocean_tab:'海洋',ocean_prop:'🌊 海洋特性',ocean_comp:'🧪 海水組成',ocean_dyn:'🌍 海洋ダイナミクス',
    oc_coverage:'🌊 海洋面積',oc_sealevel:'📏 海面高度',oc_volume:'🧊 海水量',oc_depth:'📉 平均水深',oc_seatemp:'🌡 平均海水温',
    oc_water:'💧 水',oc_salt:'🧂 塩分',oc_o2:'🫧 溶存酸素',oc_carbon:'⚫ 炭素',oc_nitrogen:'💨 窒素',oc_sulfur:'🟡 硫黄',oc_minerals:'🪨 鉱物',
-   oc_current:'🌊 海流',oc_upwelling:'⬆ 湧昇流',oc_mixing:'🔃 鉛直循環',oc_tide:'🌙 潮汐',oc_wave:'🌊 波浪'},
+   oc_current:'🌊 海流',oc_upwelling:'⬆ 湧昇流',oc_mixing:'🔃 鉛直循環',oc_tide:'🌙 潮汐',oc_wave:'🌊 波浪',
+   spaceship:'宇宙船',log:'ログ',save_ok:'セーブしました。',save_fail:'セーブに失敗しました。',load_ok:'ロードしました。',load_fail:'セーブデータが見つかりません。',mya_short:'百万年前'},
 };
 let lang='en';
+try{const savedLang=localStorage.getItem('earthsim_lang');if(savedLang==='en'||savedLang==='ja')lang=savedLang;}catch(e){}
 function T(k){return LANG[lang][k]||LANG.en[k]||k;}
-function toggleLang(){lang=lang==='en'?'ja':'en';applyLang();}
+function toggleLang(){lang=lang==='en'?'ja':'en';try{localStorage.setItem('earthsim_lang',lang);}catch(e){}applyLang();}
 function applyLang(){
   document.getElementById('era-badge').textContent=T('title');
   document.getElementById('lang-btn').textContent=T('langBtn');
   document.getElementById('lbl-speed').textContent=T('speed');
   document.getElementById('lbl-earthmap').textContent=T('earthmap');
+  document.getElementById('lbl-spaceship').textContent=T('spaceship');
+  document.getElementById('lbl-log').textContent=T('log');
+  renderLog();
   document.getElementById('lbl-atmo').textContent=T('atmo');
   document.getElementById('lbl-air').textContent=T('air');
   document.getElementById('lbl-surface').textContent=T('surface');
@@ -605,12 +650,8 @@ const COMPOSITION=[
   {key:'c_sulfur',pct:'2.9%',color:'#f7dc6f'},
 ];
 function renderComposition(){
-  const note=lang==='ja'
-    ?'惑星全体のおおよその概算組成。水は質量比では微量だが、地表と生命への影響が大きいため掲載している。'
-    :'Approximate whole-planet composition. Water is a tiny mass fraction, but is included for its outsized impact on the surface and on life.';
   document.getElementById('composition-row').innerHTML=COMPOSITION.map(x=>
-    `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.pct}</span></div>`).join('')
-    +`<div style="font-size:6px;color:#2a4a6a;margin-top:3px;line-height:1.3">${note}</div>`;
+    `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.pct}</span></div>`).join('');
 }
 
 const GASES=[
@@ -658,6 +699,7 @@ function naturalVar(seed){
 }
 
 function updateSim(ds){
+  if(spd===0) return; // literal pause: nothing moves, nothing decays, nothing progresses
   clockT+=ds;
   ashLevel=Math.max(0,ashLevel-ds/8);
   impactFlash=Math.max(0,impactFlash-ds/1.2);
@@ -795,8 +837,78 @@ function doEvent(type){
   else if(type==='typhoon'){typhoonActive=1;offset.windAvg+=65;offset.humidity+=30;offset.pressureAtm-=0.04;setEvent(T('ev_typhoon'));}
 }
 
-function setEvent(msg){const el=document.getElementById('event-log');if(el)el.textContent=msg;}
-function setSpd(s){spd=s;[1,5,20,100].forEach(v=>{const b=document.getElementById('b'+v);if(b)b.classList.toggle('active',v===s);});}
+let eventLogEntries=[];
+try{const savedLog=localStorage.getItem('earthsim_log');if(savedLog)eventLogEntries=JSON.parse(savedLog);}catch(e){}
+function setEvent(msg){
+  const el=document.getElementById('event-log');if(el)el.textContent=msg;
+  eventLogEntries.unshift({mya:Math.round(simMya),text:msg});
+  if(eventLogEntries.length>200)eventLogEntries.length=200;
+  try{localStorage.setItem('earthsim_log',JSON.stringify(eventLogEntries));}catch(e){}
+  renderLog();
+}
+function renderLog(){
+  const el=document.getElementById('log-list');if(!el)return;
+  el.innerHTML=eventLogEntries.map(e=>
+    `<div class="log-entry"><span class="log-mya">${e.mya>=1000?(e.mya/1000).toFixed(2)+' BYA':e.mya+T('mya_short')}</span><span class="log-text">${e.text}</span></div>`).join('');
+}
+
+// ---- セーブ / ロード / 音楽 ----
+function saveGame(){
+  try{
+    const data={simMya,state,offset,lastEraIdx,curEraIdx,spd,lang,eventLogEntries};
+    localStorage.setItem('earthsim_save',JSON.stringify(data));
+    setEvent(T('save_ok'));
+  }catch(e){setEvent(T('save_fail'));}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem('earthsim_save');
+    if(!raw){setEvent(T('load_fail'));return;}
+    const d=JSON.parse(raw);
+    simMya=d.simMya;state=d.state;offset=d.offset;lastEraIdx=d.lastEraIdx;curEraIdx=d.curEraIdx;
+    if(d.eventLogEntries)eventLogEntries=d.eventLogEntries;
+    setSpd(d.spd||1);
+    if(d.lang){lang=d.lang;try{localStorage.setItem('earthsim_lang',lang);}catch(e2){}}
+    applyLang();
+    updateTimeline(curEraIdx);
+    const eObj=ERAS[curEraIdx];
+    document.getElementById('eon-badge').textContent=(eObj.name[lang]||eObj.name.en).toUpperCase()+' — '+(eObj.mya>=1000?(eObj.mya/1000).toFixed(1)+(lang==='ja'?'十億年前':' BYA'):eObj.mya+(lang==='ja'?'百万年前':' MYA'));
+    setEvent(T('load_ok'));
+  }catch(e){setEvent(T('load_fail'));}
+}
+let audioCtx=null,musicOn=false,musicNodes=null;
+function toggleMusic(){
+  musicOn=!musicOn;
+  const btn=document.getElementById('btn-music');
+  if(musicOn){startMusic();if(btn)btn.textContent='🎵 ON';}
+  else{stopMusic();if(btn)btn.textContent='🎵 OFF';}
+}
+function startMusic(){
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const master=audioCtx.createGain();master.gain.value=0.045;master.connect(audioCtx.destination);
+    const freqs=[110,146.83,164.81,220];
+    const oscs=freqs.map((f,i)=>{
+      const osc=audioCtx.createOscillator();osc.type='sine';osc.frequency.value=f;
+      const g=audioCtx.createGain();g.gain.value=0.5/(i+1);
+      osc.connect(g);g.connect(master);osc.start();
+      return osc;
+    });
+    const lfo=audioCtx.createOscillator();lfo.frequency.value=0.06;
+    const lfoGain=audioCtx.createGain();lfoGain.gain.value=0.018;
+    lfo.connect(lfoGain);lfoGain.connect(master.gain);lfo.start();
+    musicNodes={master,oscs,lfo};
+  }catch(e){}
+}
+function stopMusic(){
+  if(musicNodes){
+    musicNodes.oscs.forEach(o=>{try{o.stop();}catch(e){}});
+    try{musicNodes.lfo.stop();}catch(e){}
+    musicNodes=null;
+  }
+}
+function setSpd(s){spd=s;[0,1,5,20,100].forEach(v=>{const b=document.getElementById('b'+v);if(b)b.classList.toggle('active',v===s);});}
 
 function resetSim(){
   simMya=TOTAL_MYA;lastEraIdx=-1;curEraIdx=0;lastTimestamp=null;
@@ -831,11 +943,11 @@ function drawPlanetIcon(t){
   pictx.save();
   pictx.beginPath();pictx.arc(cx,cy,r,0,Math.PI*2);pictx.clip();
   pictx.imageSmoothingEnabled=false;
+  // static (non-scrolling) crop of the world map — a scrolling/tiled version previously produced a
+  // visible seam where the texture doesn't wrap seamlessly, so this just shows one steady view
   const scale=(r*2)/WM_H;
   const drawW=WM_W*scale;
-  const scrollPx=((t*1.1)%WM_W+WM_W)%WM_W;
-  pictx.drawImage(wmv,cx-r-scrollPx*scale,cy-r,drawW,r*2);
-  pictx.drawImage(wmv,cx-r-scrollPx*scale+drawW,cy-r,drawW,r*2);
+  pictx.drawImage(wmv,cx-drawW/2,cy-r,drawW,r*2);
   pictx.restore();
   const sg1=pictx.createRadialGradient(cx-8,cy-8,2,cx,cy,r);
   sg1.addColorStop(0,'rgba(255,255,255,0.3)');sg1.addColorStop(0.6,'rgba(255,255,255,0)');sg1.addColorStop(1,'rgba(0,0,0,0.3)');
@@ -856,14 +968,15 @@ const WM_W=64,WM_H=32,WM_CENTER={x:32,y:16};
 const worldBlobs=[{sx:12,sy:9},{sx:24,sy:7},{sx:36,sy:15},{sx:50,sy:9},{sx:18,sy:22},{sx:44,sy:23},{sx:56,sy:19}].map(b=>{
   b.parts=[];
   const n=3+Math.floor(Math.random()*2);
-  for(let i=0;i<n;i++)b.parts.push({dx:(Math.random()-0.5)*5,dy:(Math.random()-0.5)*4,rf:0.55+Math.random()*0.7});
+  for(let i=0;i<n;i++)b.parts.push({dx:(Math.random()-0.5)*3,dy:(Math.random()-0.5)*2.4,rf:0.22+Math.random()*0.28});
   return b;
 });
 const wmIslands=[];for(let i=0;i<10;i++)wmIslands.push({x:Math.random()*WM_W,y:Math.random()*WM_H,seed:Math.random()*10});
-const wmClouds=[];for(let i=0;i<14;i++)wmClouds.push({
-  x:Math.random(),y:2+Math.random()*(WM_H-4),seed:Math.random()*10,
+const wmClouds=[];for(let i=0;i<10;i++)wmClouds.push({
+  x:Math.random(),y:2+Math.random()*(WM_H-4),seed:Math.random()*10,life:Math.random(),lifeSpeed:0.006+Math.random()*0.006,
   parts:[{dx:-2,dy:0,r:1.6,ph:Math.random()*6},{dx:0.5,dy:-0.6,r:1.3,ph:Math.random()*6},{dx:2,dy:0.4,r:1.4,ph:Math.random()*6}]
 });
+let pangaeaSmooth=0.3,pangaeaSmoothInit=false;
 
 function drawWorldMap(t){
   wmctx.clearRect(0,0,WM_W,WM_H);
@@ -877,23 +990,37 @@ function drawWorldMap(t){
   wmctx.fillStyle=rgbToCss(oceanCol);
   wmctx.fillRect(0,0,WM_W,WM_H);
 
-  // land color follows the same biome logic as the cross-section (same planet, different scale)
+  // land color follows the same land-cover breakdown as the SURFACE card (same planet, different scale)
   const biomeWM=computeLandBiome();
-  const plantSumWM=clamp(sumBio(['lichen','spore_plant','gymnosperm','angiosperm'])/110,0,1);
   let landCol;
   if(biomeWM==='snow') landCol=hexToRgb('#eef6fb');
-  else if(biomeWM==='desert') landCol=hexToRgb('#c99a52');
-  else if(biomeWM==='barren') landCol=hexToRgb('#4a3a2c');
-  else landCol=mixC(hexToRgb('#8a7a4a'),hexToRgb('#2e7d3e'),plantSumWM);
+  else {
+    const lc=computeLandComposition();
+    const wForest=hexToRgb('#1e6b32'),wGrass=hexToRgb('#7ea83c'),wSavanna=hexToRgb('#c9a04e'),wDesert=hexToRgb('#c99a52'),wBarren=hexToRgb('#4a3a2c');
+    const tot=(lc.forest+lc.grassland+lc.savanna+lc.desert+lc.barren)||1;
+    landCol={
+      r:(wForest.r*lc.forest+wGrass.r*lc.grassland+wSavanna.r*lc.savanna+wDesert.r*lc.desert+wBarren.r*lc.barren)/tot,
+      g:(wForest.g*lc.forest+wGrass.g*lc.grassland+wSavanna.g*lc.savanna+wDesert.g*lc.desert+wBarren.g*lc.barren)/tot,
+      b:(wForest.b*lc.forest+wGrass.b*lc.grassland+wSavanna.b*lc.savanna+wDesert.b*lc.desert+wBarren.b*lc.barren)/tot,
+    };
+  }
   if(magmaF>0.3) landCol=mixC(landCol,hexToRgb('#c0392b'),magmaF*0.7);
   wmctx.fillStyle=rgbToCss(landCol);
 
-  const pangaeaFactor=clamp(1-Math.abs(simMya-252)/900,0,1);
-  // blob radius sized so total land area actually approximates surface.land% of the map
+  const pangaeaTarget=clamp(1-Math.abs(simMya-252)/500,0,1);
+  if(!pangaeaSmoothInit){pangaeaSmooth=pangaeaTarget;pangaeaSmoothInit=true;}
+  const driftRate=0.008+tecWM.drift*0.006; // higher continental-drift rating -> visibly faster movement
+  pangaeaSmooth=lerp(pangaeaSmooth,pangaeaTarget,driftRate);
+  const pangaeaFactor=pangaeaSmooth;
+  // land% is reflected by BOTH how many "continent slots" are active AND their size — at low land%
+  // only a couple of small landmasses show; at high land% more of the fixed slots activate. This
+  // avoids blobs fusing into one oversized mass regardless of the intended percentage.
   const landPct=clamp((state.surface.land||30)/100,0.02,1);
-  const blobR=clamp(Math.sqrt(landPct*(WM_W*WM_H)/(worldBlobs.length*Math.PI))*1.15,2,13);
+  const activeBlobCount=Math.max(1,Math.min(worldBlobs.length,Math.round(landPct*worldBlobs.length)+1));
+  const blobR=clamp(2+landPct*3.4,1.8,6.2);
   const blobCenters=[];
   worldBlobs.forEach((b,i)=>{
+    if(i>=activeBlobCount)return;
     const mx=lerp(b.sx,WM_CENTER.x+(i-3)*2.6,pangaeaFactor);
     const my=lerp(b.sy,WM_CENTER.y+Math.sin(i*2)*3,pangaeaFactor);
     // organic cluster of offset circles instead of one perfect circle
@@ -922,12 +1049,15 @@ function drawWorldMap(t){
   }
 
   // cloud overlay — same humidity/wind driving the cross-section's clouds, but far slower (global
-  // scale) and built from small overlapping puffs that slowly reshape, like a real weather map
+  // scale), with each puff fading in, drifting, then dissipating and reforming elsewhere
   const cloudDensityWM=clamp(state.clouds*0.4+(state.humidityPct/100)*0.85,0,1.3);
   const windFactorWM=clamp(windRatio(),0.3,6);
   wmClouds.forEach(c=>{
-    c.x=(c.x+0.00028*windFactorWM)%1;
-    wmctx.globalAlpha=clamp(cloudDensityWM*0.55,0,0.7);
+    c.x=(c.x+0.00009*windFactorWM)%1;
+    c.life+=c.lifeSpeed*windFactorWM*0.5;
+    if(c.life>=1){c.life=0;c.x=Math.random();c.y=2+Math.random()*(WM_H-4);}
+    const fade=c.life<0.15?(c.life/0.15):(c.life>0.8?(1-c.life)/0.2:1);
+    wmctx.globalAlpha=clamp(cloudDensityWM*0.55*fade,0,0.7);
     wmctx.fillStyle=magmaF>0.4?'rgba(60,55,50,0.7)':'rgba(240,244,248,0.85)';
     const cx=c.x*WM_W,cy=c.y;
     c.parts.forEach(p=>{
@@ -1009,7 +1139,7 @@ const terrainFlecks=[];for(let i=0;i<55;i++)terrainFlecks.push({x:Math.random()*
 const seaFlecks=[];for(let i=0;i<30;i++)seaFlecks.push({x:Math.random()*MW,y:SEA_TOP+4+Math.random()*(SEA_BOT-SEA_TOP-6)});
 const subDots=[];for(let i=0;i<26;i++)subDots.push({x:Math.random()*MW,y:SUB_TOP+2+Math.random()*(SUB_BOT-SUB_TOP-4),ph:Math.random()*10,seed:Math.random()});
 const mantlePlumes=[];for(let i=0;i<7;i++)mantlePlumes.push({x:Math.random()*MW,y:Math.random(),seed:Math.random()*10,speed:0.15+Math.random()*0.25});
-const mountains=[{cx:24,base:LAND_TOP+2,w:26,hMin:12,hMax:30,freq:0.0055,phase:0.4},{cx:66,base:LAND_TOP+2,w:34,hMin:16,hMax:42,freq:0.0037,phase:2.1},{cx:116,base:LAND_TOP+2,w:30,hMin:14,hMax:38,freq:0.0048,phase:4.0},{cx:145,base:LAND_TOP+2,w:22,hMin:10,hMax:34,freq:0.0062,phase:5.6}];
+const mountains=[{cx:24,base:LAND_TOP+2,w:22,hMin:3,hMax:9,freq:0.0055,phase:0.4},{cx:66,base:LAND_TOP+2,w:34,hMin:11,hMax:23,freq:0.0037,phase:2.1},{cx:116,base:LAND_TOP+2,w:28,hMin:6,hMax:13,freq:0.0048,phase:4.0},{cx:145,base:LAND_TOP+2,w:24,hMin:15,hMax:27,freq:0.0062,phase:5.6}];
 
 // ---- creature particle pools driven by biomass ----
 function sumBio(keys){let s=0;keys.forEach(k=>s+=(state.bio[k]||0));return s;}
@@ -1240,6 +1370,44 @@ function computeLandBiome(){
   return 'green';
 }
 
+// land-cover breakdown (of the non-ice land portion) — a design estimate driven by temperature,
+// humidity, and terrestrial plant biomass, so it shifts naturally with warming/cooling/extinction events
+function computeLandComposition(){
+  const plantSum=clamp(sumBio(['lichen','spore_plant','gymnosperm','angiosperm'])/110,0,1);
+  const dryness=clamp(1-(state.humidityPct/65),0,1);
+  const heat=clamp((state.temp-18)/22,0,1);
+  const desertF=clamp(dryness*0.6+heat*0.5,0,1);
+  if(plantSum<0.06){
+    const desert=clamp(30+desertF*45,15,80);
+    return {barren:100-desert,desert,forest:0,grassland:0,savanna:0};
+  }
+  let forest=plantSum*(1-desertF*0.8)*0.7;
+  let desert=desertF*0.55;
+  let remain=Math.max(0,1-forest-desert);
+  let grassland=remain*clamp(1-heat*0.7,0.25,0.85);
+  let savanna=Math.max(0,remain-grassland);
+  const tot=forest+desert+grassland+savanna||1;
+  return {forest:forest/tot*100,grassland:grassland/tot*100,savanna:savanna/tot*100,desert:desert/tot*100,barren:0};
+}
+
+// ---- 増減傾向インジケータ（数秒ごとにスナップショットを取り、その差分から矢印を決める） ----
+const trendSnapshots={};
+const TREND_INTERVAL=4.5;
+function trendIndicator(key,value,scale){
+  const snap=trendSnapshots[key];
+  if(!snap||clockT-snap.time>TREND_INTERVAL){
+    const delta=snap?value-snap.value:0;
+    trendSnapshots[key]={value,time:clockT,delta};
+  }
+  const d=(trendSnapshots[key]&&trendSnapshots[key].delta)||0;
+  const rel=scale?d/scale:0;
+  if(Math.abs(rel)<0.04) return '<span style="color:#3a5a78">―</span>';
+  if(rel>0.28) return '<span style="color:#ff8c5a">⏫</span>';
+  if(rel>0) return '<span style="color:#98fb98">▲</span>';
+  if(rel<-0.28) return '<span style="color:#5dade2">⏬</span>';
+  return '<span style="color:#f7dc6f">▼</span>';
+}
+
 function drawMacro(t){
   const co2f=clamp((state.atmo.CO2||0)/20,0,1);
   const o2f=clamp((state.atmo.O2||0)/25,0,1);
@@ -1393,7 +1561,7 @@ function drawMacro(t){
 
   // mountains (poke into sky band) — height shifts over hundreds of millions of years: tectonic uplift & erosion
   const tec=deriveTectonics(ERAS[curEraIdx].id);
-  const mountainFactor=0.55+tec.mountain*0.17; // plate-tectonics mountain-building rating (1-5) scales peak height
+  const mountainFactor=0.75+tec.mountain*0.1; // plate-tectonics mountain-building rating (1-5) scales peak height
   let tallestM=null,tallestH=-1;
   mountains.forEach(m=>{
     const tectonic=0.5+0.5*Math.sin(simMya*m.freq+m.phase);
@@ -1438,9 +1606,11 @@ function drawMacro(t){
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
 
-  // a small UFO, quietly hovering — because why not
+  // a small UFO — landed on the ground, resting on two legs
   {
-    const ux=MW*0.5+Math.sin(t*0.2)*10,uy=SKY_TOP+16+Math.sin(t*0.35)*2;
+    const ux=MW*0.5,uy=LAND_BASE-2.6;
+    mctx.strokeStyle='rgba(150,190,180,0.85)';mctx.lineWidth=0.6;
+    mctx.beginPath();mctx.moveTo(ux-2.4,uy+1.3);mctx.lineTo(ux-1.6,uy+3.4);mctx.moveTo(ux+2.4,uy+1.3);mctx.lineTo(ux+1.6,uy+3.4);mctx.stroke();
     mctx.fillStyle='rgba(120,220,180,0.9)';
     mctx.beginPath();mctx.ellipse(ux,uy,4,1.3,0,0,Math.PI*2);mctx.fill();
     mctx.fillStyle='rgba(200,230,220,0.7)';
@@ -1549,16 +1719,21 @@ function drawMacro(t){
       mctx.fillStyle=`rgba(255,200,80,${0.3+0.3*Math.sin(t*3+i)})`;mctx.fillRect(gx,gy,1.6,1.6);
     }
   } else {
-    // waves — amplitude and choppiness scale with wind (and spike further during typhoons)
+    // waves — a single clean line; height/speed/direction convey wind, and it never rises into the land layer above
     const seaState=clamp(windRatio()*0.6+(typeof typhoonActive!=='undefined'?typhoonActive*2:0),0.4,3.5);
-    const waveAmp=1+seaState*1.8;
-    mctx.strokeStyle='rgba(255,255,255,0.35)';mctx.lineWidth=0.7;
+    const waveAmp=clamp(0.6+seaState*0.7,0.6,3);
+    const windDir=Math.sin(simMya*0.0006)>=0?1:-1;
+    const waveSpeed=(1.1+seaState*0.85)*windDir;
+    mctx.strokeStyle='rgba(255,255,255,0.4)';mctx.lineWidth=0.8;
     mctx.beginPath();
-    for(let x=0;x<=MW;x+=2){const y=SEA_TOP+1.5+Math.sin(x*0.22+t*2.2)*waveAmp+Math.sin(x*0.5+t*3.7)*waveAmp*0.4;if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);}
+    for(let x=0;x<=MW;x+=2){
+      const y=SEA_TOP+2+waveAmp+Math.sin(x*0.25*windDir+t*waveSpeed)*waveAmp;
+      if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);
+    }
     mctx.stroke();
-    if(seaState>1.3){
-      mctx.fillStyle=`rgba(255,255,255,${clamp((seaState-1.3)*0.4,0,0.6)})`;
-      for(let x=0;x<MW;x+=6){const y=SEA_TOP+1.5+Math.sin(x*0.22+t*2.2)*waveAmp;mctx.fillRect(x,y-1,1.4,1.4);}
+    if(seaState>1.6){
+      mctx.fillStyle=`rgba(255,255,255,${clamp((seaState-1.6)*0.35,0,0.55)})`;
+      for(let x=0;x<MW;x+=7){const y=SEA_TOP+2+waveAmp+Math.sin(x*0.25*windDir+t*waveSpeed)*waveAmp;mctx.fillRect(x,y-1,1.3,1.3);}
     }
   }
 
@@ -1647,7 +1822,7 @@ function updateUI(){
   if(ydEl){if(lang==='ja')ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+'十億年前':m.toFixed(1)+'百万年前');else ydEl.textContent=(m>=1000?(m/1000).toFixed(2)+' BYA':m.toFixed(1)+' MYA')+' ago';}
   if(uiTick%3!==0)return;
   const atmo=state.atmo,total=Object.values(atmo).reduce((a,b)=>a+(b||0),0)||1;
-  let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;const nm=g.name[lang]||g.name.en;h+=`<div class="gas-row"><span class="gas-label">${nm} (${g.label})</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}%</span></div>`;});
+  let h='';GASES.forEach(g=>{const v=atmo[g.key]||0,p=v/total*100;const nm=g.name[lang]||g.name.en;h+=`<div class="gas-row"><span class="gas-label">${nm} (${g.label})</span><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(100,p*3)}%;background:${g.color}"></div></div><span class="gas-val" style="color:${g.color}">${p.toFixed(1)}% ${trendIndicator('gas_'+g.key,p,4)}</span></div>`;});
   document.getElementById('atmo-bars').innerHTML=h;
 
   const tc=state.temp>40?'#ff6b6b':state.temp<-10?'#87ceeb':'#98fb98';
@@ -1660,22 +1835,36 @@ function updateUI(){
   const atmDisplay=state.pressureAtm>=10?Math.round(state.pressureAtm)+' atm':state.pressureAtm.toFixed(2)+' atm';
 
   const airItems=[
-    {color:tc,icon:'🌡',lbl:T('temp'),val:Math.round(state.temp)+'°C'},
-    {color:'#7ec8e3',icon:'💨',lbl:T('wind'),val:(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+'/'+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+'m/s'},
-    {color:pc,icon:isHigh?'⬆':'⬇',lbl:T('pressure'),val:atmDisplay+' ('+T(isHigh?'high':'low')+')'},
-    {color:'#87ceeb',icon:'💧',lbl:T('humidity'),val:humidity+'%'}
+    {color:tc,icon:'🌡',lbl:T('temp'),val:Math.round(state.temp)+'°C '+trendIndicator('air_temp',state.temp,3)},
+    {color:'#7ec8e3',icon:'💨',lbl:T('wind'),val:(lang==='ja'?'平均':'avg.')+Math.round(sf2.windAvg)+'/'+(lang==='ja'?'最大':'max.')+Math.round(sf2.windMax)+'m/s '+trendIndicator('air_wind',sf2.windAvg,4)},
+    {color:pc,icon:isHigh?'⬆':'⬇',lbl:T('pressure'),val:atmDisplay+' ('+T(isHigh?'high':'low')+') '+trendIndicator('air_pressure',state.pressureAtm,0.04)},
+    {color:'#87ceeb',icon:'💧',lbl:T('humidity'),val:humidity+'% '+trendIndicator('air_humidity',humidity,8)}
   ];
   document.getElementById('air-row').innerHTML=airItems.map(x=>
     `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
 
   const surfItemsAll=[
-    {v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma')},
-    {v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean')},
-    {v:sf2.land, color:'#82e0aa',icon:'🏔',lbl:T('land')},
-    {v:sf2.ice,  color:'#aed6f1',icon:'🧊',lbl:T('ice_s')}
+    {v:sf2.magma,color:'#ff6b6b',icon:'🌋',lbl:T('magma'),tk:'surf_magma'},
+    {v:sf2.ocean,color:'#5dade2',icon:'🌊',lbl:T('ocean'),tk:'surf_ocean'},
+    {v:sf2.land, color:'#82e0aa',icon:'🏔',lbl:T('land'),tk:'surf_land'},
+    {v:sf2.ice,  color:'#aed6f1',icon:'🧊',lbl:T('ice_s'),tk:'surf_ice'}
   ];
-  document.getElementById('surface-row').innerHTML=surfItemsAll.filter(x=>x.v>0.5).map(x=>
-    `<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}%</span></div>`).join('');
+  const lc=computeLandComposition();
+  const landSubItems=[
+    {v:lc.forest,color:'#2e8b3d',icon:'🌲',lbl:T('lc_forest'),tk:'lc_forest'},
+    {v:lc.grassland,color:'#8fbc4f',icon:'🌾',lbl:T('lc_grassland'),tk:'lc_grassland'},
+    {v:lc.savanna,color:'#d2a24c',icon:'🌿',lbl:T('lc_savanna'),tk:'lc_savanna'},
+    {v:lc.desert,color:'#e0b25c',icon:'🏜',lbl:T('lc_desert'),tk:'lc_desert'},
+    {v:lc.barren,color:'#8a7a63',icon:'🪨',lbl:T('lc_barren'),tk:'lc_barren'},
+  ].filter(x=>x.v>1);
+  document.getElementById('surface-row').innerHTML=surfItemsAll.filter(x=>x.v>0.5).map(x=>{
+    const row=`<div class="climate-item"><span class="ci-label" style="color:${x.color}"><span class="ci-icon">${x.icon}</span>${x.lbl}</span><span style="color:${x.color}">${Math.round(x.v)}% ${trendIndicator(x.tk,x.v,20)}</span></div>`;
+    if(x.tk==='surf_land' && landSubItems.length){
+      const sub=landSubItems.map(s=>`<div class="climate-item" style="padding-left:12px;font-size:7px"><span class="ci-label" style="color:${s.color}"><span class="ci-icon">${s.icon}</span>${s.lbl}</span><span style="color:${s.color}">${Math.round(s.v)}% ${trendIndicator(s.tk,s.v,25)}</span></div>`).join('');
+      return row+sub;
+    }
+    return row;
+  }).join('');
   drawSurfacePie(surfItemsAll);
 
   const tierWord=v=>T('tier'+clamp(Math.round(v),1,5));
@@ -1685,18 +1874,17 @@ function updateUI(){
   const tec=deriveTectonics(ERAS[curEraIdx].id);
   const microbeF=clamp(sumBio(['archaea','bacteria'])/90,0,1)*5;
   const subsurfTier=clamp(Math.round(1+microbeF),1,5);
+  const deepBioWord=T('deepbio'+subsurfTier);
   const crustItems=[
-    {v:magmaLevel,key:'magma_level',word:tierWord(magmaTierNum),color:tierColor(magmaTierNum)},
-    {v:tec.activity,key:'plate_activity',word:tierWord(tec.activity),color:tierColor(tec.activity)},
-    {v:tec.volcanic,key:'volcanic_activity',word:tierWord(tec.volcanic),color:tierColor(tec.volcanic)},
-    {v:tec.mountain,key:'mountain_building',word:tierWord(tec.mountain),color:tierColor(tec.mountain)},
-    {v:tec.seafloor,key:'seafloor_spreading',word:tierWord(tec.seafloor),color:tierColor(tec.seafloor)},
-    {v:tec.subduction,key:'subduction',word:tierWord(tec.subduction),color:tierColor(tec.subduction)},
-    {v:tec.drift,key:'continental_drift',word:tierWord(tec.drift),color:tierColor(tec.drift)},
-    {v:subsurfTier,key:'subsurface_bio',word:tierWord(subsurfTier),color:tierColor(subsurfTier)},
+    {icon:'🌋',key:'crust_heat',word:tierWord(magmaTierNum),color:tierColor(magmaTierNum),desc:T('crust_heat_desc'),tk:'crust_heat',tv:magmaLevel,sc:20},
+    {icon:'🌍',key:'crust_tectonics',word:tierWord(tec.activity),color:tierColor(tec.activity),desc:T('crust_tectonics_desc'),tk:'crust_tectonics',tv:tec.activity,sc:1.5},
+    {icon:'🦠',key:'crust_biosphere',word:deepBioWord,color:tierColor(subsurfTier),desc:T('crust_biosphere_desc'),tk:'crust_biosphere',tv:microbeF,sc:1},
   ];
   document.getElementById('crustact-row').innerHTML=crustItems.map(x=>
-    `<div class="climate-item"><span class="ci-label" style="color:#7ec8e3">${T(x.key)}</span><span style="color:${x.color}">${x.word}</span></div>`).join('');
+    `<div style="margin-bottom:7px">
+       <div class="climate-item" style="margin-bottom:1px"><span class="ci-label" style="color:#7ec8e3"><span class="ci-icon">${x.icon}</span>${T(x.key)}</span><span style="color:${x.color}">${x.word} ${trendIndicator(x.tk,x.tv,x.sc)}</span></div>
+       <div style="font-size:6px;color:#3a5a78;line-height:1.3;padding-left:15px">${x.desc}</div>
+     </div>`).join('');
 
   // ---- OCEAN tab ----
   const oceanCovPct=sf2.ocean;
@@ -1705,11 +1893,11 @@ function updateUI(){
   const avgDepth=clamp(3.7*(58/Math.max(10,oceanCovPct))*0.9,0.3,7).toFixed(1);
   const seaTemp=Math.round(clamp(state.temp*0.55+3,-2,42));
   const propItems=[
-    {key:'oc_coverage',val:Math.round(oceanCovPct)+'%',color:'#5dade2'},
-    {key:'oc_sealevel',val:(seaLevel>=0?'+':'')+seaLevel+' m',color:'#7ec8e3'},
-    {key:'oc_volume',val:oceanVolume+' ×10⁹ km³',color:'#5dade2'},
-    {key:'oc_depth',val:avgDepth+' km',color:'#2471a3'},
-    {key:'oc_seatemp',val:seaTemp+'°C',color:seaTemp>25?'#ff6b6b':seaTemp<5?'#87ceeb':'#98fb98'},
+    {key:'oc_coverage',val:Math.round(oceanCovPct)+'% '+trendIndicator('oc_coverage',oceanCovPct,6),color:'#5dade2'},
+    {key:'oc_sealevel',val:(seaLevel>=0?'+':'')+seaLevel+' m '+trendIndicator('oc_sealevel',seaLevel,8),color:'#7ec8e3'},
+    {key:'oc_volume',val:oceanVolume+' ×10⁹ km³ '+trendIndicator('oc_volume',parseFloat(oceanVolume),0.05),color:'#5dade2'},
+    {key:'oc_depth',val:avgDepth+' km '+trendIndicator('oc_depth',parseFloat(avgDepth),0.2),color:'#2471a3'},
+    {key:'oc_seatemp',val:seaTemp+'°C '+trendIndicator('oc_seatemp',seaTemp,3),color:seaTemp>25?'#ff6b6b':seaTemp<5?'#87ceeb':'#98fb98'},
   ];
   document.getElementById('ocean-prop-row').innerHTML=propItems.map(x=>
     `<div class="climate-item"><span class="ci-label" style="color:${x.color}">${T(x.key)}</span><span style="color:${x.color}">${x.val}</span></div>`).join('');
@@ -1734,11 +1922,11 @@ function updateUI(){
   const dynColor=v=>tierColor(v>2.4?5:v>1.7?4:v>1.1?3:v>0.6?2:1);
   const mixWord=state.temp>25?tierWord(1):state.temp>10?tierWord(3):tierWord(5);
   const dynItems=[
-    {key:'oc_current',word:dynWord(wr),color:dynColor(wr)},
-    {key:'oc_upwelling',word:dynWord(wr*0.9),color:dynColor(wr*0.9)},
-    {key:'oc_mixing',word:mixWord,color:state.temp>25?'#ffa07a':state.temp>10?'#f7dc6f':'#7ec8e3'},
-    {key:'oc_tide',word:tierWord(3),color:tierColor(3)},
-    {key:'oc_wave',word:dynWord(seaStateNow),color:dynColor(seaStateNow)},
+    {key:'oc_current',word:dynWord(wr)+' '+trendIndicator('oc_current',wr,0.3),color:dynColor(wr)},
+    {key:'oc_upwelling',word:dynWord(wr*0.9)+' '+trendIndicator('oc_upwelling',wr*0.9,0.3),color:dynColor(wr*0.9)},
+    {key:'oc_mixing',word:mixWord+' '+trendIndicator('oc_mixing',state.temp,3),color:state.temp>25?'#ffa07a':state.temp>10?'#f7dc6f':'#7ec8e3'},
+    {key:'oc_tide',word:tierWord(3)+' '+trendIndicator('oc_tide',3,1),color:tierColor(3)},
+    {key:'oc_wave',word:dynWord(seaStateNow)+' '+trendIndicator('oc_wave',seaStateNow,0.3),color:dynColor(seaStateNow)},
   ];
   document.getElementById('ocean-dyn-row').innerHTML=dynItems.map(x=>
     `<div class="climate-item"><span class="ci-label" style="color:#7ec8e3">${T(x.key)}</span><span style="color:${x.color}">${x.word}</span></div>`).join('');
@@ -1746,15 +1934,15 @@ function updateUI(){
   let bh='';
   BIO_GROUPS_DEF.forEach(group=>{
     const gtitle=T('grp_'+group.gkey);
-    bh+=`<div class="bio-group"><div class="bio-group-title">${gtitle}</div>`;
+    bh+=`<div class="bio-group"><div class="bio-group-title">${gtitle}</div><div class="bio-cols">`;
     const sorted=[...group.members].sort((a,b2)=>(state.bio[b2.key]||0)-(state.bio[a.key]||0));
     sorted.forEach(m=>{
       const v=clamp(state.bio[m.key]||0,0,100);
-      const barWidth=v<0.05?0:Math.max(3,v);
+      const barH=v<0.05?0:Math.max(2,v/100*22);
       const lbl=m[lang]||m.en;
-      bh+=`<div class="bio-row"><span class="bio-icon">${m.icon}</span><span class="bio-name">${lbl}</span><div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:${barWidth}%;background:${m.color}"></div></div></div>`;
+      bh+=`<div class="bio-col"><div class="bio-col-barbg"><div class="bio-col-barfill" style="height:${barH}px;background:${m.color}"></div></div><div class="bio-col-icon">${m.icon}</div><div class="bio-col-name">${lbl}</div></div>`;
     });
-    bh+='</div>';
+    bh+='</div></div>';
   });
   document.getElementById('bio-groups').innerHTML=bh;
 }
@@ -1785,6 +1973,8 @@ function loop(ts){
 initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();renderComposition();
 document.getElementById('companion-name').textContent=COMPANIONS[currentChar].name;
 startTyping(COMPANIONS[currentChar].lines[lang][0]);
+applyLang();
+renderLog();
 requestAnimationFrame(loop);
 </script>
 </body>
