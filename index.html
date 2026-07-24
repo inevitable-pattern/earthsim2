@@ -10,12 +10,13 @@ html,body{width:100%;height:100%;background:#000;display:flex;align-items:center
 #scale-root{width:940px;height:640px;transform-origin:center center;position:relative}
 #wrap{display:flex;gap:0;width:940px;height:640px;background:#000;font-family:'Courier New',monospace}
 #left{width:484px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px;gap:4px;position:relative}
-#top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center}
-#title-logo{height:20px;width:auto;flex-shrink:0}
+#title-area{position:relative;width:100%}
+#top-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:center;padding-left:58px}
+#title-logo{position:absolute;left:0;top:-2px;height:58px;width:auto;z-index:2;pointer-events:none}
 #era-badge{font-size:13px;color:#ffec27;letter-spacing:1px;text-align:center;font-weight:bold;flex:1}
 #lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
 #lang-btn:hover{background:#1a3a5c}
-#eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px}
+#eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px;padding-left:58px}
 #macro-wrap{position:relative;width:440px;height:400px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
 canvas#macro{width:440px;height:400px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
@@ -100,12 +101,14 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
 <div id="scale-root">
 <div id="wrap">
 <div id="left">
-  <div id="top-row">
+  <div id="title-area">
     <img id="title-logo" src="data:image/png;base64,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" alt="logo">
-    <div id="era-badge">EARTH SIMULATOR</div>
-    <button id="lang-btn" onclick="toggleLang()">日本語</button>
+    <div id="top-row">
+      <div id="era-badge">EARTH SIMULATOR</div>
+      <button id="lang-btn" onclick="toggleLang()">日本語</button>
+    </div>
+    <div id="eon-badge">HADEAN — 4.5 BYA</div>
   </div>
-  <div id="eon-badge">HADEAN — 4.5 BYA</div>
   <div id="macro-wrap">
     <canvas id="macro" width="176" height="160"></canvas>
 
@@ -128,11 +131,11 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
   </div>
   <div id="speed-row">
     <span id="lbl-speed">SPEED:</span>
-    <button id="b0" onclick="setSpd(0)">⏹️</button>
-    <button id="b1" onclick="setSpd(1)" class="active">🔼</button>
-    <button id="b5" onclick="setSpd(5)">⏫</button>
-    <button id="b20" onclick="setSpd(20)">⏫⏫</button>
-    <button id="b100" onclick="setSpd(100)">⏫⏫⏫</button>
+    <button id="b0" onclick="setSpd(0)">STOP</button>
+    <button id="b1" onclick="setSpd(1)" class="active">1x</button>
+    <button id="b5" onclick="setSpd(5)">5x</button>
+    <button id="b20" onclick="setSpd(20)">20x</button>
+    <button id="b100" onclick="setSpd(100)">100x</button>
   </div>
 </div>
 <div id="right">
@@ -380,7 +383,7 @@ function drawCompanionAvatar(t){
 
 // ---- 言語 ----
 const LANG={
-  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'ORGANISMS',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_ocean:'🌊 OCEAN LIFE',grp_land:'🌍 LAND LIFE',grp_subsurface:'🦠 SUBSURFACE BIOSPHERE',
+  en:{title:'EARTH SIMULATOR',langBtn:'日本語',speed:'SPEED:',speed_stop:'STOP',atmo:'ATMOSPHERE',earthmap:'EARTH MAP',air:'AIR',surface:'SURFACE',climate:'CLIMATE',crust:'CRUST',bio:'ORGANISMS',temp:'TEMP',wind:'WIND',pressure:'PRESSURE',humidity:'HUMIDITY',high:'HIGH',low:'LOW',magma:'Magma',ocean:'Ocean',land:'Land',ice_s:'Ice',ago:' ago',reset_msg:'Earth reset — 4.5 billion years begin',btn_meteor:'☄ METEOR',btn_volcano:'🌋 VOLCANO',btn_ice:'❄ ICE AGE',btn_warm:'☀ WARMING',btn_ext:'💀 MASS EXT',btn_quake:'🌐 QUAKE',btn_typhoon:'🌀 TYPHOON',btn_reset:'↺ RESET',ev_meteor:'☄ METEOR IMPACT! Mass extinction event!',ev_volcano:'🌋 MASSIVE VOLCANISM! CO2 surges, O2 drops!',ev_ice:'❄ ICE AGE! Global cooling. Life struggles!',ev_warm:'☀ GLOBAL WARMING! Ice melts. Ocean rises!',ev_ext:'💀 MASS EXTINCTION! 90% of species wiped out!',ev_quake:'🌐 MAJOR EARTHQUAKE! The ground shakes and cracks!',ev_typhoon:'🌀 TYPHOON! Violent winds and torrential rain!',grp_ocean:'🌊 OCEAN LIFE',grp_land:'🌍 LAND LIFE',grp_subsurface:'🦠 SUBSURFACE BIOSPHERE',
    crustact:'CRUSTAL ACTIVITY',composition:'PLANET COMPOSITION',
    plate_activity:'🌍 Plate Activity',volcanic_activity:'🌋 Volcanic Activity',mountain_building:'⛰ Mountain Building',seafloor_spreading:'🌊 Seafloor Spreading',subduction:'♻ Subduction',continental_drift:'🪨 Continental Drift',magma_level:'🌋 Magma Activity',subsurface_bio:'🦠 Subsurface Biosphere',
    crust_heat:'Internal Heat',crust_tectonics:'Plate Tectonics',crust_biosphere:'Deep Biosphere',
@@ -396,7 +399,7 @@ const LANG={
    oc_water:'💧 Water',oc_salt:'🧂 Salt (Salinity)',oc_o2:'🫧 Dissolved Oxygen',oc_carbon:'⚫ Carbon',oc_nitrogen:'💨 Nitrogen',oc_sulfur:'🟡 Sulfur',oc_minerals:'🪨 Minerals',
    oc_current:'🌊 Ocean Current',oc_upwelling:'⬆ Upwelling',oc_mixing:'🔃 Vertical Mixing',oc_tide:'🌙 Tide',oc_wave:'🌊 Wave Activity',
    spaceship:'SPACESHIP',log:'LOG',save_ok:'Game saved.',save_fail:'Save failed.',load_ok:'Game loaded.',load_fail:'No save data found.',mya_short:' Mya'},
-  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_ocean:'🌊 海の生物',grp_land:'🌍 陸の生物',grp_subsurface:'🦠 地下生物圏',
+  ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',speed_stop:'停止',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_ocean:'🌊 海の生物',grp_land:'🌍 陸の生物',grp_subsurface:'🦠 地下生物圏',
    crustact:'地殻活動',composition:'惑星組成',
    plate_activity:'🌍 プレート活動',volcanic_activity:'🌋 火山活動',mountain_building:'⛰ 山脈形成',seafloor_spreading:'🌊 海底拡大',subduction:'♻ 沈み込み',continental_drift:'🪨 大陸移動',magma_level:'🌋 マグマ活動',subsurface_bio:'🦠 地下生物圏',
    crust_heat:'内部熱',crust_tectonics:'プレートテクトニクス',crust_biosphere:'地下生物圏',
@@ -421,6 +424,7 @@ function applyLang(){
   document.getElementById('era-badge').textContent=T('title');
   document.getElementById('lang-btn').textContent=T('langBtn');
   document.getElementById('lbl-speed').textContent=T('speed');
+  document.getElementById('b0').textContent=T('speed_stop');
   document.getElementById('lbl-earthmap').textContent=T('earthmap');
   document.getElementById('lbl-spaceship').textContent=T('spaceship');
   document.getElementById('lbl-log').textContent=T('log');
@@ -1546,12 +1550,13 @@ function drawMacro(t){
   }
 
   if(!skyClouds.length) initMacroParticles();
-  // clouds — density now driven by live humidity as well as era cloud baseline; speed driven by wind
+  // clouds — flow left to right only; speed follows wind (faster when windy, slower when calm)
   const windFactor=clamp(windRatio(),0.3,6);
   const cloudDensity=clamp(state.clouds*0.4+(state.humidityPct/100)*0.85,0,1.3);
   const visibleCloudCount=Math.max(2,Math.round(skyClouds.length*clamp(cloudDensity,0.15,1)));
+  const cloudSpeed=0.0055*windFactor;
   skyClouds.forEach((c,ci)=>{
-    const cxFrac=((c.x+t*c.speed*(0.3+h2of)*0.02*windFactor)%1+1)%1;
+    const cxFrac=((c.x+t*cloudSpeed)%1+1)%1;
     if(ci>=visibleCloudCount) return;
     const cx=cxFrac*MW,cy=SKY_TOP+c.y*(SKY_BOT-SKY_TOP-10)+4;
     mctx.globalAlpha=c.alpha*(0.3+cloudDensity*0.9)*(0.5+0.5*nightFactor);
@@ -1685,18 +1690,19 @@ function drawMacro(t){
     for(let i=0;i<count;i++) drawCreature(c,c.pool[i],t);
   });
 
-  // a small UFO — landed on the ground, resting on two legs
+  // a small UFO — landed on the ground, resting on two short splayed legs
   {
-    const ux=MW*0.5,uy=LAND_BASE-24;
-    mctx.strokeStyle='#8fb8ae';mctx.lineWidth=1.3;
-    mctx.beginPath();mctx.moveTo(ux-3.6,uy+1.9);mctx.lineTo(ux-2.4,uy+6.2);mctx.moveTo(ux+3.6,uy+1.9);mctx.lineTo(ux+2.4,uy+6.2);mctx.stroke();
-    mctx.fillStyle='#3a8c72';mctx.beginPath();mctx.ellipse(ux,uy+0.4,6.6,2.2,0,0,Math.PI*2);mctx.fill();
-    mctx.fillStyle='#5fd6a8';mctx.strokeStyle='#0a1f1a';mctx.lineWidth=0.9;
-    mctx.beginPath();mctx.ellipse(ux,uy,6.6,2.2,0,0,Math.PI*2);mctx.fill();mctx.stroke();
-    mctx.fillStyle='#eafcf6';mctx.strokeStyle='#0a1f1a';mctx.lineWidth=0.9;
-    mctx.beginPath();mctx.ellipse(ux,uy-1.8,3.1,2,0,Math.PI,0);mctx.fill();mctx.stroke();
+    const S=0.7; // 70% scale
+    const ux=MW*0.5,uy=LAND_TOP+(LAND_BASE-LAND_TOP)*0.5;
+    mctx.strokeStyle='#8fb8ae';mctx.lineWidth=1.3*S;
+    mctx.beginPath();mctx.moveTo(ux-2.0*S,uy+1.6*S);mctx.lineTo(ux-4.3*S,uy+3.9*S);mctx.moveTo(ux+2.0*S,uy+1.6*S);mctx.lineTo(ux+4.3*S,uy+3.9*S);mctx.stroke();
+    mctx.fillStyle='#3a8c72';mctx.beginPath();mctx.ellipse(ux,uy+0.4*S,6.6*S,2.2*S,0,0,Math.PI*2);mctx.fill();
+    mctx.fillStyle='#5fd6a8';mctx.strokeStyle='#0a1f1a';mctx.lineWidth=0.9*S;
+    mctx.beginPath();mctx.ellipse(ux,uy,6.6*S,2.2*S,0,0,Math.PI*2);mctx.fill();mctx.stroke();
+    mctx.fillStyle='#eafcf6';mctx.strokeStyle='#0a1f1a';mctx.lineWidth=0.9*S;
+    mctx.beginPath();mctx.ellipse(ux,uy-1.8*S,3.1*S,2*S,0,Math.PI,0);mctx.fill();mctx.stroke();
     mctx.fillStyle=`rgba(255,255,150,${0.6+0.4*Math.sin(t*4)})`;
-    mctx.beginPath();mctx.arc(ux-3.1,uy+0.5,0.8,0,Math.PI*2);mctx.arc(ux,uy+0.7,0.8,0,Math.PI*2);mctx.arc(ux+3.1,uy+0.5,0.8,0,Math.PI*2);mctx.fill();
+    mctx.beginPath();mctx.arc(ux-3.1*S,uy+0.5*S,0.8*S,0,Math.PI*2);mctx.arc(ux,uy+0.7*S,0.8*S,0,Math.PI*2);mctx.arc(ux+3.1*S,uy+0.5*S,0.8*S,0,Math.PI*2);mctx.fill();
   }
 
   // wind streaks — visible gust lines when wind is strong (drawn after mountains so they don't hide behind peaks)
@@ -1799,24 +1805,24 @@ function drawMacro(t){
       mctx.fillStyle=`rgba(255,200,80,${0.3+0.3*Math.sin(t*3+i)})`;mctx.fillRect(gx,gy,1.6,1.6);
     }
   } else {
-    // waves — a single clean, gentle line (styled like the mantle veins below); height/speed convey
-    // wind, but waves never get as fast as the wind itself, and direction never flips
+    // waves — sharper line (styled like the mantle veins below) with lively motion; height/speed
+    // convey wind, but waves never get as fast as the wind itself, and direction never flips
     const seaStateTarget=clamp(windRatio()*0.6+(typeof typhoonActive!=='undefined'?typhoonActive*2:0),0.4,3.5);
     if(typeof waveStateSmooth==='undefined'){waveStateSmooth=seaStateTarget;}
     waveStateSmooth=lerp(waveStateSmooth,seaStateTarget,0.0008);
     const seaState=waveStateSmooth;
-    const waveAmp=clamp(0.5+seaState*0.5,0.5,2.2);
-    const waveSpeed=0.05+seaState*0.045; // real swells are slow — gentle regardless of how rough the sea state is
-    mctx.strokeStyle='rgba(255,255,255,0.4)';mctx.lineWidth=0.9;mctx.lineCap='round';mctx.lineJoin='round';
+    const waveAmp=clamp(0.7+seaState*0.7,0.7,3.2);
+    const waveSpeed=0.1+seaState*0.09; // livelier than before, but real swells are still slower than the wind itself
+    mctx.strokeStyle='rgba(255,255,255,0.7)';mctx.lineWidth=1.1;mctx.lineCap='round';mctx.lineJoin='round';
     mctx.beginPath();
     for(let x=0;x<=MW;x+=4){
-      const y=SEA_TOP+2+waveAmp+Math.sin(x*0.1+t*waveSpeed)*waveAmp;
+      const y=SEA_TOP+2+waveAmp+Math.sin(x*0.12+t*waveSpeed)*waveAmp;
       if(x===0)mctx.moveTo(x,y);else mctx.lineTo(x,y);
     }
     mctx.stroke();
     if(seaState>1.6){
       mctx.fillStyle=`rgba(255,255,255,${clamp((seaState-1.6)*0.3,0,0.5)})`;
-      for(let x=0;x<MW;x+=9){const y=SEA_TOP+2+waveAmp+Math.sin(x*0.1+t*waveSpeed)*waveAmp;mctx.fillRect(x,y-1,1.2,1.2);}
+      for(let x=0;x<MW;x+=9){const y=SEA_TOP+2+waveAmp+Math.sin(x*0.12+t*waveSpeed)*waveAmp;mctx.fillRect(x,y-1,1.2,1.2);}
     }
   }
 
