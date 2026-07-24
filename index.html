@@ -224,6 +224,14 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
             <button class="ebtn" onclick="toggleMusic()" id="btn-music">🎵 OFF</button>
           </div>
         </div>
+        <div class="climate-card" style="margin-bottom:6px;background:#0a1f14;border-color:#1e5c37">
+          <div class="climate-card-title" style="color:#4ecb71" id="lbl-edit">✏ EDIT</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('editor.html','_blank')">🧬 OBJECT</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('event.html','_blank')">⚡ EVENT</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('age.html','_blank')">🕰 AGE</button>
+          </div>
+        </div>
         <div class="climate-card-title" id="lbl-log">LOG</div>
         <div id="log-list"></div>
       </div>
@@ -398,7 +406,7 @@ const LANG={
    oc_coverage:'🌊 Ocean Coverage',oc_sealevel:'📏 Sea Level',oc_volume:'🧊 Ocean Volume',oc_depth:'📉 Average Depth',oc_seatemp:'🌡 Average Temperature',
    oc_water:'💧 Water',oc_salt:'🧂 Salt (Salinity)',oc_o2:'🫧 Dissolved Oxygen',oc_carbon:'⚫ Carbon',oc_nitrogen:'💨 Nitrogen',oc_sulfur:'🟡 Sulfur',oc_minerals:'🪨 Minerals',
    oc_current:'🌊 Ocean Current',oc_upwelling:'⬆ Upwelling',oc_mixing:'🔃 Vertical Mixing',oc_tide:'🌙 Tide',oc_wave:'🌊 Wave Activity',
-   spaceship:'SPACESHIP',log:'LOG',save_ok:'Game saved.',save_fail:'Save failed.',load_ok:'Game loaded.',load_fail:'No save data found.',mya_short:' Mya'},
+   spaceship:'SPACESHIP',log:'LOG',edit:'✏ EDIT',save_ok:'Game saved.',save_fail:'Save failed.',load_ok:'Game loaded.',load_fail:'No save data found.',mya_short:' Mya'},
   ja:{title:'地球シミュレータ',langBtn:'English',speed:'速度:',speed_stop:'停止',atmo:'大気組成',earthmap:'地球マップ',air:'気象',surface:'地表',climate:'気候',crust:'地殻',bio:'生物',temp:'気温',wind:'風速',pressure:'気圧',humidity:'湿度',high:'高',low:'低',magma:'マグマ',ocean:'海洋',land:'陸地',ice_s:'氷床',ago:'前',reset_msg:'リセット — 46億年の旅が始まる',btn_meteor:'☄ 隕石',btn_volcano:'🌋 火山噴火',btn_ice:'❄ 氷河期',btn_warm:'☀ 温暖化',btn_ext:'💀 大量絶滅',btn_quake:'🌐 大地震',btn_typhoon:'🌀 台風',btn_reset:'↺ リセット',ev_meteor:'☄ 隕石衝突！大量絶滅イベント！',ev_volcano:'🌋 超大型噴火！CO2急増、O2低下！',ev_ice:'❄ 氷河期！全球凍結の危機！',ev_warm:'☀ 地球温暖化！氷が溶ける！',ev_ext:'💀 大量絶滅！種の90%が消滅！',ev_quake:'🌐 大地震発生！大地が揺れ、地割れが走る！',ev_typhoon:'🌀 台風接近！猛烈な風と豪雨！',grp_ocean:'🌊 海の生物',grp_land:'🌍 陸の生物',grp_subsurface:'🦠 地下生物圏',
    crustact:'地殻活動',composition:'惑星組成',
    plate_activity:'🌍 プレート活動',volcanic_activity:'🌋 火山活動',mountain_building:'⛰ 山脈形成',seafloor_spreading:'🌊 海底拡大',subduction:'♻ 沈み込み',continental_drift:'🪨 大陸移動',magma_level:'🌋 マグマ活動',subsurface_bio:'🦠 地下生物圏',
@@ -414,7 +422,7 @@ const LANG={
    oc_coverage:'🌊 海洋面積',oc_sealevel:'📏 海面高度',oc_volume:'🧊 海水量',oc_depth:'📉 平均水深',oc_seatemp:'🌡 平均海水温',
    oc_water:'💧 水',oc_salt:'🧂 塩分',oc_o2:'🫧 溶存酸素',oc_carbon:'⚫ 炭素',oc_nitrogen:'💨 窒素',oc_sulfur:'🟡 硫黄',oc_minerals:'🪨 鉱物',
    oc_current:'🌊 海流',oc_upwelling:'⬆ 湧昇流',oc_mixing:'🔃 鉛直循環',oc_tide:'🌙 潮汐',oc_wave:'🌊 波浪',
-   spaceship:'宇宙船',log:'ログ',save_ok:'セーブしました。',save_fail:'セーブに失敗しました。',load_ok:'ロードしました。',load_fail:'セーブデータが見つかりません。',mya_short:'百万年前'},
+   spaceship:'宇宙船',log:'ログ',edit:'✏ 編集',save_ok:'セーブしました。',save_fail:'セーブに失敗しました。',load_ok:'ロードしました。',load_fail:'セーブデータが見つかりません。',mya_short:'百万年前'},
 };
 let lang='en';
 try{const savedLang=localStorage.getItem('earthsim_lang');if(savedLang==='en'||savedLang==='ja')lang=savedLang;}catch(e){}
@@ -428,6 +436,7 @@ function applyLang(){
   document.getElementById('lbl-earthmap').textContent=T('earthmap');
   document.getElementById('lbl-spaceship').textContent=T('spaceship');
   document.getElementById('lbl-log').textContent=T('log');
+  document.getElementById('lbl-edit').textContent=T('edit');
   renderLog();
   document.getElementById('lbl-atmo').textContent=T('atmo');
   document.getElementById('lbl-air').textContent=T('air');
