@@ -75,6 +75,8 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
     <div id="slot-name-row">
       <label style="font-size:9px;color:#4a7c9e">NAME:</label>
       <input id="slot-name" value="">
+      <label style="font-size:9px;color:#4a7c9e">COLOR:</label>
+      <input id="slot-color" type="color" value="#5dade2" oninput="onColorChange()" style="width:36px;height:26px;padding:1px;background:#071525;border:1px solid #1a3a5c;cursor:pointer">
     </div>
     <div id="right">
       <div id="prompt-area">
@@ -125,7 +127,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 <script>
 const NS='objects';
 const SEED=[
-{name:'Plankton',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Plankton',color:'#5dade2',source:`function draw(ctx, cx, cy, t, scale, color) {
   const x = cx + Math.sin(t*0.6)*3*scale;
   const y = cy + Math.cos(t*0.5)*2*scale;
   ctx.globalAlpha = 0.55;
@@ -133,7 +135,7 @@ const SEED=[
   ctx.fillRect(x, y, 1*scale, 1*scale);
   ctx.globalAlpha = 1;
 }`},
-{name:'Kelp',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Kelp',color:'#2ecc71',source:`function draw(ctx, cx, cy, t, scale, color) {
   const sway = Math.sin(t*1.1)*3*scale;
   ctx.strokeStyle = color;
   ctx.lineWidth = 1*scale;
@@ -142,7 +144,7 @@ const SEED=[
   ctx.quadraticCurveTo(cx+sway, cy-5*scale, cx+sway*1.6, cy-9*scale);
   ctx.stroke();
 }`},
-{name:'Jellyfish',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Jellyfish',color:'#f8c8d4',source:`function draw(ctx, cx, cy, t, scale, color) {
   const rr = (1.6+Math.sin(t*2.4)*0.6)*scale;
   ctx.globalAlpha = 0.8;
   ctx.fillStyle = color;
@@ -154,7 +156,7 @@ const SEED=[
   ctx.stroke();
   ctx.globalAlpha = 1;
 }`},
-{name:'Trilobite',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Trilobite',color:'#a04000',source:`function draw(ctx, cx, cy, t, scale, color) {
   ctx.fillStyle = color;
   ctx.beginPath(); ctx.ellipse(cx, cy, 1.8*scale, 1*scale, 0, 0, Math.PI*2); ctx.fill();
   ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.3*scale;
@@ -165,7 +167,7 @@ const SEED=[
     ctx.stroke();
   }
 }`},
-{name:'Shell / Mollusk',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Shell / Mollusk',color:'#d98880',source:`function draw(ctx, cx, cy, t, scale, color) {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(cx-1.6*scale, cy);
@@ -180,7 +182,7 @@ const SEED=[
     ctx.stroke();
   }
 }`},
-{name:'Starfish',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Starfish',color:'#e08283',source:`function draw(ctx, cx, cy, t, scale, color) {
   ctx.fillStyle = color;
   ctx.beginPath();
   for (let k=0;k<5;k++){
@@ -194,7 +196,7 @@ const SEED=[
   ctx.fillStyle='rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.arc(cx,cy,0.6*scale,0,Math.PI*2); ctx.fill();
 }`},
-{name:'Crab',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Crab',color:'#e67e22',source:`function draw(ctx, cx, cy, t, scale, color) {
   const x=cx,y=cy;
   ctx.fillStyle=color;
   ctx.beginPath(); ctx.ellipse(x,y,1.7*scale,1.2*scale,0,0,Math.PI*2); ctx.fill();
@@ -213,7 +215,7 @@ const SEED=[
   ctx.beginPath(); ctx.moveTo(x-2.6*scale,y-1.4*scale); ctx.lineTo(x-3.3*scale,y-1.9*scale); ctx.lineTo(x-3*scale,y-0.9*scale); ctx.fill();
   ctx.beginPath(); ctx.moveTo(x+2.6*scale,y-1.4*scale); ctx.lineTo(x+3.3*scale,y-1.9*scale); ctx.lineTo(x+3*scale,y-0.9*scale); ctx.fill();
 }`},
-{name:'Fish',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Fish',color:'#5dade2',source:`function draw(ctx, cx, cy, t, scale, color) {
   const y=cy+Math.sin(t*3)*1.6*scale;
   const w=2.2*scale, h=1.2*scale;
   ctx.fillStyle=color;
@@ -221,19 +223,19 @@ const SEED=[
   ctx.moveTo(cx-w/2,y); ctx.lineTo(cx+w/2,y-h/2); ctx.lineTo(cx+w/2,y+h/2);
   ctx.closePath(); ctx.fill();
 }`},
-{name:'Amphibian',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Amphibian',color:'#58d68d',source:`function draw(ctx, cx, cy, t, scale, color) {
   const y=cy-Math.abs(Math.sin(t*3))*2.2*scale;
   ctx.fillStyle=color;
   ctx.fillRect(cx-1*scale,y-1*scale,2*scale,1.6*scale);
 }`},
-{name:'Insect',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Insect',color:'#f7dc6f',source:`function draw(ctx, cx, cy, t, scale, color) {
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   ctx.fillStyle=color;
   ctx.fillRect(cx-1*scale,cy-bob-1.6*scale,2*scale,1.6*scale);
   ctx.fillRect(cx-0.6*scale,cy-0.6*scale,0.6*scale,0.8*scale);
   ctx.fillRect(cx+0.2*scale,cy-0.6*scale,0.6*scale,0.8*scale);
 }`},
-{name:'Reptile',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Reptile',color:'#a9cce3',source:`function draw(ctx, cx, cy, t, scale, color) {
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-0.6*scale;
@@ -246,7 +248,7 @@ const SEED=[
   ctx.fillRect(cx-0.9*scale,cy-0.5*scale,0.5*scale,0.7*scale);
   ctx.fillRect(cx+0.4*scale,cy-0.5*scale,0.5*scale,0.7*scale);
 }`},
-{name:'Dinosaur (Sauropod)',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Dinosaur (Sauropod)',color:'#d35400',source:`function draw(ctx, cx, cy, t, scale, color) {
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-1.1*scale;
@@ -261,7 +263,7 @@ const SEED=[
   ctx.fillRect(cx-1.1*scale,cy-0.6*scale,0.6*scale,0.9*scale);
   ctx.fillRect(cx+0.5*scale,cy-0.6*scale,0.6*scale,0.9*scale);
 }`},
-{name:'Mammal',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Mammal',color:'#ec407a',source:`function draw(ctx, cx, cy, t, scale, color) {
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-0.9*scale;
@@ -274,21 +276,21 @@ const SEED=[
   ctx.fillRect(cx-0.9*scale,cy-0.6*scale,0.6*scale,0.9*scale);
   ctx.fillRect(cx+0.3*scale,cy-0.6*scale,0.6*scale,0.9*scale);
 }`},
-{name:'Bird',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Bird',color:'#f1c40f',source:`function draw(ctx, cx, cy, t, scale, color) {
   const flap=Math.sin(t*9)*1.4*scale;
   ctx.strokeStyle=color; ctx.lineWidth=0.8*scale;
   ctx.beginPath();
   ctx.moveTo(cx-2*scale,cy-flap); ctx.lineTo(cx,cy); ctx.lineTo(cx+2*scale,cy-flap);
   ctx.stroke();
 }`},
-{name:'Fungi / Mushroom',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Fungi / Mushroom',color:'#f0b27a',source:`function draw(ctx, cx, cy, t, scale, color) {
   const pulse=(0.9+Math.sin(t*1.6)*0.15)*scale;
   ctx.fillStyle=color;
   ctx.beginPath(); ctx.ellipse(cx,cy-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0); ctx.fill();
   ctx.fillStyle='#d5b895';
   ctx.fillRect(cx-0.3*scale,cy-1.4*pulse,0.6*scale,1.4*pulse);
 }`},
-{name:'Conifer Tree',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Conifer Tree',color:'#1d6a2f',source:`function draw(ctx, cx, cy, t, scale, color) {
   const lean=Math.sin(t*1.1)*0.08*scale;
   const h=7*scale;
   ctx.strokeStyle='#6b4a2b'; ctx.lineWidth=0.6*scale;
@@ -304,7 +306,7 @@ const SEED=[
     ctx.closePath(); ctx.fill();
   }
 }`},
-{name:'Flowering Tree',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'Flowering Tree',color:'#2e8b3d',source:`function draw(ctx, cx, cy, t, scale, color) {
   const lean=Math.sin(t*1.15)*0.1*scale;
   const h=6*scale;
   ctx.strokeStyle='#6b4a2b'; ctx.lineWidth=0.7*scale;
@@ -318,7 +320,7 @@ const SEED=[
     ctx.beginPath(); ctx.arc(tcx+Math.cos(ang)*1.3*scale,tcy+Math.sin(ang)*1.1*scale,0.45*scale,0,Math.PI*2); ctx.fill();
   }
 }`},
-{name:'UFO',source:`function draw(ctx, cx, cy, t, scale, color) {
+{name:'UFO',color:'#5fd6a8',source:`function draw(ctx, cx, cy, t, scale, color) {
   const S=scale*0.7;
   ctx.strokeStyle='#8fb8ae'; ctx.lineWidth=1.3*S;
   ctx.beginPath();
@@ -359,8 +361,14 @@ function selectSlot(i){
   const s=slots[i];
   document.getElementById('slot-name').value=s.name;
   document.getElementById('source-editor').value=s.source||'';
+  curColor=s.color||'#5dade2';
+  document.getElementById('slot-color').value=curColor;
   document.getElementById('status-line').textContent=s.empty?'Empty slot — describe what you want in the prompt box, or write source directly.':('Slot '+(i+1)+' — '+s.name);
   renderSlotList();
+  runPreview();
+}
+function onColorChange(){
+  curColor=document.getElementById('slot-color').value;
   runPreview();
 }
 
@@ -394,9 +402,10 @@ function onSourceEdit(){ /* live preview follows automatically via loop */ }
 function doSave(){
   const src=document.getElementById('source-editor').value;
   const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
-  slots[curSlot]={name,source:src,empty:!src.trim()};
+  const color=document.getElementById('slot-color').value;
+  slots[curSlot]={name,source:src,color,empty:!src.trim()};
   saveSlots(NS,slots);
-  pushVersion(NS,curSlot,src,name);
+  pushVersion(NS,curSlot,src,name,{color});
   renderSlotList();
   toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
 }
@@ -406,9 +415,11 @@ function doDiscard(){
     const last=versions[versions.length-1];
     document.getElementById('source-editor').value=last.source;
     document.getElementById('slot-name').value=last.name||slots[curSlot].name;
+    if(last.color){curColor=last.color;document.getElementById('slot-color').value=curColor;}
   } else {
     document.getElementById('source-editor').value=slots[curSlot].source||'';
   }
+  runPreview();
   toast('Reverted to last saved version.');
 }
 function toggleVersionList(){
@@ -426,6 +437,8 @@ function loadVersion(v){
   if(found){
     document.getElementById('source-editor').value=found.source;
     document.getElementById('slot-name').value=found.name||slots[curSlot].name;
+    if(found.color){curColor=found.color;document.getElementById('slot-color').value=curColor;}
+    runPreview();
     toast('Loaded version '+v+'.');
   }
   document.getElementById('version-list').style.display='none';

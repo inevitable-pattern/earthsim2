@@ -53,12 +53,22 @@ function loadSlots(namespace, seedData, slotCount){
     const raw=localStorage.getItem(key);
     if(raw){
       const slots=JSON.parse(raw);
-      if(Array.isArray(slots)&&slots.length===slotCount) return slots;
+      if(Array.isArray(slots)&&slots.length===slotCount){
+        let changed=false;
+        slots.forEach((s,i)=>{
+          if(!s.color){
+            s.color=(seedData[i]&&seedData[i].color)||'#5dade2';
+            changed=true;
+          }
+        });
+        if(changed)saveSlots(namespace,slots);
+        return slots;
+      }
     }
   }catch(e){}
   const slots=[];
   for(let i=0;i<slotCount;i++){
-    slots.push(seedData[i]?{...seedData[i],empty:false}:{name:'Empty Slot '+(i+1),source:'',empty:true});
+    slots.push(seedData[i]?{...seedData[i],empty:false}:{name:'Empty Slot '+(i+1),source:'',color:'#5dade2',empty:true});
   }
   saveSlots(namespace,slots);
   return slots;
@@ -71,9 +81,9 @@ function saveSlots(namespace,slots){
 function getVersions(namespace,slotId){
   try{ return JSON.parse(localStorage.getItem('earthsim_editor_'+namespace+'_v_'+slotId)||'[]'); }catch(e){ return []; }
 }
-function pushVersion(namespace,slotId,source,name){
+function pushVersion(namespace,slotId,source,name,extra){
   const versions=getVersions(namespace,slotId);
-  versions.push({v:versions.length+1,source,name,time:Date.now()});
+  versions.push(Object.assign({v:versions.length+1,source,name,time:Date.now()},extra||{}));
   try{ localStorage.setItem('earthsim_editor_'+namespace+'_v_'+slotId,JSON.stringify(versions)); }catch(e){}
   return versions;
 }
