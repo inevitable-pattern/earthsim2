@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Object Editor — Earth Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:100vh;overflow:hidden}
+#top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0a1628;border-bottom:1px solid #1a3a5c}
+#top h1{font-size:14px;color:#4ecb71;letter-spacing:2px;flex:1}
+.topbtn{font-family:'Courier New',monospace;font-size:11px;padding:5px 10px;background:#071525;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.topbtn:hover{border-color:#4ecb71;color:#4ecb71}
+#body{display:flex;height:calc(100vh - 42px)}
+#slot-panel{width:210px;flex-shrink:0;border-right:1px solid #1a3a5c;display:flex;flex-direction:column}
+#slot-search{padding:6px;border-bottom:1px solid #1a3a5c}
+#slot-search input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:4px}
+#slot-list{flex:1;overflow-y:auto}
+.slot-item{padding:6px 10px;font-size:11px;border-bottom:1px solid #071525;cursor:pointer;display:flex;justify-content:space-between}
+.slot-item:hover{background:#0d2137}
+.slot-item.active{background:#1a3a5c;color:#ffec27}
+.slot-item.empty{color:#3a5a78;font-style:italic}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#preview-row{display:flex;gap:12px;padding:12px;border-bottom:1px solid #1a3a5c}
+.preview-box{background:#04101c;border:1px solid #1a3a5c;display:flex;flex-direction:column;align-items:center;padding:6px}
+.preview-box .lbl{font-size:9px;color:#4a7c9e;letter-spacing:1px;margin-bottom:4px}
+canvas#preview-big{width:220px;height:220px;image-rendering:pixelated;background:#000}
+canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;background:#000}
+#slot-name-row{display:flex;align-items:center;gap:8px;padding:0 12px 8px}
+#slot-name{background:#071525;border:1px solid #1a3a5c;color:#ffec27;font-family:inherit;font-size:12px;padding:4px 8px;flex:1}
+#right{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;overflow:hidden}
+#prompt-area{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+#prompt-area label{font-size:9px;color:#4a7c9e;letter-spacing:1px}
+#prompt-input{background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:6px;height:52px;resize:vertical}
+#prompt-row2{display:flex;gap:6px;align-items:center}
+#source-editor{flex:1;background:#04101c;border:1px solid #1a3a5c;color:#4ecb71;font-family:'Courier New',monospace;font-size:11px;padding:8px;resize:none;line-height:1.5;min-height:0}
+#action-row{display:flex;gap:6px;padding:8px 0;flex-wrap:wrap;align-items:center}
+.actbtn{font-family:'Courier New',monospace;font-size:11px;padding:6px 12px;cursor:pointer;border:1px solid}
+.actbtn.save{background:#0d2b12;color:#4ecb71;border-color:#4ecb71}
+.actbtn.discard{background:#2b0d0d;color:#ff6b6b;border-color:#ff6b6b}
+.actbtn.load{background:#0d1a2b;color:#5dade2;border-color:#5dade2}
+.actbtn.gh{background:#1a1a1a;color:#ccc;border-color:#666}
+.actbtn:hover{filter:brightness(1.3)}
+#version-list{display:none;position:absolute;background:#0a1628;border:1px solid #5dade2;max-height:200px;overflow-y:auto;z-index:20;min-width:220px}
+.version-item{padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #071525}
+.version-item:hover{background:#0d2137}
+#status-line{font-size:10px;color:#4a7c9e;padding:2px 0}
+#settings-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center}
+#settings-box{background:#0a1628;border:1px solid #4ecb71;padding:20px;width:420px;max-width:90vw}
+#settings-box h2{color:#4ecb71;font-size:13px;margin-bottom:12px;letter-spacing:1px}
+.set-row{margin-bottom:10px}
+.set-row label{display:block;font-size:10px;color:#4a7c9e;margin-bottom:3px}
+.set-row input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px}
+.set-note{font-size:9px;color:#7a5a3a;margin-top:12px;line-height:1.5;border-top:1px solid #1a3a5c;padding-top:10px}
+</style>
+</head>
+<body>
+<div id="top">
+  <button class="topbtn" onclick="location.href='index.html'">← BACK</button>
+  <h1>🧬 OBJECT EDITOR</h1>
+  <button class="topbtn" onclick="openSettings()">⚙ SETTINGS</button>
+</div>
+<div id="body">
+  <div id="slot-panel">
+    <div id="slot-search"><input id="slot-search-input" placeholder="Search slots..." oninput="renderSlotList()"></div>
+    <div id="slot-list"></div>
+  </div>
+  <div id="main">
+    <div id="preview-row">
+      <div class="preview-box"><div class="lbl">ZOOMED PREVIEW</div><canvas id="preview-big" width="120" height="120"></canvas></div>
+      <div class="preview-box"><div class="lbl">IN-GAME SCALE</div><canvas id="preview-game" width="48" height="48"></canvas></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 8px">
+        <div id="status-line">Select a slot to begin.</div>
+      </div>
+    </div>
+    <div id="slot-name-row">
+      <label style="font-size:9px;color:#4a7c9e">NAME:</label>
+      <input id="slot-name" value="">
+    </div>
+    <div id="right">
+      <div id="prompt-area">
+        <label>PROMPT (ask Claude to modify this object)</label>
+        <textarea id="prompt-input" placeholder="e.g. make the wings flap faster and add a red beak"></textarea>
+        <div id="prompt-row2">
+          <button class="actbtn load" onclick="submitPrompt()">✨ SEND TO CLAUDE</button>
+          <span id="prompt-status" style="font-size:10px;color:#4a7c9e"></span>
+        </div>
+      </div>
+      <label style="font-size:9px;color:#4a7c9e;margin-bottom:3px">SOURCE (draw(ctx, cx, cy, t, scale, color))</label>
+      <textarea id="source-editor" spellcheck="false" oninput="onSourceEdit()"></textarea>
+      <div id="action-row">
+        <button class="actbtn save" onclick="doSave()">💾 SAVE</button>
+        <button class="actbtn discard" onclick="doDiscard()">🗑 DISCARD</button>
+        <div style="position:relative">
+          <button class="actbtn load" onclick="toggleVersionList()">📜 LOAD VERSION</button>
+          <div id="version-list"></div>
+        </div>
+        <button class="actbtn gh" onclick="doGithubPush()">🐙 PUSH TO GITHUB</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal">
+  <div id="settings-box">
+    <h2>⚙ SETTINGS</h2>
+    <div class="set-row"><label>Claude API Key</label><input id="set-api-key" type="password" placeholder="sk-ant-..."></div>
+    <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
+    <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
+    <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
+    <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="objects/"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="actbtn save" onclick="saveSettingsFromForm()">SAVE SETTINGS</button>
+      <button class="actbtn discard" onclick="closeSettings()">CLOSE</button>
+    </div>
+    <div class="set-note">
+      These are stored only in this browser's local storage — they are never sent anywhere except
+      directly to api.anthropic.com (with your key) or api.github.com (with your token) when you use
+      the buttons above. Direct browser calls to the Anthropic API are intended for personal/prototype
+      use; don't ship this page's key to other people. Treat both tokens like passwords.
+    </div>
+  </div>
+</div>
+
+<script src="editor-core.js"></script>
+<script>
+const NS='objects';
+const SEED=[
+{name:'Plankton',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const x = cx + Math.sin(t*0.6)*3*scale;
+  const y = cy + Math.cos(t*0.5)*2*scale;
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, 1*scale, 1*scale);
+  ctx.globalAlpha = 1;
+}`},
+{name:'Kelp',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const sway = Math.sin(t*1.1)*3*scale;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1*scale;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.quadraticCurveTo(cx+sway, cy-5*scale, cx+sway*1.6, cy-9*scale);
+  ctx.stroke();
+}`},
+{name:'Jellyfish',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const rr = (1.6+Math.sin(t*2.4)*0.6)*scale;
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.ellipse(cx, cy, rr, rr*0.7, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = color; ctx.globalAlpha = 0.4; ctx.lineWidth = 0.6*scale;
+  ctx.beginPath();
+  ctx.moveTo(cx-scale, cy+rr*0.7); ctx.lineTo(cx-scale, cy+rr*0.7+2*scale);
+  ctx.moveTo(cx+scale, cy+rr*0.7); ctx.lineTo(cx+scale, cy+rr*0.7+2.5*scale);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}`},
+{name:'Trilobite',source:`function draw(ctx, cx, cy, t, scale, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.ellipse(cx, cy, 1.8*scale, 1*scale, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.3*scale;
+  for (let s=-1; s<=1; s++) {
+    ctx.beginPath();
+    ctx.moveTo(cx+s*0.6*scale, cy-0.9*scale);
+    ctx.lineTo(cx+s*0.6*scale, cy+0.9*scale);
+    ctx.stroke();
+  }
+}`},
+{name:'Shell / Mollusk',source:`function draw(ctx, cx, cy, t, scale, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx-1.6*scale, cy);
+  ctx.quadraticCurveTo(cx, cy-2*scale, cx+1.6*scale, cy);
+  ctx.quadraticCurveTo(cx, cy+0.8*scale, cx-1.6*scale, cy);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 0.25*scale;
+  for (let s=-1; s<=1; s++) {
+    ctx.beginPath();
+    ctx.moveTo(cx+s*0.9*scale, cy-0.2*scale);
+    ctx.lineTo(cx, cy-1.6*scale);
+    ctx.stroke();
+  }
+}`},
+{name:'Starfish',source:`function draw(ctx, cx, cy, t, scale, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  for (let k=0;k<5;k++){
+    const outAng=-Math.PI/2+k*(Math.PI*2/5), inAng=outAng+Math.PI/5;
+    const ox=cx+Math.cos(outAng)*2.1*scale, oy=cy+Math.sin(outAng)*2.1*scale;
+    const ix=cx+Math.cos(inAng)*0.8*scale, iy=cy+Math.sin(inAng)*0.8*scale;
+    if(k===0) ctx.moveTo(ox,oy); else ctx.lineTo(ox,oy);
+    ctx.lineTo(ix,iy);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.arc(cx,cy,0.6*scale,0,Math.PI*2); ctx.fill();
+}`},
+{name:'Crab',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const x=cx,y=cy;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(x,y,1.7*scale,1.2*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=0.45*scale;
+  for(let s=-1;s<=1;s+=2){
+    ctx.beginPath();
+    ctx.moveTo(x+s*1.6*scale,y+0.7*scale); ctx.lineTo(x+s*2.3*scale,y+1.5*scale); ctx.lineTo(x+s*1.9*scale,y+1.9*scale);
+    ctx.moveTo(x+s*1.4*scale,y+0.9*scale); ctx.lineTo(x+s*1.9*scale,y+1.5*scale);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(x-1.5*scale,y-0.6*scale); ctx.lineTo(x-2.6*scale,y-1.4*scale);
+  ctx.moveTo(x+1.5*scale,y-0.6*scale); ctx.lineTo(x+2.6*scale,y-1.4*scale);
+  ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.moveTo(x-2.6*scale,y-1.4*scale); ctx.lineTo(x-3.3*scale,y-1.9*scale); ctx.lineTo(x-3*scale,y-0.9*scale); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x+2.6*scale,y-1.4*scale); ctx.lineTo(x+3.3*scale,y-1.9*scale); ctx.lineTo(x+3*scale,y-0.9*scale); ctx.fill();
+}`},
+{name:'Fish',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const y=cy+Math.sin(t*3)*1.6*scale;
+  const w=2.2*scale, h=1.2*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(cx-w/2,y); ctx.lineTo(cx+w/2,y-h/2); ctx.lineTo(cx+w/2,y+h/2);
+  ctx.closePath(); ctx.fill();
+}`},
+{name:'Amphibian',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const y=cy-Math.abs(Math.sin(t*3))*2.2*scale;
+  ctx.fillStyle=color;
+  ctx.fillRect(cx-1*scale,y-1*scale,2*scale,1.6*scale);
+}`},
+{name:'Insect',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
+  ctx.fillStyle=color;
+  ctx.fillRect(cx-1*scale,cy-bob-1.6*scale,2*scale,1.6*scale);
+  ctx.fillRect(cx-0.6*scale,cy-0.6*scale,0.6*scale,0.8*scale);
+  ctx.fillRect(cx+0.2*scale,cy-0.6*scale,0.6*scale,0.8*scale);
+}`},
+{name:'Reptile',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const dir=1;
+  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
+  const bodyY=cy-bob-0.6*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(cx,bodyY,2*scale,0.9*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=0.8*scale;
+  ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.lineTo(cx-dir*3.4*scale,bodyY+0.4*scale); ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(cx+dir*2*scale,bodyY-0.1*scale,0.55*scale,0,Math.PI*2); ctx.fill();
+  ctx.fillRect(cx-0.9*scale,cy-0.5*scale,0.5*scale,0.7*scale);
+  ctx.fillRect(cx+0.4*scale,cy-0.5*scale,0.5*scale,0.7*scale);
+}`},
+{name:'Dinosaur (Sauropod)',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const dir=1;
+  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
+  const bodyY=cy-bob-1.1*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(cx,bodyY,2.6*scale,1.5*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=1.3*scale;
+  ctx.beginPath(); ctx.moveTo(cx+dir*2*scale,bodyY-0.6*scale); ctx.quadraticCurveTo(cx+dir*3.6*scale,bodyY-2.8*scale,cx+dir*4.4*scale,bodyY-3.6*scale); ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(cx+dir*4.6*scale,bodyY-3.8*scale,0.6*scale,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=1*scale;
+  ctx.beginPath(); ctx.moveTo(cx-dir*2.4*scale,bodyY+0.2*scale); ctx.quadraticCurveTo(cx-dir*4.2*scale,bodyY+0.8*scale,cx-dir*5.4*scale,bodyY-0.6*scale); ctx.stroke();
+  ctx.fillRect(cx-1.1*scale,cy-0.6*scale,0.6*scale,0.9*scale);
+  ctx.fillRect(cx+0.5*scale,cy-0.6*scale,0.6*scale,0.9*scale);
+}`},
+{name:'Mammal',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const dir=1;
+  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
+  const bodyY=cy-bob-0.9*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(cx,bodyY,1.8*scale,1.3*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+dir*1.7*scale,bodyY-0.9*scale,0.7*scale,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+dir*2.2*scale,bodyY-1.5*scale,0.35*scale,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=0.6*scale;
+  ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.quadraticCurveTo(cx-dir*2.6*scale,bodyY-0.8*scale,cx-dir*2.9*scale,bodyY-0.2*scale); ctx.stroke();
+  ctx.fillRect(cx-0.9*scale,cy-0.6*scale,0.6*scale,0.9*scale);
+  ctx.fillRect(cx+0.3*scale,cy-0.6*scale,0.6*scale,0.9*scale);
+}`},
+{name:'Bird',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const flap=Math.sin(t*9)*1.4*scale;
+  ctx.strokeStyle=color; ctx.lineWidth=0.8*scale;
+  ctx.beginPath();
+  ctx.moveTo(cx-2*scale,cy-flap); ctx.lineTo(cx,cy); ctx.lineTo(cx+2*scale,cy-flap);
+  ctx.stroke();
+}`},
+{name:'Fungi / Mushroom',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const pulse=(0.9+Math.sin(t*1.6)*0.15)*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(cx,cy-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0); ctx.fill();
+  ctx.fillStyle='#d5b895';
+  ctx.fillRect(cx-0.3*scale,cy-1.4*pulse,0.6*scale,1.4*pulse);
+}`},
+{name:'Conifer Tree',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const lean=Math.sin(t*1.1)*0.08*scale;
+  const h=7*scale;
+  ctx.strokeStyle='#6b4a2b'; ctx.lineWidth=0.6*scale;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h*0.3); ctx.stroke();
+  ctx.fillStyle=color;
+  for(let tier=0;tier<3;tier++){
+    const ty=cy-h*0.25-tier*h*0.32;
+    const tw=(2.6-tier*0.6)*scale;
+    ctx.beginPath();
+    ctx.moveTo(cx+lean*h*(tier/3),ty-h*0.42);
+    ctx.lineTo(cx+lean*h*(tier/3)-tw/2,ty);
+    ctx.lineTo(cx+lean*h*(tier/3)+tw/2,ty);
+    ctx.closePath(); ctx.fill();
+  }
+}`},
+{name:'Flowering Tree',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const lean=Math.sin(t*1.15)*0.1*scale;
+  const h=6*scale;
+  ctx.strokeStyle='#6b4a2b'; ctx.lineWidth=0.7*scale;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h); ctx.stroke();
+  const tcx=cx+lean*h, tcy=cy-h-1.3*scale;
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.ellipse(tcx,tcy,2*scale,2.1*scale,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#f8c8d4';
+  for(let k=0;k<3;k++){
+    const ang=k*2.1;
+    ctx.beginPath(); ctx.arc(tcx+Math.cos(ang)*1.3*scale,tcy+Math.sin(ang)*1.1*scale,0.45*scale,0,Math.PI*2); ctx.fill();
+  }
+}`},
+{name:'UFO',source:`function draw(ctx, cx, cy, t, scale, color) {
+  const S=scale*0.7;
+  ctx.strokeStyle='#8fb8ae'; ctx.lineWidth=1.3*S;
+  ctx.beginPath();
+  ctx.moveTo(cx-2*S,cy+1.6*S); ctx.lineTo(cx-4.3*S,cy+3.9*S);
+  ctx.moveTo(cx+2*S,cy+1.6*S); ctx.lineTo(cx+4.3*S,cy+3.9*S);
+  ctx.stroke();
+  ctx.fillStyle='#3a8c72';
+  ctx.beginPath(); ctx.ellipse(cx,cy+0.4*S,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#5fd6a8'; ctx.strokeStyle='#0a1f1a'; ctx.lineWidth=0.9*S;
+  ctx.beginPath(); ctx.ellipse(cx,cy,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#eafcf6';
+  ctx.beginPath(); ctx.ellipse(cx,cy-1.8*S,3.1*S,2*S,0,Math.PI,0); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=\`rgba(255,255,150,\${0.6+0.4*Math.sin(t*4)})\`;
+  ctx.beginPath(); ctx.arc(cx-3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.arc(cx,cy+0.7*S,0.8*S,0,Math.PI*2); ctx.arc(cx+3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.fill();
+}`},
+];
+
+let slots=loadSlots(NS,SEED,100);
+let curSlot=0;
+let curColor='#5dade2';
+
+function renderSlotList(){
+  const q=(document.getElementById('slot-search-input').value||'').toLowerCase();
+  const list=document.getElementById('slot-list');
+  list.innerHTML='';
+  slots.forEach((s,i)=>{
+    if(q && !s.name.toLowerCase().includes(q)) return;
+    const div=document.createElement('div');
+    div.className='slot-item'+(i===curSlot?' active':'')+(s.empty?' empty':'');
+    div.innerHTML=`<span>${i+1}. ${s.name}</span>`;
+    div.onclick=()=>selectSlot(i);
+    list.appendChild(div);
+  });
+}
+
+function selectSlot(i){
+  curSlot=i;
+  const s=slots[i];
+  document.getElementById('slot-name').value=s.name;
+  document.getElementById('source-editor').value=s.source||'';
+  document.getElementById('status-line').textContent=s.empty?'Empty slot — describe what you want in the prompt box, or write source directly.':('Slot '+(i+1)+' — '+s.name);
+  renderSlotList();
+  runPreview();
+}
+
+function getFn(){
+  const src=document.getElementById('source-editor').value;
+  try{
+    const factory=new Function(src+'\nreturn draw;');
+    return factory();
+  }catch(e){
+    document.getElementById('status-line').textContent='⚠ Source error: '+e.message;
+    return null;
+  }
+}
+
+let animT=0;
+function runPreview(){
+  const fn=getFn();
+  const bigCv=document.getElementById('preview-big'),bigCx=bigCv.getContext('2d');
+  const gameCv=document.getElementById('preview-game'),gameCx=gameCv.getContext('2d');
+  bigCx.clearRect(0,0,120,120);
+  gameCx.clearRect(0,0,48,48);
+  if(fn){
+    try{ fn(bigCx,60,70,animT,9,curColor); }catch(e){}
+    try{ gameCx.save(); gameCx.translate(0,0); fn(gameCx,24,30,animT,1.6,curColor); gameCx.restore(); }catch(e){}
+  }
+}
+function loop(){ animT+=0.03; runPreview(); requestAnimationFrame(loop); }
+
+function onSourceEdit(){ /* live preview follows automatically via loop */ }
+
+function doSave(){
+  const src=document.getElementById('source-editor').value;
+  const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
+  slots[curSlot]={name,source:src,empty:!src.trim()};
+  saveSlots(NS,slots);
+  pushVersion(NS,curSlot,src,name);
+  renderSlotList();
+  toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
+}
+function doDiscard(){
+  const versions=getVersions(NS,curSlot);
+  if(versions.length){
+    const last=versions[versions.length-1];
+    document.getElementById('source-editor').value=last.source;
+    document.getElementById('slot-name').value=last.name||slots[curSlot].name;
+  } else {
+    document.getElementById('source-editor').value=slots[curSlot].source||'';
+  }
+  toast('Reverted to last saved version.');
+}
+function toggleVersionList(){
+  const el=document.getElementById('version-list');
+  if(el.style.display==='block'){ el.style.display='none'; return; }
+  const versions=getVersions(NS,curSlot);
+  el.innerHTML=versions.length?versions.slice().reverse().map(v=>
+    `<div class="version-item" onclick="loadVersion(${v.v})">v${v.v} — ${new Date(v.time).toLocaleString()}</div>`).join('')
+    : '<div class="version-item">No saved versions yet</div>';
+  el.style.display='block';
+}
+function loadVersion(v){
+  const versions=getVersions(NS,curSlot);
+  const found=versions.find(x=>x.v===v);
+  if(found){
+    document.getElementById('source-editor').value=found.source;
+    document.getElementById('slot-name').value=found.name||slots[curSlot].name;
+    toast('Loaded version '+v+'.');
+  }
+  document.getElementById('version-list').style.display='none';
+}
+
+async function submitPrompt(){
+  const promptText=document.getElementById('prompt-input').value.trim();
+  if(!promptText){ toast('Type an instruction first.'); return; }
+  const statusEl=document.getElementById('prompt-status');
+  statusEl.textContent='Sending to Claude...';
+  try{
+    const current=document.getElementById('source-editor').value;
+    const hint='You are editing a JavaScript function for a retro pixel-art canvas game creature. '+
+      'The function signature must stay exactly: function draw(ctx, cx, cy, t, scale, color) { ... } — '+
+      'ctx is a Canvas2D context, (cx,cy) is the center position, t is a seconds-based animation clock, '+
+      'scale is a size multiplier to apply to all dimensions, and color is the suggested fill/stroke color (string).';
+    const newSrc=await callClaude(promptText,current,hint);
+    document.getElementById('source-editor').value=newSrc;
+    statusEl.textContent='Updated. Review, then SAVE if you like it.';
+    runPreview();
+  }catch(e){
+    statusEl.textContent='⚠ '+e.message;
+  }
+}
+
+async function doGithubPush(){
+  const src=document.getElementById('source-editor').value;
+  const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
+  const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.js';
+  toast('Pushing to GitHub...');
+  try{
+    await pushToGithub(fname,src,'Update object: '+name);
+    toast('Pushed '+fname+' to GitHub.');
+  }catch(e){
+    toast('⚠ '+e.message);
+  }
+}
+
+document.addEventListener('click',(ev)=>{
+  const vl=document.getElementById('version-list');
+  if(vl.style.display==='block' && !vl.contains(ev.target) && ev.target.textContent.indexOf('LOAD VERSION')===-1){
+    vl.style.display='none';
+  }
+});
+
+renderSlotList();
+selectSlot(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

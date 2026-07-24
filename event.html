@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Editor — Earth Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:100vh;overflow:hidden}
+#top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0a1628;border-bottom:1px solid #1a3a5c}
+#top h1{font-size:14px;color:#4ecb71;letter-spacing:2px;flex:1}
+.topbtn{font-family:'Courier New',monospace;font-size:11px;padding:5px 10px;background:#071525;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.topbtn:hover{border-color:#4ecb71;color:#4ecb71}
+#body{display:flex;height:calc(100vh - 42px)}
+#slot-panel{width:210px;flex-shrink:0;border-right:1px solid #1a3a5c;display:flex;flex-direction:column}
+#slot-search{padding:6px;border-bottom:1px solid #1a3a5c}
+#slot-search input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:4px}
+#slot-list{flex:1;overflow-y:auto}
+.slot-item{padding:6px 10px;font-size:11px;border-bottom:1px solid #071525;cursor:pointer}
+.slot-item:hover{background:#0d2137}
+.slot-item.active{background:#1a3a5c;color:#ffec27}
+.slot-item.empty{color:#3a5a78;font-style:italic}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:12px}
+#preview-box{background:#04101c;border:1px solid #1a3a5c;padding:10px;margin-bottom:10px;font-size:11px;min-height:90px}
+#preview-box .lbl{font-size:9px;color:#4a7c9e;letter-spacing:1px;margin-bottom:6px}
+#effect-table{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.effect-cell{background:#071525;padding:3px 6px;font-size:10px}
+#slot-name-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#slot-name{background:#071525;border:1px solid #1a3a5c;color:#ffec27;font-family:inherit;font-size:12px;padding:4px 8px;flex:1}
+#prompt-area{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+#prompt-area label{font-size:9px;color:#4a7c9e;letter-spacing:1px}
+#prompt-input{background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:6px;height:44px;resize:vertical}
+#prompt-row2{display:flex;gap:6px;align-items:center}
+#source-editor{flex:1;background:#04101c;border:1px solid #1a3a5c;color:#4ecb71;font-family:'Courier New',monospace;font-size:11px;padding:8px;resize:none;line-height:1.5;min-height:0}
+#action-row{display:flex;gap:6px;padding:8px 0;flex-wrap:wrap;align-items:center}
+.actbtn{font-family:'Courier New',monospace;font-size:11px;padding:6px 12px;cursor:pointer;border:1px solid}
+.actbtn.save{background:#0d2b12;color:#4ecb71;border-color:#4ecb71}
+.actbtn.discard{background:#2b0d0d;color:#ff6b6b;border-color:#ff6b6b}
+.actbtn.load{background:#0d1a2b;color:#5dade2;border-color:#5dade2}
+.actbtn.gh{background:#1a1a1a;color:#ccc;border-color:#666}
+.actbtn:hover{filter:brightness(1.3)}
+#version-list{display:none;position:absolute;background:#0a1628;border:1px solid #5dade2;max-height:200px;overflow-y:auto;z-index:20;min-width:220px}
+.version-item{padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #071525}
+.version-item:hover{background:#0d2137}
+#settings-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center}
+#settings-box{background:#0a1628;border:1px solid #4ecb71;padding:20px;width:420px;max-width:90vw}
+#settings-box h2{color:#4ecb71;font-size:13px;margin-bottom:12px;letter-spacing:1px}
+.set-row{margin-bottom:10px}
+.set-row label{display:block;font-size:10px;color:#4a7c9e;margin-bottom:3px}
+.set-row input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px}
+.set-note{font-size:9px;color:#7a5a3a;margin-top:12px;line-height:1.5;border-top:1px solid #1a3a5c;padding-top:10px}
+</style>
+</head>
+<body>
+<div id="top">
+  <button class="topbtn" onclick="location.href='index.html'">← BACK</button>
+  <h1>⚡ EVENT EDITOR</h1>
+  <button class="topbtn" onclick="openSettings()">⚙ SETTINGS</button>
+</div>
+<div id="body">
+  <div id="slot-panel">
+    <div id="slot-search"><input id="slot-search-input" placeholder="Search slots..." oninput="renderSlotList()"></div>
+    <div id="slot-list"></div>
+  </div>
+  <div id="main">
+    <div id="preview-box">
+      <div class="lbl">EFFECT PREVIEW</div>
+      <div id="effect-table"></div>
+    </div>
+    <div id="slot-name-row">
+      <label style="font-size:9px;color:#4a7c9e">NAME:</label>
+      <input id="slot-name" value="">
+    </div>
+    <div id="prompt-area">
+      <label>PROMPT (ask Claude to modify this event)</label>
+      <textarea id="prompt-input" placeholder="e.g. make this event also spike humidity, and write a more dramatic description"></textarea>
+      <div id="prompt-row2">
+        <button class="actbtn load" onclick="submitPrompt()">✨ SEND TO CLAUDE</button>
+        <span id="prompt-status" style="font-size:10px;color:#4a7c9e"></span>
+      </div>
+    </div>
+    <label style="font-size:9px;color:#4a7c9e;margin-bottom:3px">SOURCE (JSON effect definition)</label>
+    <textarea id="source-editor" spellcheck="false"></textarea>
+    <div id="action-row">
+      <button class="actbtn save" onclick="doSave()">💾 SAVE</button>
+      <button class="actbtn discard" onclick="doDiscard()">🗑 DISCARD</button>
+      <div style="position:relative">
+        <button class="actbtn load" onclick="toggleVersionList()">📜 LOAD VERSION</button>
+        <div id="version-list"></div>
+      </div>
+      <button class="actbtn gh" onclick="doGithubPush()">🐙 PUSH TO GITHUB</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal">
+  <div id="settings-box">
+    <h2>⚙ SETTINGS</h2>
+    <div class="set-row"><label>Claude API Key</label><input id="set-api-key" type="password" placeholder="sk-ant-..."></div>
+    <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
+    <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
+    <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
+    <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="events/"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="actbtn save" onclick="saveSettingsFromForm()">SAVE SETTINGS</button>
+      <button class="actbtn discard" onclick="closeSettings()">CLOSE</button>
+    </div>
+    <div class="set-note">
+      Stored only in this browser's local storage — sent only to api.anthropic.com or api.github.com
+      when you press the buttons above. Treat both like passwords.
+    </div>
+  </div>
+</div>
+
+<script src="editor-core.js"></script>
+<script>
+const NS='events';
+const SEED=[
+{name:'Meteor Impact',source:JSON.stringify({
+  description_en:'METEOR IMPACT! Mass extinction event!',
+  description_ja:'隕石衝突！大量絶滅イベント！',
+  effects:{temp:25,co2:18,windAvg:45,humidity:-15,pressureAtm:0.03},
+  bio:{most:-20,survivors:{bacteria:8,fungi:10}}
+},null,2)},
+{name:'Volcanic Eruption',source:JSON.stringify({
+  description_en:'MASSIVE VOLCANISM! CO2 surges, O2 drops!',
+  description_ja:'超大型噴火！CO2急増、O2低下！',
+  effects:{temp:18,co2:25,o2:-6,windAvg:18,humidity:10,pressureAtm:-0.02},
+  visual:{ashLevel:1,volcanoActive:1}
+},null,2)},
+{name:'Ice Age',source:JSON.stringify({
+  description_en:'ICE AGE! Global cooling. Life struggles!',
+  description_ja:'氷河期！全球凍結の危機！',
+  effects:{temp:-35,iceRatio:0.7,windAvg:22,humidity:-20,pressureAtm:0.05},
+  bio:{most:-15}
+},null,2)},
+{name:'Global Warming',source:JSON.stringify({
+  description_en:'GLOBAL WARMING! Ice melts. Ocean rises!',
+  description_ja:'地球温暖化！氷が溶ける！',
+  effects:{temp:25,co2:12,iceRatio:-0.5,windAvg:-4,humidity:15,pressureAtm:-0.03}
+},null,2)},
+{name:'Mass Extinction',source:JSON.stringify({
+  description_en:'MASS EXTINCTION! 90% of species wiped out!',
+  description_ja:'大量絶滅！種の90%が消滅！',
+  effects:{temp:12,windAvg:25,humidity:-10},
+  bio:{most:-45,survivors:{bacteria:15,fungi:20}},
+  visual:{impactFlash:0.6}
+},null,2)},
+{name:'Earthquake',source:JSON.stringify({
+  description_en:'MAJOR EARTHQUAKE! The ground shakes and cracks!',
+  description_ja:'大地震発生！大地が揺れ、地割れが走る！',
+  effects:{windAvg:6},
+  visual:{quakeActive:1,ashLevelMin:0.35}
+},null,2)},
+{name:'Typhoon',source:JSON.stringify({
+  description_en:'TYPHOON! Violent winds and torrential rain!',
+  description_ja:'台風接近！猛烈な風と豪雨！',
+  effects:{windAvg:65,humidity:30,pressureAtm:-0.04},
+  visual:{typhoonActive:1}
+},null,2)},
+];
+
+let slots=loadSlots(NS,SEED,100);
+let curSlot=0;
+
+function renderSlotList(){
+  const q=(document.getElementById('slot-search-input').value||'').toLowerCase();
+  const list=document.getElementById('slot-list');
+  list.innerHTML='';
+  slots.forEach((s,i)=>{
+    if(q && !s.name.toLowerCase().includes(q)) return;
+    const div=document.createElement('div');
+    div.className='slot-item'+(i===curSlot?' active':'')+(s.empty?' empty':'');
+    div.textContent=(i+1)+'. '+s.name;
+    div.onclick=()=>selectSlot(i);
+    list.appendChild(div);
+  });
+}
+
+function renderPreview(){
+  const box=document.getElementById('effect-table');
+  try{
+    const data=JSON.parse(document.getElementById('source-editor').value||'{}');
+    let html='';
+    if(data.description_en) html+=`<div class="effect-cell" style="grid-column:1/4;color:#ffec27">${data.description_en}</div>`;
+    const flat={};
+    Object.assign(flat, data.effects||{});
+    Object.keys(flat).forEach(k=>{html+=`<div class="effect-cell">${k}: <b style="color:${flat[k]>=0?'#98fb98':'#ff8c5a'}">${flat[k]>=0?'+':''}${flat[k]}</b></div>`;});
+    if(data.bio){
+      if(data.bio.most!==undefined)html+=`<div class="effect-cell">biomass (most spp.): <b style="color:#ff8c5a">${data.bio.most}</b></div>`;
+      if(data.bio.survivors)Object.keys(data.bio.survivors).forEach(k=>{html+=`<div class="effect-cell">${k} (survivor): <b style="color:#98fb98">+${data.bio.survivors[k]}</b></div>`;});
+    }
+    box.innerHTML=html||'<div class="effect-cell">(no effects defined)</div>';
+  }catch(e){
+    box.innerHTML='<div class="effect-cell" style="color:#ff6b6b">⚠ Invalid JSON: '+e.message+'</div>';
+  }
+}
+
+function selectSlot(i){
+  curSlot=i;
+  const s=slots[i];
+  document.getElementById('slot-name').value=s.name;
+  document.getElementById('source-editor').value=s.source||'';
+  renderSlotList();
+  renderPreview();
+}
+
+document.getElementById('source-editor').addEventListener('input',renderPreview);
+
+function doSave(){
+  const src=document.getElementById('source-editor').value;
+  const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
+  slots[curSlot]={name,source:src,empty:!src.trim()};
+  saveSlots(NS,slots);
+  pushVersion(NS,curSlot,src,name);
+  renderSlotList();
+  toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
+}
+function doDiscard(){
+  const versions=getVersions(NS,curSlot);
+  if(versions.length){
+    const last=versions[versions.length-1];
+    document.getElementById('source-editor').value=last.source;
+    document.getElementById('slot-name').value=last.name||slots[curSlot].name;
+  } else {
+    document.getElementById('source-editor').value=slots[curSlot].source||'';
+  }
+  renderPreview();
+  toast('Reverted to last saved version.');
+}
+function toggleVersionList(){
+  const el=document.getElementById('version-list');
+  if(el.style.display==='block'){ el.style.display='none'; return; }
+  const versions=getVersions(NS,curSlot);
+  el.innerHTML=versions.length?versions.slice().reverse().map(v=>
+    `<div class="version-item" onclick="loadVersion(${v.v})">v${v.v} — ${new Date(v.time).toLocaleString()}</div>`).join('')
+    : '<div class="version-item">No saved versions yet</div>';
+  el.style.display='block';
+}
+function loadVersion(v){
+  const versions=getVersions(NS,curSlot);
+  const found=versions.find(x=>x.v===v);
+  if(found){
+    document.getElementById('source-editor').value=found.source;
+    document.getElementById('slot-name').value=found.name||slots[curSlot].name;
+    renderPreview();
+    toast('Loaded version '+v+'.');
+  }
+  document.getElementById('version-list').style.display='none';
+}
+
+async function submitPrompt(){
+  const promptText=document.getElementById('prompt-input').value.trim();
+  if(!promptText){ toast('Type an instruction first.'); return; }
+  const statusEl=document.getElementById('prompt-status');
+  statusEl.textContent='Sending to Claude...';
+  try{
+    const current=document.getElementById('source-editor').value;
+    const hint='You are editing a JSON definition of a world event for a planet-simulation game. '+
+      'Keep it valid JSON with this shape: {description_en, description_ja, effects:{temp,co2,o2,windAvg,humidity,pressureAtm,iceRatio (all optional numeric deltas)}, bio:{most (numeric delta applied to most species), survivors:{key:numericBonus}}, visual:{...any flags}}.';
+    const newSrc=await callClaude(promptText,current,hint);
+    document.getElementById('source-editor').value=newSrc;
+    statusEl.textContent='Updated. Review, then SAVE if you like it.';
+    renderPreview();
+  }catch(e){
+    statusEl.textContent='⚠ '+e.message;
+  }
+}
+
+async function doGithubPush(){
+  const src=document.getElementById('source-editor').value;
+  const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
+  const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.json';
+  toast('Pushing to GitHub...');
+  try{
+    await pushToGithub(fname,src,'Update event: '+name);
+    toast('Pushed '+fname+' to GitHub.');
+  }catch(e){
+    toast('⚠ '+e.message);
+  }
+}
+
+document.addEventListener('click',(ev)=>{
+  const vl=document.getElementById('version-list');
+  if(vl.style.display==='block' && !vl.contains(ev.target) && ev.target.textContent.indexOf('LOAD VERSION')===-1){
+    vl.style.display='none';
+  }
+});
+
+renderSlotList();
+selectSlot(0);
+</script>
+</body>
+</html>
