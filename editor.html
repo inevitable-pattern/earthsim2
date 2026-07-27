@@ -107,7 +107,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
       <div id="color-parts-list" style="display:flex;gap:6px;flex-wrap:wrap"></div>
       <button id="add-part-btn" onclick="addColorPart()">+ ADD PART</button>
     </div>
-    <div class="color-parts-help">Each part is a named color slot your object's code reads as <b>colors.NAME</b> (e.g. colors.main for a single-color shape, or colors.trunk / colors.leaves for a tree). Rename the text box to change the name — just make sure the code below refers to the same name.</div>
+    <div class="color-parts-help">Colors are baked directly into the code as defaults (<b>let default_color1 = '#hex';</b>) so a saved object works standalone, even outside this editor. The code reads them as <b>color1</b>, <b>color2</b>, etc. Changing a swatch above rewrites that default_colorN line directly.</div>
     <div id="palette-row">
       <label>🎨 PALETTE (click to select, then + ADD PART uses it):</label>
       <div id="palette-swatches"></div>
@@ -122,7 +122,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
           <span id="prompt-status" style="font-size:10px;color:#4a7c9e"></span>
         </div>
       </div>
-      <label style="font-size:9px;color:#4a7c9e;margin-bottom:3px">SOURCE (draw(ctx, cx, cy, t, scale, colors) — colors.partName per COLOR PARTS above)</label>
+      <label style="font-size:9px;color:#4a7c9e;margin-bottom:3px">SOURCE (draw(ctx, cx, cy, t, scale, color1, color2, ...) — self-contained, defaults embedded below)</label>
       <textarea id="source-editor" spellcheck="false" oninput="onSourceEdit()"></textarea>
       <div id="action-row">
         <button class="actbtn save" onclick="doSave()">💾 SAVE</button>
@@ -175,37 +175,53 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 const NS='objects';
 const PRIMARY_PART={'Fungi / Mushroom':'cap','Conifer Tree':'leaves','Flowering Tree':'leaves','UFO':'body'};
 const SEED=[
-{name:'Plankton',colors:{main:'#5dade2'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Plankton',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#5dade2'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const x = cx + Math.sin(t*0.6)*3*scale;
   const y = cy + Math.cos(t*0.5)*2*scale;
   ctx.globalAlpha = 0.55;
-  ctx.fillStyle = colors.main;
+  ctx.fillStyle = color1;
   ctx.fillRect(x, y, 1*scale, 1*scale);
   ctx.globalAlpha = 1;
 }`},
-{name:'Kelp',colors:{main:'#2ecc71'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Kelp',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#2ecc71'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const sway = Math.sin(t*1.1)*3*scale;
-  ctx.strokeStyle = colors.main;
+  ctx.strokeStyle = color1;
   ctx.lineWidth = 1*scale;
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.quadraticCurveTo(cx+sway, cy-5*scale, cx+sway*1.6, cy-9*scale);
   ctx.stroke();
 }`},
-{name:'Jellyfish',colors:{main:'#f8c8d4'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Jellyfish',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#f8c8d4'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const rr = (1.6+Math.sin(t*2.4)*0.6)*scale;
   ctx.globalAlpha = 0.8;
-  ctx.fillStyle = colors.main;
+  ctx.fillStyle = color1;
   ctx.beginPath(); ctx.ellipse(cx, cy, rr, rr*0.7, 0, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = colors.main; ctx.globalAlpha = 0.4; ctx.lineWidth = 0.6*scale;
+  ctx.strokeStyle = color1; ctx.globalAlpha = 0.4; ctx.lineWidth = 0.6*scale;
   ctx.beginPath();
   ctx.moveTo(cx-scale, cy+rr*0.7); ctx.lineTo(cx-scale, cy+rr*0.7+2*scale);
   ctx.moveTo(cx+scale, cy+rr*0.7); ctx.lineTo(cx+scale, cy+rr*0.7+2.5*scale);
   ctx.stroke();
   ctx.globalAlpha = 1;
 }`},
-{name:'Trilobite',colors:{main:'#a04000'},source:`function draw(ctx, cx, cy, t, scale, colors) {
-  ctx.fillStyle = colors.main;
+{name:'Trilobite',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#a04000'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  ctx.fillStyle = color1;
   ctx.beginPath(); ctx.ellipse(cx, cy, 1.8*scale, 1*scale, 0, 0, Math.PI*2); ctx.fill();
   ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.3*scale;
   for (let s=-1; s<=1; s++) {
@@ -215,8 +231,12 @@ const SEED=[
     ctx.stroke();
   }
 }`},
-{name:'Shell / Mollusk',colors:{main:'#d98880'},source:`function draw(ctx, cx, cy, t, scale, colors) {
-  ctx.fillStyle = colors.main;
+{name:'Shell / Mollusk',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#d98880'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  ctx.fillStyle = color1;
   ctx.beginPath();
   ctx.moveTo(cx-1.6*scale, cy);
   ctx.quadraticCurveTo(cx, cy-2*scale, cx+1.6*scale, cy);
@@ -230,8 +250,12 @@ const SEED=[
     ctx.stroke();
   }
 }`},
-{name:'Starfish',colors:{main:'#e08283'},source:`function draw(ctx, cx, cy, t, scale, colors) {
-  ctx.fillStyle = colors.main;
+{name:'Starfish',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#e08283'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  ctx.fillStyle = color1;
   ctx.beginPath();
   for (let k=0;k<5;k++){
     const outAng=-Math.PI/2+k*(Math.PI*2/5), inAng=outAng+Math.PI/5;
@@ -244,11 +268,15 @@ const SEED=[
   ctx.fillStyle='rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.arc(cx,cy,0.6*scale,0,Math.PI*2); ctx.fill();
 }`},
-{name:'Crab',colors:{main:'#e67e22'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Crab',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#e67e22'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const x=cx,y=cy;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.ellipse(x,y,1.7*scale,1.2*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=colors.main; ctx.lineWidth=0.45*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.45*scale;
   for(let s=-1;s<=1;s+=2){
     ctx.beginPath();
     ctx.moveTo(x+s*1.6*scale,y+0.7*scale); ctx.lineTo(x+s*2.3*scale,y+1.5*scale); ctx.lineTo(x+s*1.9*scale,y+1.9*scale);
@@ -259,91 +287,131 @@ const SEED=[
   ctx.moveTo(x-1.5*scale,y-0.6*scale); ctx.lineTo(x-2.6*scale,y-1.4*scale);
   ctx.moveTo(x+1.5*scale,y-0.6*scale); ctx.lineTo(x+2.6*scale,y-1.4*scale);
   ctx.stroke();
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.moveTo(x-2.6*scale,y-1.4*scale); ctx.lineTo(x-3.3*scale,y-1.9*scale); ctx.lineTo(x-3*scale,y-0.9*scale); ctx.fill();
   ctx.beginPath(); ctx.moveTo(x+2.6*scale,y-1.4*scale); ctx.lineTo(x+3.3*scale,y-1.9*scale); ctx.lineTo(x+3*scale,y-0.9*scale); ctx.fill();
 }`},
-{name:'Fish',colors:{main:'#5dade2'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Fish',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#5dade2'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const y=cy+Math.sin(t*3)*1.6*scale;
   const w=2.2*scale, h=1.2*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath();
   ctx.moveTo(cx-w/2,y); ctx.lineTo(cx+w/2,y-h/2); ctx.lineTo(cx+w/2,y+h/2);
   ctx.closePath(); ctx.fill();
 }`},
-{name:'Amphibian',colors:{main:'#58d68d'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Amphibian',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#58d68d'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const y=cy-Math.abs(Math.sin(t*3))*2.2*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.fillRect(cx-1*scale,y-1*scale,2*scale,1.6*scale);
 }`},
-{name:'Insect',colors:{main:'#f7dc6f'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Insect',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#f7dc6f'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.fillRect(cx-1*scale,cy-bob-1.6*scale,2*scale,1.6*scale);
   ctx.fillRect(cx-0.6*scale,cy-0.6*scale,0.6*scale,0.8*scale);
   ctx.fillRect(cx+0.2*scale,cy-0.6*scale,0.6*scale,0.8*scale);
 }`},
-{name:'Reptile',colors:{main:'#a9cce3'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Reptile',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#a9cce3'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-0.6*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.ellipse(cx,bodyY,2*scale,0.9*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=colors.main; ctx.lineWidth=0.8*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.8*scale;
   ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.lineTo(cx-dir*3.4*scale,bodyY+0.4*scale); ctx.stroke();
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.arc(cx+dir*2*scale,bodyY-0.1*scale,0.55*scale,0,Math.PI*2); ctx.fill();
   ctx.fillRect(cx-0.9*scale,cy-0.5*scale,0.5*scale,0.7*scale);
   ctx.fillRect(cx+0.4*scale,cy-0.5*scale,0.5*scale,0.7*scale);
 }`},
-{name:'Dinosaur (Sauropod)',colors:{main:'#d35400'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Dinosaur (Sauropod)',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#d35400'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-1.1*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.ellipse(cx,bodyY,2.6*scale,1.5*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=colors.main; ctx.lineWidth=1.3*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=1.3*scale;
   ctx.beginPath(); ctx.moveTo(cx+dir*2*scale,bodyY-0.6*scale); ctx.quadraticCurveTo(cx+dir*3.6*scale,bodyY-2.8*scale,cx+dir*4.4*scale,bodyY-3.6*scale); ctx.stroke();
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.arc(cx+dir*4.6*scale,bodyY-3.8*scale,0.6*scale,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=colors.main; ctx.lineWidth=1*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=1*scale;
   ctx.beginPath(); ctx.moveTo(cx-dir*2.4*scale,bodyY+0.2*scale); ctx.quadraticCurveTo(cx-dir*4.2*scale,bodyY+0.8*scale,cx-dir*5.4*scale,bodyY-0.6*scale); ctx.stroke();
   ctx.fillRect(cx-1.1*scale,cy-0.6*scale,0.6*scale,0.9*scale);
   ctx.fillRect(cx+0.5*scale,cy-0.6*scale,0.6*scale,0.9*scale);
 }`},
-{name:'Mammal',colors:{main:'#ec407a'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Mammal',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#ec407a'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const dir=1;
   const bob=Math.abs(Math.sin(t*5))*0.6*scale;
   const bodyY=cy-bob-0.9*scale;
-  ctx.fillStyle=colors.main;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.ellipse(cx,bodyY,1.8*scale,1.3*scale,0,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(cx+dir*1.7*scale,bodyY-0.9*scale,0.7*scale,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(cx+dir*2.2*scale,bodyY-1.5*scale,0.35*scale,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=colors.main; ctx.lineWidth=0.6*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.6*scale;
   ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.quadraticCurveTo(cx-dir*2.6*scale,bodyY-0.8*scale,cx-dir*2.9*scale,bodyY-0.2*scale); ctx.stroke();
   ctx.fillRect(cx-0.9*scale,cy-0.6*scale,0.6*scale,0.9*scale);
   ctx.fillRect(cx+0.3*scale,cy-0.6*scale,0.6*scale,0.9*scale);
 }`},
-{name:'Bird',colors:{main:'#f1c40f'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Bird',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#f1c40f'; // main
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
   const flap=Math.sin(t*9)*1.4*scale;
-  ctx.strokeStyle=colors.main; ctx.lineWidth=0.8*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.8*scale;
   ctx.beginPath();
   ctx.moveTo(cx-2*scale,cy-flap); ctx.lineTo(cx,cy); ctx.lineTo(cx+2*scale,cy-flap);
   ctx.stroke();
 }`},
-{name:'Fungi / Mushroom',colors:{cap:'#f0b27a',stem:'#d5b895'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Fungi / Mushroom',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
+  let default_color1 = '#f0b27a'; // cap
+  let default_color2 = '#d5b895'; // stem
+  if (color1 == null) color1 = default_color1;
+  if (color2 == null) color2 = default_color2;
+  // --- END COLOR SETUP ---
+
   const pulse=(0.9+Math.sin(t*1.6)*0.15)*scale;
-  ctx.fillStyle=colors.cap;
+  ctx.fillStyle=color1;
   ctx.beginPath(); ctx.ellipse(cx,cy-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0); ctx.fill();
-  ctx.fillStyle=colors.stem;
+  ctx.fillStyle=color2;
   ctx.fillRect(cx-0.3*scale,cy-1.4*pulse,0.6*scale,1.4*pulse);
 }`},
-{name:'Conifer Tree',colors:{trunk:'#6b4a2b',leaves:'#1d6a2f'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Conifer Tree',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
+  let default_color1 = '#6b4a2b'; // trunk
+  let default_color2 = '#1d6a2f'; // leaves
+  if (color1 == null) color1 = default_color1;
+  if (color2 == null) color2 = default_color2;
+  // --- END COLOR SETUP ---
+
   const lean=Math.sin(t*1.1)*0.08*scale;
   const h=7*scale;
-  ctx.strokeStyle=colors.trunk; ctx.lineWidth=0.6*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.6*scale;
   ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h*0.3); ctx.stroke();
-  ctx.fillStyle=colors.leaves;
+  ctx.fillStyle=color2;
   for(let tier=0;tier<3;tier++){
     const ty=cy-h*0.25-tier*h*0.32;
     const tw=(2.6-tier*0.6)*scale;
@@ -354,32 +422,50 @@ const SEED=[
     ctx.closePath(); ctx.fill();
   }
 }`},
-{name:'Flowering Tree',colors:{trunk:'#6b4a2b',leaves:'#2e8b3d',flowers:'#f8c8d4'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'Flowering Tree',source:`function draw(ctx, cx, cy, t, scale, color1, color2, color3) {
+  let default_color1 = '#6b4a2b'; // trunk
+  let default_color2 = '#2e8b3d'; // leaves
+  let default_color3 = '#f8c8d4'; // flowers
+  if (color1 == null) color1 = default_color1;
+  if (color2 == null) color2 = default_color2;
+  if (color3 == null) color3 = default_color3;
+  // --- END COLOR SETUP ---
+
   const lean=Math.sin(t*1.15)*0.1*scale;
   const h=6*scale;
-  ctx.strokeStyle=colors.trunk; ctx.lineWidth=0.7*scale;
+  ctx.strokeStyle=color1; ctx.lineWidth=0.7*scale;
   ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h); ctx.stroke();
   const tcx=cx+lean*h, tcy=cy-h-1.3*scale;
-  ctx.fillStyle=colors.leaves;
+  ctx.fillStyle=color2;
   ctx.beginPath(); ctx.ellipse(tcx,tcy,2*scale,2.1*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=colors.flowers;
+  ctx.fillStyle=color3;
   for(let k=0;k<3;k++){
     const ang=k*2.1;
     ctx.beginPath(); ctx.arc(tcx+Math.cos(ang)*1.3*scale,tcy+Math.sin(ang)*1.1*scale,0.45*scale,0,Math.PI*2); ctx.fill();
   }
 }`},
-{name:'UFO',colors:{body:'#5fd6a8',underside:'#3a8c72',canopy:'#eafcf6',legs:'#8fb8ae'},source:`function draw(ctx, cx, cy, t, scale, colors) {
+{name:'UFO',source:`function draw(ctx, cx, cy, t, scale, color1, color2, color3, color4) {
+  let default_color1 = '#5fd6a8'; // body
+  let default_color2 = '#3a8c72'; // underside
+  let default_color3 = '#eafcf6'; // canopy
+  let default_color4 = '#8fb8ae'; // legs
+  if (color1 == null) color1 = default_color1;
+  if (color2 == null) color2 = default_color2;
+  if (color3 == null) color3 = default_color3;
+  if (color4 == null) color4 = default_color4;
+  // --- END COLOR SETUP ---
+
   const S=scale*0.7;
-  ctx.strokeStyle=colors.legs; ctx.lineWidth=1.3*S;
+  ctx.strokeStyle=color4; ctx.lineWidth=1.3*S;
   ctx.beginPath();
   ctx.moveTo(cx-2*S,cy+1.6*S); ctx.lineTo(cx-4.3*S,cy+3.9*S);
   ctx.moveTo(cx+2*S,cy+1.6*S); ctx.lineTo(cx+4.3*S,cy+3.9*S);
   ctx.stroke();
-  ctx.fillStyle=colors.underside;
+  ctx.fillStyle=color2;
   ctx.beginPath(); ctx.ellipse(cx,cy+0.4*S,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=colors.body; ctx.strokeStyle='#0a1f1a'; ctx.lineWidth=0.9*S;
+  ctx.fillStyle=color1; ctx.strokeStyle='#0a1f1a'; ctx.lineWidth=0.9*S;
   ctx.beginPath(); ctx.ellipse(cx,cy,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=colors.canopy;
+  ctx.fillStyle=color3;
   ctx.beginPath(); ctx.ellipse(cx,cy-1.8*S,3.1*S,2*S,0,Math.PI,0); ctx.fill(); ctx.stroke();
   ctx.fillStyle=\`rgba(255,255,150,\${0.6+0.4*Math.sin(t*4)})\`;
   ctx.beginPath(); ctx.arc(cx-3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.arc(cx,cy+0.7*S,0.8*S,0,Math.PI*2); ctx.arc(cx+3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.fill();
@@ -387,16 +473,50 @@ const SEED=[
 ];
 
 let slots=loadSlots(NS,SEED,100);
-(function migrateOldColorFormat(){
-  let changed=false;
-  slots.forEach(s=>{
-    if(s && !s.colors && s.color){ s.colors={main:s.color}; delete s.color; changed=true; }
-    else if(s && s.colors && s.color){ delete s.color; changed=true; } // strip stray leftover field
-  });
-  if(changed) saveSlots(NS,slots);
-})();
 let curSlot=0;
-let curColors={main:'#5dade2'};
+let curColors=[{hex:'#5dade2',label:null}];
+
+// ---- Self-contained color system: colors live INSIDE the source as
+//   let default_colorN = '#hex'; // label
+//   if (colorN == null) colorN = default_colorN;
+// so a saved object is fully portable — it works standalone if just called with
+// draw(ctx,cx,cy,t,scale), and still overridable via draw(ctx,cx,cy,t,scale,'#someHex').
+const COLOR_SETUP_MARKER='// --- END COLOR SETUP ---';
+function buildPreamble(colorsArr){
+  const params=colorsArr.map((_,i)=>'color'+(i+1)).join(', ');
+  let lines='function draw(ctx, cx, cy, t, scale'+(colorsArr.length?', '+params:'')+') {\n';
+  colorsArr.forEach((c,i)=>{ lines+=`  let default_color${i+1} = '${c.hex}';`+(c.label?` // ${c.label}`:'')+'\n'; });
+  colorsArr.forEach((c,i)=>{ lines+=`  if (color${i+1} == null) color${i+1} = default_color${i+1};\n`; });
+  lines+='  '+COLOR_SETUP_MARKER+'\n';
+  return lines;
+}
+function splitBody(source){
+  const idx=(source||'').indexOf(COLOR_SETUP_MARKER);
+  if(idx===-1)return null;
+  const lineEnd=source.indexOf('\n',idx);
+  return source.slice(lineEnd===-1?idx+COLOR_SETUP_MARKER.length:lineEnd+1);
+}
+function rebuildSource(colorsArr,body){
+  return buildPreamble(colorsArr)+body;
+}
+function parseColorsFromSource(source){
+  const re=/let\s+default_color(\d+)\s*=\s*'([^']*)'\s*;?[ \t]*(?:\/\/\s*(.*))?/g;
+  const arr=[];
+  let m;
+  while((m=re.exec(source||''))){ arr[parseInt(m[1],10)-1]={hex:m[2],label:(m[3]||'').trim()||null}; }
+  return arr.filter(Boolean);
+}
+// One-time migration for objects saved under the older {colors:{name:hex}} metadata + colors.name body style
+function migrateOldColorsSourceToNumbered(source,colorsMeta){
+  const entries=Object.entries(colorsMeta||{});
+  if(!entries.length)return source;
+  const braceIdx=(source||'').indexOf('{');
+  if(braceIdx===-1)return source;
+  let body=source.slice(braceIdx+1);
+  entries.forEach(([name],i)=>{ body=body.replace(new RegExp('colors\\.'+name+'\\b','g'),'color'+(i+1)); });
+  const colorsArr=entries.map(([name,hex])=>({hex,label:name}));
+  return buildPreamble(colorsArr)+body;
+}
 
 function renderSlotList(){
   const q=(document.getElementById('slot-search-input').value||'').toLowerCase();
@@ -418,16 +538,13 @@ function loadPalette(){
     const raw=localStorage.getItem('earthsim_editor_palette');
     if(raw){const arr=JSON.parse(raw);if(Array.isArray(arr)&&arr.length)return arr;}
   }catch(e){}
-  // seed the palette with every color already used across the built-in objects
   const seen=new Set();
-  SEED.forEach(s=>Object.values(s.colors||{}).forEach(c=>seen.add(c)));
+  SEED.forEach(s=>parseColorsFromSource(s.source).forEach(c=>seen.add(c.hex)));
   const arr=[...seen];
   try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){}
   return arr;
 }
-function savePalette(arr){
-  try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){}
-}
+function savePalette(arr){ try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){} }
 let palette=loadPalette();
 function renderPalette(){
   const el=document.getElementById('palette-swatches');
@@ -435,8 +552,7 @@ function renderPalette(){
   palette.forEach(c=>{
     const sw=document.createElement('div');
     sw.className='palette-swatch'+(c===selectedPaletteColor?' selected':'');
-    sw.style.background=c;
-    sw.title=c;
+    sw.style.background=c; sw.title=c;
     sw.onclick=()=>{selectedPaletteColor=c;renderPalette();};
     el.appendChild(sw);
   });
@@ -450,50 +566,55 @@ function addToPalette(hex){
 function renderColorParts(){
   const list=document.getElementById('color-parts-list');
   list.innerHTML='';
-  Object.keys(curColors).forEach(part=>{
+  curColors.forEach((c,i)=>{
     const row=document.createElement('div');
     row.className='color-part';
-    row.innerHTML=`<input type="text" value="${part}" onchange="renamePart(this,'${part}')">
-      <input type="color" value="${curColors[part]}" oninput="setPartColor('${part}',this.value)">
-      <span class="rm" onclick="removePart('${part}')">✕</span>`;
+    row.innerHTML=`<span style="font-size:9px;color:#7ec8e3;padding:0 2px">Color ${i+1}${c.label?' ('+c.label+')':''}</span>
+      <input type="color" value="${c.hex}" oninput="setPartColor(${i},this.value)">
+      <span class="rm" onclick="removePart(${i})">✕</span>`;
     list.appendChild(row);
   });
 }
+function setPartColor(i,hex){
+  curColors[i].hex=hex;
+  const src=document.getElementById('source-editor').value;
+  const body=splitBody(src);
+  if(body!==null) document.getElementById('source-editor').value=rebuildSource(curColors,body);
+  if(!palette.includes(hex)){palette.push(hex);savePalette(palette);renderPalette();}
+  runPreview();
+}
 function addColorPart(){
-  let n=1,name='part'+n;
-  while(curColors[name])name='part'+(++n);
-  curColors[name]=selectedPaletteColor||'#5dade2';
+  curColors.push({hex:selectedPaletteColor||'#5dade2',label:null});
+  const src=document.getElementById('source-editor').value;
+  let body=splitBody(src);
+  if(body===null){ const braceIdx=src.indexOf('{'); body=braceIdx!==-1?src.slice(braceIdx+1):'\n}\n'; }
+  document.getElementById('source-editor').value=rebuildSource(curColors,body);
   renderColorParts();
   runPreview();
+  toast('Added Color '+curColors.length+' — reference it in your drawing code as color'+curColors.length+'.');
 }
-function removePart(part){
-  if(Object.keys(curColors).length<=1){toast('Need at least one color part.');return;}
-  delete curColors[part];
+function removePart(i){
+  if(curColors.length<=1){toast('Need at least one color part.');return;}
+  curColors.splice(i,1);
+  const src=document.getElementById('source-editor').value;
+  const body=splitBody(src);
+  if(body!==null) document.getElementById('source-editor').value=rebuildSource(curColors,body);
   renderColorParts();
   runPreview();
-}
-function setPartColor(part,val){
-  curColors[part]=val;
-  if(!palette.includes(val)){palette.push(val);savePalette(palette);renderPalette();}
-  runPreview();
-}
-function renamePart(el,oldName){
-  const newName=el.value.trim().replace(/[^a-zA-Z0-9_]/g,'')||oldName;
-  if(newName!==oldName && !curColors[newName]){
-    curColors[newName]=curColors[oldName];
-    delete curColors[oldName];
-  }
-  renderColorParts();
-  runPreview();
-  toast(newName!==oldName?`Renamed part to "${newName}" — update colors.${newName} in the source.`:'');
+  toast('Removed. Remaining color numbers may have shifted — check your drawing code still refers to the right colorN.');
 }
 
 function selectSlot(i){
   curSlot=i;
   const s=slots[i];
   document.getElementById('slot-name').value=s.name;
-  document.getElementById('source-editor').value=s.source||'';
-  curColors=s.colors?{...s.colors}:{main:'#5dade2'};
+  let src=s.source||'';
+  if(!src.includes(COLOR_SETUP_MARKER) && s.colors){
+    src=migrateOldColorsSourceToNumbered(src,s.colors); // one-time upgrade from the older metadata format
+  }
+  document.getElementById('source-editor').value=src;
+  curColors=parseColorsFromSource(src);
+  if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
   renderColorParts();
   document.getElementById('status-line').textContent=s.empty?'Empty slot — describe what you want in the prompt box, or write source directly.':('Slot '+(i+1)+' — '+s.name);
   renderSlotList();
@@ -511,21 +632,21 @@ function getFn(){
   }
 }
 
-// Some objects may still have old source text (written before this editor supported multiple named
-// color parts) whose function signature ends in a single `color` parameter expecting a plain string.
-// Since we now always have a colors OBJECT, calling that old code with the object directly would set
-// ctx.fillStyle to an object — an invalid value that canvas silently ignores, leaving everything black.
-// This wrapper detects which style the function actually declares and calls it the right way either way.
-function callDrawFn(fn,ctx,cx,cy,t,scale,colorsObj){
+// Calls draw() the right way whichever style it's actually written in: the current numbered
+// color1..colorN style, the legacy single-string "color" style, or the intermediate "colors" object
+// style — so nothing ever silently goes black regardless of when an object was last saved.
+function callDrawFn(fn,ctx,cx,cy,t,scale,colorsArr){
   const head=fn.toString().match(/^\s*function[^(]*\(([^)]*)\)/);
-  const params=head?head[1].split(',').map(p=>p.trim()):[];
-  const lastParam=params[params.length-1];
-  if(lastParam==='color'){
-    const val=colorsObj.main||Object.values(colorsObj)[0]||'#5dade2';
-    fn(ctx,cx,cy,t,scale,val);
-  } else {
-    fn(ctx,cx,cy,t,scale,colorsObj);
+  const params=head?head[1].split(',').map(p=>p.trim()).filter(Boolean):[];
+  const tail=params.slice(5);
+  if(tail.length===0){ fn(ctx,cx,cy,t,scale); return; }
+  if(tail.length===1 && tail[0]==='color'){ fn(ctx,cx,cy,t,scale,(colorsArr[0]&&colorsArr[0].hex)||'#5dade2'); return; }
+  if(tail.length===1 && tail[0]==='colors'){
+    const obj={}; colorsArr.forEach((c,i)=>obj['color'+(i+1)]=c.hex); if(colorsArr[0])obj.main=colorsArr[0].hex;
+    fn(ctx,cx,cy,t,scale,obj); return;
   }
+  const args=tail.map((p,i)=>(colorsArr[i]&&colorsArr[i].hex)||'#5dade2');
+  fn(ctx,cx,cy,t,scale,...args);
 }
 
 let animT=0;
@@ -542,14 +663,18 @@ function runPreview(){
 }
 function loop(){ animT+=0.03; runPreview(); requestAnimationFrame(loop); }
 
-function onSourceEdit(){ /* live preview follows automatically via loop */ }
+function onSourceEdit(){
+  // if the person hand-edits default_colorN values directly in the textarea, keep the swatches in sync
+  const parsed=parseColorsFromSource(document.getElementById('source-editor').value);
+  if(parsed.length){ curColors=parsed; renderColorParts(); }
+}
 
 function doSave(){
   const src=document.getElementById('source-editor').value;
   const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
-  slots[curSlot]={name,source:src,colors:{...curColors},empty:!src.trim()};
+  slots[curSlot]={name,source:src,empty:!src.trim()};
   saveSlots(NS,slots);
-  pushVersion(NS,curSlot,src,name,{colors:{...curColors}});
+  pushVersion(NS,curSlot,src,name);
   renderSlotList();
   toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
 }
@@ -559,10 +684,12 @@ function doDiscard(){
     const last=versions[versions.length-1];
     document.getElementById('source-editor').value=last.source;
     document.getElementById('slot-name').value=last.name||slots[curSlot].name;
-    if(last.colors){curColors={...last.colors};renderColorParts();}
   } else {
     document.getElementById('source-editor').value=slots[curSlot].source||'';
   }
+  curColors=parseColorsFromSource(document.getElementById('source-editor').value);
+  if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
+  renderColorParts();
   runPreview();
   toast('Reverted to last saved version.');
 }
@@ -581,7 +708,9 @@ function loadVersion(v){
   if(found){
     document.getElementById('source-editor').value=found.source;
     document.getElementById('slot-name').value=found.name||slots[curSlot].name;
-    if(found.colors){curColors={...found.colors};renderColorParts();}
+    curColors=parseColorsFromSource(found.source);
+    if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
+    renderColorParts();
     runPreview();
     toast('Loaded version '+v+'.');
   }
@@ -595,17 +724,19 @@ async function submitPrompt(){
   statusEl.textContent='Sending to Claude...';
   try{
     const current=document.getElementById('source-editor').value;
-    const partNames=Object.keys(curColors).join(', ');
-    const hint='You are editing a JavaScript function for a retro pixel-art canvas game creature. '+
-      'The function signature must stay exactly: function draw(ctx, cx, cy, t, scale, colors) { ... } — '+
-      'ctx is a Canvas2D context, (cx,cy) is the center position, t is a seconds-based animation clock, '+
-      'scale is a size multiplier to apply to all dimensions, and colors is an object with named color parts '+
-      '(currently: '+partNames+') — reference them as colors.partName. If you introduce a new visual part that '+
-      'needs its own color, name it clearly (e.g. colors.wingtips) and mention in one trailing comment line '+
-      '"// NEW COLOR PART: wingtips" so it can be added to the color-parts list.';
+    const hint='You are editing a JavaScript function for a retro pixel-art canvas game creature/object. '+
+      'It must stay fully self-contained (so it also works as a standalone plugin file): the function '+
+      'signature is function draw(ctx, cx, cy, t, scale, color1, color2, ...) — one optional colorN '+
+      'parameter per color part, in order. Immediately after the opening brace, declare for each part: '+
+      '"let default_colorN = \'#hex\'; // short label" then "if (colorN == null) colorN = default_colorN;" '+
+      '— then a line that is exactly "'+COLOR_SETUP_MARKER+'" — then the actual drawing code using '+
+      'color1/color2/etc. Keep this exact structure so the color parts stay editable. Current color count: '+curColors.length+'.';
     const newSrc=await callClaude(promptText,current,hint);
     document.getElementById('source-editor').value=newSrc;
-    statusEl.textContent='Updated. Review, then SAVE if you like it. If Claude added a new color part, add it with + ADD PART above (matching name).';
+    curColors=parseColorsFromSource(newSrc);
+    if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
+    renderColorParts();
+    statusEl.textContent='Updated. Review, then SAVE if you like it.';
     runPreview();
   }catch(e){
     statusEl.textContent='⚠ '+e.message;
@@ -616,11 +747,10 @@ async function doGithubPush(){
   const src=document.getElementById('source-editor').value;
   const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
   const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.js';
-  const header='/* EARTHSIM_OBJECT name="'+name.replace(/"/g,"'")+'" colors='+JSON.stringify(curColors)+' */\n';
   toast('Pushing to GitHub...');
   try{
-    await pushToGithub(fname,header+src,'Update object: '+name);
-    toast('Pushed '+fname+' to GitHub (colors embedded as a header comment).');
+    await pushToGithub(fname,src,'Update object: '+name); // colors are embedded directly in the source — no extra metadata needed
+    toast('Pushed '+fname+' to GitHub — colors are baked directly into the file as defaults.');
   }catch(e){
     toast('⚠ '+e.message);
   }
@@ -674,7 +804,7 @@ const REF_EFFECTS=[
    draw:(ctx,cx,cy,t)=>{ctx.shadowColor='#ffec27';ctx.shadowBlur=10;ctx.fillStyle='#ffec27';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}},
   {name:'Walk cycle (bob + legs)',code:'const bob = Math.abs(Math.sin(t*5))*3;\n// body rises on each "step", legs alternate',
    draw:(ctx,cx,cy,t)=>{const bob=Math.abs(Math.sin(t*5))*4;ctx.fillStyle='#d35400';ctx.beginPath();ctx.ellipse(cx,cy-10-bob,14,8,0,0,Math.PI*2);ctx.fill();ctx.fillRect(cx-8,cy-bob,4,10);ctx.fillRect(cx+4,cy-bob,4,10);}},
-  {name:'Multi-part color object',code:'function draw(ctx,cx,cy,t,scale,colors){\n  ctx.fillStyle = colors.trunk; // part 1\n  ctx.fillStyle = colors.leaves; // part 2\n}',
+  {name:'Self-contained colors',code:'function draw(ctx,cx,cy,t,scale,color1,color2){\n  let default_color1=\'#6b4a2b\'; // trunk\n  let default_color2=\'#1d6a2f\'; // leaves\n  if(color1==null)color1=default_color1;\n  if(color2==null)color2=default_color2;\n  // --- END COLOR SETUP ---\n  ctx.fillStyle=color1;\n  ctx.fillStyle=color2;\n}',
    draw:(ctx,cx,cy,t)=>{ctx.strokeStyle='#6b4a2b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,cy+16);ctx.lineTo(cx,cy-4);ctx.stroke();ctx.fillStyle='#1d6a2f';ctx.beginPath();ctx.arc(cx,cy-10,12,0,Math.PI*2);ctx.fill();}},
 ];
 function buildReferenceGallery(){
