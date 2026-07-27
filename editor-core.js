@@ -53,22 +53,12 @@ function loadSlots(namespace, seedData, slotCount){
     const raw=localStorage.getItem(key);
     if(raw){
       const slots=JSON.parse(raw);
-      if(Array.isArray(slots)&&slots.length===slotCount){
-        let changed=false;
-        slots.forEach((s,i)=>{
-          if(!s.color){
-            s.color=(seedData[i]&&seedData[i].color)||'#5dade2';
-            changed=true;
-          }
-        });
-        if(changed)saveSlots(namespace,slots);
-        return slots;
-      }
+      if(Array.isArray(slots)&&slots.length===slotCount) return slots;
     }
   }catch(e){}
   const slots=[];
   for(let i=0;i<slotCount;i++){
-    slots.push(seedData[i]?{...seedData[i],empty:false}:{name:'Empty Slot '+(i+1),source:'',color:'#5dade2',empty:true});
+    slots.push(seedData[i]?{...seedData[i],empty:false}:{name:'Empty Slot '+(i+1),source:'',colors:{main:'#5dade2'},empty:true});
   }
   saveSlots(namespace,slots);
   return slots;
