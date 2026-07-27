@@ -58,6 +58,13 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 .color-part input[type=color]{width:24px;height:20px;padding:0;border:none;cursor:pointer;background:none}
 .color-part .rm{cursor:pointer;color:#ff6b6b;font-size:11px;padding:0 2px}
 #add-part-btn{font-family:'Courier New',monospace;font-size:10px;padding:3px 8px;background:#0d1a2b;color:#5dade2;border:1px solid #5dade2;cursor:pointer}
+#palette-row{display:flex;align-items:center;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
+#palette-row>label{font-size:9px;color:#4a7c9e}
+#palette-swatches{display:flex;gap:4px;flex-wrap:wrap}
+.palette-swatch{width:18px;height:18px;border:2px solid #1a3a5c;cursor:pointer;flex-shrink:0}
+.palette-swatch.selected{border-color:#ffec27}
+#palette-add{width:24px;height:20px;padding:0;border:none;cursor:pointer;background:none}
+.color-parts-help{font-size:8px;color:#3a5a78;padding:0 12px 6px;line-height:1.4}
 #ref-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center}
 #ref-box{background:#0a1628;border:1px solid #4ecb71;padding:16px;width:820px;max-width:95vw;height:85vh;overflow-y:auto}
 #ref-box h2{color:#4ecb71;font-size:13px;margin-bottom:4px;letter-spacing:1px}
@@ -99,6 +106,12 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
       <label>COLOR PARTS:</label>
       <div id="color-parts-list" style="display:flex;gap:6px;flex-wrap:wrap"></div>
       <button id="add-part-btn" onclick="addColorPart()">+ ADD PART</button>
+    </div>
+    <div class="color-parts-help">Each part is a named color slot your object's code reads as <b>colors.NAME</b> (e.g. colors.main for a single-color shape, or colors.trunk / colors.leaves for a tree). Rename the text box to change the name — just make sure the code below refers to the same name.</div>
+    <div id="palette-row">
+      <label>🎨 PALETTE (click to select, then + ADD PART uses it):</label>
+      <div id="palette-swatches"></div>
+      <input id="palette-add" type="color" value="#5dade2" title="pick a custom color to add to the palette" onchange="addToPalette(this.value)">
     </div>
     <div id="right">
       <div id="prompt-area">
@@ -378,6 +391,7 @@ let slots=loadSlots(NS,SEED,100);
   let changed=false;
   slots.forEach(s=>{
     if(s && !s.colors && s.color){ s.colors={main:s.color}; delete s.color; changed=true; }
+    else if(s && s.colors && s.color){ delete s.color; changed=true; } // strip stray leftover field
   });
   if(changed) saveSlots(NS,slots);
 })();
@@ -398,6 +412,41 @@ function renderSlotList(){
   });
 }
 
+let selectedPaletteColor=null;
+function loadPalette(){
+  try{
+    const raw=localStorage.getItem('earthsim_editor_palette');
+    if(raw){const arr=JSON.parse(raw);if(Array.isArray(arr)&&arr.length)return arr;}
+  }catch(e){}
+  // seed the palette with every color already used across the built-in objects
+  const seen=new Set();
+  SEED.forEach(s=>Object.values(s.colors||{}).forEach(c=>seen.add(c)));
+  const arr=[...seen];
+  try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){}
+  return arr;
+}
+function savePalette(arr){
+  try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){}
+}
+let palette=loadPalette();
+function renderPalette(){
+  const el=document.getElementById('palette-swatches');
+  el.innerHTML='';
+  palette.forEach(c=>{
+    const sw=document.createElement('div');
+    sw.className='palette-swatch'+(c===selectedPaletteColor?' selected':'');
+    sw.style.background=c;
+    sw.title=c;
+    sw.onclick=()=>{selectedPaletteColor=c;renderPalette();};
+    el.appendChild(sw);
+  });
+}
+function addToPalette(hex){
+  if(!palette.includes(hex)){palette.push(hex);savePalette(palette);}
+  selectedPaletteColor=hex;
+  renderPalette();
+}
+
 function renderColorParts(){
   const list=document.getElementById('color-parts-list');
   list.innerHTML='';
@@ -413,7 +462,7 @@ function renderColorParts(){
 function addColorPart(){
   let n=1,name='part'+n;
   while(curColors[name])name='part'+(++n);
-  curColors[name]='#5dade2';
+  curColors[name]=selectedPaletteColor||'#5dade2';
   renderColorParts();
   runPreview();
 }
@@ -425,6 +474,7 @@ function removePart(part){
 }
 function setPartColor(part,val){
   curColors[part]=val;
+  if(!palette.includes(val)){palette.push(val);savePalette(palette);renderPalette();}
   runPreview();
 }
 function renamePart(el,oldName){
@@ -461,6 +511,23 @@ function getFn(){
   }
 }
 
+// Some objects may still have old source text (written before this editor supported multiple named
+// color parts) whose function signature ends in a single `color` parameter expecting a plain string.
+// Since we now always have a colors OBJECT, calling that old code with the object directly would set
+// ctx.fillStyle to an object — an invalid value that canvas silently ignores, leaving everything black.
+// This wrapper detects which style the function actually declares and calls it the right way either way.
+function callDrawFn(fn,ctx,cx,cy,t,scale,colorsObj){
+  const head=fn.toString().match(/^\s*function[^(]*\(([^)]*)\)/);
+  const params=head?head[1].split(',').map(p=>p.trim()):[];
+  const lastParam=params[params.length-1];
+  if(lastParam==='color'){
+    const val=colorsObj.main||Object.values(colorsObj)[0]||'#5dade2';
+    fn(ctx,cx,cy,t,scale,val);
+  } else {
+    fn(ctx,cx,cy,t,scale,colorsObj);
+  }
+}
+
 let animT=0;
 function runPreview(){
   const fn=getFn();
@@ -469,8 +536,8 @@ function runPreview(){
   bigCx.clearRect(0,0,120,120);
   gameCx.clearRect(0,0,48,48);
   if(fn){
-    try{ fn(bigCx,60,70,animT,9,curColors); }catch(e){}
-    try{ gameCx.save(); gameCx.translate(0,0); fn(gameCx,24,30,animT,1.6,curColors); gameCx.restore(); }catch(e){}
+    try{ callDrawFn(fn,bigCx,60,70,animT,9,curColors); }catch(e){}
+    try{ gameCx.save(); gameCx.translate(0,0); callDrawFn(fn,gameCx,24,30,animT,1.6,curColors); gameCx.restore(); }catch(e){}
   }
 }
 function loop(){ animT+=0.03; runPreview(); requestAnimationFrame(loop); }
@@ -645,6 +712,7 @@ function refLoop(){
 }
 requestAnimationFrame(refLoop);
 
+renderPalette();
 renderSlotList();
 selectSlot(0);
 requestAnimationFrame(loop);
