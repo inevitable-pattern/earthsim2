@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{
+    margin:0;
+    background:#e8f4ff;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
+}
+window.onresize=resize;
+resize();
+
+let t=0;
+
+function ellipse(x,y,w,h,color){
+    ctx.beginPath();
+    ctx.fillStyle=color;
+    ctx.ellipse(x,y,w,h,0,0,Math.PI*2);
+    ctx.fill();
+}
+
+function line(x1,y1,x2,y2,w,color){
+    ctx.beginPath();
+    ctx.strokeStyle=color;
+    ctx.lineWidth=w;
+    ctx.lineCap="round";
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+}
+
+function leg(x,y,len,a){
+
+    let kx=x+Math.sin(a)*25;
+    let ky=y+Math.cos(a)*len*0.5;
+
+    let fx=kx+Math.sin(a*0.7)*20;
+    let fy=ky+Math.cos(a*0.7)*len*0.5;
+
+    line(x,y,kx,ky,14,"#b97d39");
+    line(kx,ky,fx,fy,12,"#b97d39");
+
+    line(fx,fy,fx+12,fy,5,"#222");
+
+}
+
+function draw(){
+
+    requestAnimationFrame(draw);
+
+    t+=0.04;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#95d676";
+    ctx.fillRect(0,canvas.height-120,canvas.width,120);
+
+    let x=canvas.width/2;
+    let y=canvas.height/2+40;
+
+    let bob=Math.sin(t*2)*4;
+
+    //---------------- body
+
+    ellipse(x,y+bob,140,60,"#d6a54c");
+
+    //---------------- neck
+
+    ctx.save();
+
+    ctx.translate(x+95,y-10+bob);
+
+    ctx.rotate(-0.2+Math.sin(t*2)*0.08);
+
+    line(0,0,10,-150,22,"#d6a54c");
+
+    //---------------- head
+
+    ellipse(20,-165,45,28,"#d6a54c");
+
+    ellipse(55,-168,18,12,"#d6a54c");
+
+    line(10,-195,5,-225,5,"#7d5326");
+    line(30,-195,35,-223,5,"#7d5326");
+
+    ellipse(4,-228,4,4,"#7d5326");
+    ellipse(35,-226,4,4,"#7d5326");
+
+    ellipse(55,-170,2,2,"black");
+
+    ctx.restore();
+
+    //---------------- tail
+
+    ctx.save();
+
+    ctx.translate(x-120,y-10+bob);
+
+    ctx.rotate(Math.sin(t*4)*0.4);
+
+    line(0,0,-45,30,5,"#7d5326");
+
+    ellipse(-50,36,8,12,"#222");
+
+    ctx.restore();
+
+    //---------------- legs
+
+    let s=Math.sin(t*2);
+
+    leg(x-70,y+40+bob,130,s*0.45);
+
+    leg(x-25,y+40+bob,130,-s*0.45);
+
+    leg(x+40,y+40+bob,130,-s*0.45);
+
+    leg(x+85,y+40+bob,130,s*0.45);
+
+    //---------------- spots
+
+    ctx.fillStyle="#9a6128";
+
+    [
+        [-70,-20],[-20,-25],[20,-10],[70,-15],
+        [-40,20],[10,15],[60,20],[-80,15]
+    ].forEach(p=>{
+        ellipse(x+p[0],y+p[1]+bob,8,8,"#9a6128");
+    });
+
+}
+
+draw();
+
+</script>
+
+</body>
+</html>
