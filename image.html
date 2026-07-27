@@ -15,24 +15,25 @@ body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:10
 #slot-search{padding:6px;border-bottom:1px solid #1a3a5c}
 #slot-search input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:4px}
 #slot-list{flex:1;overflow-y:auto}
-.slot-item{padding:6px 10px;font-size:11px;border-bottom:1px solid #071525;cursor:pointer;display:flex;justify-content:space-between}
+.slot-item{padding:6px 10px;font-size:11px;border-bottom:1px solid #071525;cursor:pointer;display:flex;align-items:center;gap:6px}
 .slot-item:hover{background:#0d2137}
 .slot-item.active{background:#1a3a5c;color:#ffec27}
 .slot-item.empty{color:#3a5a78;font-style:italic}
-#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-#preview-row{display:flex;gap:12px;padding:12px;border-bottom:1px solid #1a3a5c}
-.preview-box{background:#04101c;border:1px solid #1a3a5c;display:flex;flex-direction:column;align-items:center;padding:6px}
-.preview-box .lbl{font-size:9px;color:#4a7c9e;letter-spacing:1px;margin-bottom:4px}
-canvas#preview-big{width:220px;height:220px;image-rendering:pixelated;background:#000}
-canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;background:#000}
-#slot-name-row{display:flex;align-items:center;gap:8px;padding:0 12px 8px}
-#slot-name{background:#071525;border:1px solid #1a3a5c;color:#ffec27;font-family:inherit;font-size:12px;padding:4px 8px;flex:1}
-#right{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;overflow:hidden}
-#prompt-area{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
-#prompt-area label{font-size:9px;color:#4a7c9e;letter-spacing:1px}
-#prompt-input{background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:6px;height:52px;resize:vertical}
-#prompt-row2{display:flex;gap:6px;align-items:center}
-#source-editor{flex:1;background:#04101c;border:1px solid #1a3a5c;color:#4ecb71;font-family:'Courier New',monospace;font-size:11px;padding:8px;resize:none;line-height:1.5;min-height:0}
+.slot-thumb{width:16px;height:16px;object-fit:cover;background:#04101c;border:1px solid #1a3a5c;flex-shrink:0}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:12px}
+#preview-row{display:flex;gap:12px;margin-bottom:10px}
+.preview-box{background:#04101c;border:1px solid #1a3a5c;display:flex;align-items:center;justify-content:center;width:180px;height:180px;flex-shrink:0}
+.preview-box img{max-width:100%;max-height:100%}
+.preview-placeholder{font-size:10px;color:#3a5a78;text-align:center;padding:10px}
+#meta-col{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.meta-row label{display:block;font-size:9px;color:#4a7c9e;margin-bottom:3px}
+.meta-row input,.meta-row textarea{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px}
+.meta-row textarea{resize:vertical;height:50px}
+#source-row{display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden}
+.source-block{background:#071525;border:1px solid #1a3a5c;padding:8px}
+.source-block label{font-size:9px;color:#4a7c9e;letter-spacing:1px;margin-bottom:6px;display:block}
+#prompt-input{width:100%;background:#04101c;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:6px;height:44px;resize:vertical}
+.row-flex{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #action-row{display:flex;gap:6px;padding:8px 0;flex-wrap:wrap;align-items:center}
 .actbtn{font-family:'Courier New',monospace;font-size:11px;padding:6px 12px;cursor:pointer;border:1px solid}
 .actbtn.save{background:#0d2b12;color:#4ecb71;border-color:#4ecb71}
@@ -51,38 +52,13 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 .set-row label{display:block;font-size:10px;color:#4a7c9e;margin-bottom:3px}
 .set-row input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px}
 .set-note{font-size:9px;color:#7a5a3a;margin-top:12px;line-height:1.5;border-top:1px solid #1a3a5c;padding-top:10px}
-#color-parts-row{display:flex;align-items:center;gap:8px;padding:0 12px 8px;flex-wrap:wrap}
-#color-parts-row>label{font-size:9px;color:#4a7c9e}
-.color-part{display:flex;align-items:center;gap:3px;background:#071525;border:1px solid #1a3a5c;padding:2px 4px}
-.color-part input[type=text]{width:56px;background:#04101c;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:10px;padding:2px}
-.color-part input[type=color]{width:24px;height:20px;padding:0;border:none;cursor:pointer;background:none}
-.color-part .rm{cursor:pointer;color:#ff6b6b;font-size:11px;padding:0 2px}
-#add-part-btn{font-family:'Courier New',monospace;font-size:10px;padding:3px 8px;background:#0d1a2b;color:#5dade2;border:1px solid #5dade2;cursor:pointer}
-#palette-row{display:flex;align-items:center;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
-#palette-row>label{font-size:9px;color:#4a7c9e}
-#palette-swatches{display:flex;gap:4px;flex-wrap:wrap}
-.palette-swatch{width:18px;height:18px;border:2px solid #1a3a5c;cursor:pointer;flex-shrink:0}
-.palette-swatch.selected{border-color:#ffec27}
-#palette-add{width:24px;height:20px;padding:0;border:none;cursor:pointer;background:none}
-.color-parts-help{font-size:8px;color:#3a5a78;padding:0 12px 6px;line-height:1.4}
-#ref-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center}
-#ref-box{background:#0a1628;border:1px solid #4ecb71;padding:16px;width:820px;max-width:95vw;height:85vh;overflow-y:auto}
-#ref-box h2{color:#4ecb71;font-size:13px;margin-bottom:4px;letter-spacing:1px}
-#ref-box .ref-sub{font-size:10px;color:#4a7c9e;margin-bottom:12px}
-.ref-section-title{font-size:11px;color:#ffec27;margin:14px 0 8px;letter-spacing:1px;border-bottom:1px solid #1a3a5c;padding-bottom:4px}
-.ref-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.ref-card{background:#04101c;border:1px solid #1a3a5c;padding:6px;display:flex;flex-direction:column;align-items:center}
-.ref-card canvas{width:80px;height:80px;image-rendering:pixelated;background:#000;margin-bottom:4px}
-.ref-card .ref-name{font-size:9px;color:#7ec8e3;margin-bottom:3px}
-.ref-card pre{font-size:8px;color:#4ecb71;background:#000;padding:4px;width:100%;white-space:pre-wrap;line-height:1.3;max-height:70px;overflow-y:auto}
-#ref-close{position:sticky;top:0;float:right}
+#file-input{display:none}
 </style>
 </head>
 <body>
 <div id="top">
   <button class="topbtn" onclick="location.href='index.html'">← BACK</button>
   <h1>🖼 IMAGE EDITOR</h1>
-  <button class="topbtn" onclick="openReference()">📖 REFERENCE</button>
   <button class="topbtn" onclick="openSettings()">⚙ SETTINGS</button>
 </div>
 <div id="body">
@@ -92,39 +68,29 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
   </div>
   <div id="main">
     <div id="preview-row">
-      <div class="preview-box"><div class="lbl">ZOOMED PREVIEW</div><canvas id="preview-big" width="120" height="120"></canvas></div>
-      <div class="preview-box"><div class="lbl">IN-GAME SCALE</div><canvas id="preview-game" width="48" height="48"></canvas></div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 8px">
+      <div class="preview-box" id="preview-box"><div class="preview-placeholder">No image yet</div></div>
+      <div id="meta-col">
+        <div class="meta-row"><label>TITLE</label><input id="slot-name" value=""></div>
+        <div class="meta-row"><label>DESCRIPTION</label><textarea id="slot-desc" placeholder="Short description shown alongside this image"></textarea></div>
         <div id="status-line">Select a slot to begin.</div>
-        <div id="reset-warning" style="display:none;font-size:9px;color:#ffa07a;background:#2b1a0d;border:1px solid #7a5a3a;padding:5px;line-height:1.5"></div>
       </div>
     </div>
-    <div id="slot-name-row">
-      <label style="font-size:9px;color:#4a7c9e">NAME:</label>
-      <input id="slot-name" value="">
-    </div>
-    <div id="color-parts-row">
-      <label>COLOR PARTS:</label>
-      <div id="color-parts-list" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-      <button id="add-part-btn" onclick="addColorPart()">+ ADD PART</button>
-    </div>
-    <div class="color-parts-help">Colors are baked directly into the code as defaults (<b>let default_color1 = '#hex';</b>) so a saved object works standalone, even outside this editor. The code reads them as <b>color1</b>, <b>color2</b>, etc. Changing a swatch above rewrites that default_colorN line directly.</div>
-    <div id="palette-row">
-      <label>🎨 PALETTE (click to select, then + ADD PART uses it):</label>
-      <div id="palette-swatches"></div>
-      <input id="palette-add" type="color" value="#5dade2" title="pick a custom color to add to the palette" onchange="addToPalette(this.value)">
-    </div>
-    <div id="right">
-      <div id="prompt-area">
-        <label>PROMPT (ask Claude to modify this object)</label>
-        <textarea id="prompt-input" placeholder="e.g. make the wings flap faster and add a red beak"></textarea>
-        <div id="prompt-row2">
-          <button class="actbtn load" onclick="submitPrompt()">✨ SEND TO CLAUDE</button>
-          <span id="prompt-status" style="font-size:10px;color:#4a7c9e"></span>
+    <div id="source-row">
+      <div class="source-block">
+        <label>OPTION A — LOAD FROM DEVICE</label>
+        <div class="row-flex">
+          <button class="actbtn load" onclick="document.getElementById('file-input').click()">📁 CHOOSE FILE...</button>
+          <input id="file-input" type="file" accept="image/*" onchange="onFileChosen(this)">
         </div>
       </div>
-      <label style="font-size:9px;color:#4a7c9e;margin-bottom:3px">SOURCE (draw(ctx, cx, cy, t, scale, color1, color2, ...) — self-contained, defaults embedded below)</label>
-      <textarea id="source-editor" spellcheck="false" oninput="onSourceEdit()"></textarea>
+      <div class="source-block">
+        <label>OPTION B — GENERATE WITH CHATGPT (needs ChatGPT key in SETTINGS)</label>
+        <div class="row-flex" style="align-items:flex-start">
+          <textarea id="prompt-input" placeholder="e.g. a small pixel-art icon of a green leaf on a dark background" style="flex:1"></textarea>
+          <button class="actbtn load" onclick="submitPrompt()">✨ GENERATE</button>
+        </div>
+        <div id="prompt-status" style="font-size:10px;color:#4a7c9e;margin-top:4px"></div>
+      </div>
       <div id="action-row">
         <button class="actbtn save" onclick="doSave()">💾 SAVE</button>
         <button class="actbtn discard" onclick="doDiscard()">🗑 DISCARD</button>
@@ -143,6 +109,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
     <h2>⚙ SETTINGS</h2>
     <div class="set-row"><label>Claude API Key</label><input id="set-api-key" type="password" placeholder="sk-ant-..."></div>
     <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
+    <div class="set-row"><label>ChatGPT (OpenAI) API Key — for AI image generation</label><input id="set-chatgpt-key" type="password" placeholder="sk-..."></div>
     <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
     <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
     <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="images/"></div>
@@ -151,201 +118,24 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
       <button class="actbtn discard" onclick="closeSettings()">CLOSE</button>
     </div>
     <div class="set-note">
-      These are stored only in this browser's local storage — they are never sent anywhere except
-      directly to api.anthropic.com (with your key) or api.github.com (with your token) when you use
-      the buttons above. Direct browser calls to the Anthropic API are intended for personal/prototype
-      use; don't ship this page's key to other people. Treat both tokens like passwords.
+      Stored only in this browser's local storage — sent only to api.anthropic.com, api.openai.com, or
+      api.github.com when you use the matching buttons. Note: direct browser calls to OpenAI's image API
+      may be blocked by CORS depending on their current policy — if generation fails, use "LOAD FROM DEVICE"
+      instead, which always works. Treat all keys like passwords.
     </div>
-  </div>
-</div>
-
-<div id="ref-modal">
-  <div id="ref-box">
-    <button class="topbtn" id="ref-close" onclick="closeReference()">CLOSE ✕</button>
-    <h2>📖 SHAPES &amp; EFFECTS REFERENCE</h2>
-    <div class="ref-sub">A cheat-sheet of canvas techniques you can use (or ask Claude to use) when writing draw() functions. Everything here runs live.</div>
-    <div class="ref-section-title">BASIC SHAPES</div>
-    <div class="ref-grid" id="ref-shapes"></div>
-    <div class="ref-section-title">EFFECTS &amp; TECHNIQUES</div>
-    <div class="ref-grid" id="ref-effects"></div>
   </div>
 </div>
 
 <script src="editor-core.js"></script>
 <script>
 const NS='images';
-const PRIMARY_PART={'Fungi / Mushroom':'cap','Conifer Tree':'leaves','Flowering Tree':'leaves','UFO':'body'};
 const SEED=[
-{name:'Sun',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
-  let default_color1 = '#ffe066'; // disc
-  let default_color2 = '#ffb703'; // rays
-  if (color1 == null) color1 = default_color1;
-  if (color2 == null) color2 = default_color2;
-  // --- END COLOR SETUP ---
-
-  ctx.strokeStyle = color2;
-  ctx.lineWidth = 1.2*scale;
-  for (let i=0;i<8;i++){
-    const ang = i*(Math.PI/4) + t*0.3;
-    ctx.beginPath();
-    ctx.moveTo(cx+Math.cos(ang)*9*scale, cy+Math.sin(ang)*9*scale);
-    ctx.lineTo(cx+Math.cos(ang)*13*scale, cy+Math.sin(ang)*13*scale);
-    ctx.stroke();
-  }
-  ctx.fillStyle = color1;
-  ctx.beginPath(); ctx.arc(cx, cy, 8*scale, 0, Math.PI*2); ctx.fill();
-}`},
-{name:'Moon',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#eef3f8'; // crescent
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  ctx.fillStyle = color1;
-  ctx.beginPath(); ctx.arc(cx, cy, 8*scale, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.arc(cx+4*scale, cy-2*scale, 7*scale, 0, Math.PI*2); ctx.fill();
-}`},
-{name:'Cloud',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#f4f7fb'; // puff
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const bob = Math.sin(t*0.8)*1.5*scale;
-  ctx.fillStyle = color1;
-  ctx.beginPath();
-  ctx.ellipse(cx-6*scale, cy+bob, 6*scale, 4*scale, 0, 0, Math.PI*2);
-  ctx.ellipse(cx, cy-2*scale+bob, 8*scale, 5.5*scale, 0, 0, Math.PI*2);
-  ctx.ellipse(cx+7*scale, cy+bob, 5.5*scale, 4*scale, 0, 0, Math.PI*2);
-  ctx.fill();
-}`},
-{name:'Raindrop',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#5dade2'; // drop
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const y = cy + (t*40 % 20)*scale*0.1;
-  ctx.fillStyle = color1;
-  ctx.beginPath();
-  ctx.moveTo(cx, y-8*scale);
-  ctx.quadraticCurveTo(cx+6*scale, y+2*scale, cx, y+8*scale);
-  ctx.quadraticCurveTo(cx-6*scale, y+2*scale, cx, y-8*scale);
-  ctx.fill();
-}`},
-{name:'Snowflake',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#ffffff'; // flake
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(t*0.3);
-  ctx.strokeStyle = color1;
-  ctx.lineWidth = 1*scale;
-  for (let i=0;i<6;i++){
-    ctx.save();
-    ctx.rotate(i*Math.PI/3);
-    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-9*scale); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,-6*scale); ctx.lineTo(-2.5*scale,-8*scale); ctx.moveTo(0,-6*scale); ctx.lineTo(2.5*scale,-8*scale); ctx.stroke();
-    ctx.restore();
-  }
-  ctx.restore();
-}`},
-{name:'Star Icon',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#ffec27'; // star
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const tw = 0.7+0.3*Math.sin(t*3);
-  ctx.globalAlpha = tw;
-  ctx.fillStyle = color1;
-  ctx.beginPath();
-  for (let k=0;k<5;k++){
-    const outAng=-Math.PI/2+k*(Math.PI*2/5), inAng=outAng+Math.PI/5;
-    const ox=cx+Math.cos(outAng)*8*scale, oy=cy+Math.sin(outAng)*8*scale;
-    const ix=cx+Math.cos(inAng)*3*scale, iy=cy+Math.sin(inAng)*3*scale;
-    if(k===0) ctx.moveTo(ox,oy); else ctx.lineTo(ox,oy);
-    ctx.lineTo(ix,iy);
-  }
-  ctx.closePath(); ctx.fill();
-  ctx.globalAlpha = 1;
-}`},
+  {name:'Sun',title:'Sun',description:'A simple sun icon.',imageData:''},
+  {name:'Moon',title:'Moon',description:'A crescent moon icon.',imageData:''},
+  {name:'Cloud',title:'Cloud',description:'A puffy cloud icon.',imageData:''},
 ];
-
 let slots=loadSlots(NS,SEED,100);
 let curSlot=0;
-let curColors=[{hex:'#5dade2',label:null}];
-
-// ---- Self-contained color system: colors live INSIDE the source as
-//   let default_colorN = '#hex'; // label
-//   if (colorN == null) colorN = default_colorN;
-// so a saved object is fully portable — it works standalone if just called with
-// draw(ctx,cx,cy,t,scale), and still overridable via draw(ctx,cx,cy,t,scale,'#someHex').
-const COLOR_SETUP_MARKER='// --- END COLOR SETUP ---';
-function buildPreamble(colorsArr){
-  const params=colorsArr.map((_,i)=>'color'+(i+1)).join(', ');
-  let lines='function draw(ctx, cx, cy, t, scale'+(colorsArr.length?', '+params:'')+') {\n';
-  colorsArr.forEach((c,i)=>{ lines+=`  let default_color${i+1} = '${c.hex}';`+(c.label?` // ${c.label}`:'')+'\n'; });
-  colorsArr.forEach((c,i)=>{ lines+=`  if (color${i+1} == null) color${i+1} = default_color${i+1};\n`; });
-  lines+='  '+COLOR_SETUP_MARKER+'\n';
-  return lines;
-}
-function splitBody(source){
-  const idx=(source||'').indexOf(COLOR_SETUP_MARKER);
-  if(idx===-1)return null;
-  const lineEnd=source.indexOf('\n',idx);
-  return source.slice(lineEnd===-1?idx+COLOR_SETUP_MARKER.length:lineEnd+1);
-}
-function rebuildSource(colorsArr,body){
-  return buildPreamble(colorsArr)+body;
-}
-function parseColorsFromSource(source){
-  const re=/let\s+default_color(\d+)\s*=\s*'([^']*)'\s*;?[ \t]*(?:\/\/\s*(.*))?/g;
-  const arr=[];
-  let m;
-  while((m=re.exec(source||''))){ arr[parseInt(m[1],10)-1]={hex:m[2],label:(m[3]||'').trim()||null}; }
-  return arr.filter(Boolean);
-}
-// One-time migration for objects saved under the older {colors:{name:hex}} metadata + colors.name body style
-function migrateOldColorsSourceToNumbered(source,colorsMeta){
-  const entries=Object.entries(colorsMeta||{});
-  if(!entries.length)return source;
-  const braceIdx=(source||'').indexOf('{');
-  if(braceIdx===-1)return source;
-  let body=source.slice(braceIdx+1);
-  entries.forEach(([name],i)=>{ body=body.replace(new RegExp('colors\\.'+name+'\\b','g'),'color'+(i+1)); });
-  const colorsArr=entries.map(([name,hex])=>({hex,label:name}));
-  return buildPreamble(colorsArr)+body;
-}
-// Migration for the very oldest format: a single bare `color` parameter with no metadata at all.
-// This can only recover the ONE part that was actually wired to `color` — any other hardcoded hex
-// values elsewhere in the body are a real limitation of that old data (see the RESET button below).
-function migrateBareColorSourceToNumbered(source,fallbackHex){
-  const head=(source||'').match(/^\s*function[^(]*\(([^)]*)\)/);
-  const params=head?head[1].split(',').map(p=>p.trim()).filter(Boolean):[];
-  if(params.length!==6 || params[5]!=='color')return source; // not this legacy shape
-  const braceIdx=source.indexOf('{');
-  if(braceIdx===-1)return source;
-  let body=source.slice(braceIdx+1).replace(/\bcolor\b/g,'color1');
-  return buildPreamble([{hex:fallbackHex||'#5dade2',label:null}])+body;
-}
-// True if this slot's current color-part count looks inconsistent with its own built-in template —
-// a strong sign the cached copy predates a template update and couldn't be fully auto-migrated.
-function seedMismatchWarning(name,parsedCount){
-  const seed=SEED.find(s=>s.name===name);
-  if(!seed)return null;
-  const seedCount=parseColorsFromSource(seed.source).length;
-  return (seedCount!==parsedCount)?seedCount:null;
-}
-function resetSlotToSeedDefault(){
-  const seed=SEED.find(s=>s.name===slots[curSlot].name);
-  if(!seed){toast('No built-in default exists for this slot.');return;}
-  document.getElementById('source-editor').value=seed.source;
-  curColors=parseColorsFromSource(seed.source);
-  renderColorParts();
-  runPreview();
-  document.getElementById('reset-warning').style.display='none';
-  toast('Restored the built-in default for "'+seed.name+'". Click SAVE to keep it (your previous version is still in LOAD VERSION).');
-}
 
 function renderSlotList(){
   const q=(document.getElementById('slot-search-input').value||'').toLowerCase();
@@ -355,180 +145,82 @@ function renderSlotList(){
     if(q && !s.name.toLowerCase().includes(q)) return;
     const div=document.createElement('div');
     div.className='slot-item'+(i===curSlot?' active':'')+(s.empty?' empty':'');
-    div.innerHTML=`<span>${i+1}. ${s.name}</span>`;
+    const thumb=s.imageData?`<img class="slot-thumb" src="${s.imageData}">`:'<span class="slot-thumb"></span>';
+    div.innerHTML=`${thumb}<span>${i+1}. ${s.name}</span>`;
     div.onclick=()=>selectSlot(i);
     list.appendChild(div);
   });
 }
 
-let selectedPaletteColor=null;
-function loadPalette(){
-  try{
-    const raw=localStorage.getItem('earthsim_editor_palette');
-    if(raw){const arr=JSON.parse(raw);if(Array.isArray(arr)&&arr.length)return arr;}
-  }catch(e){}
-  const seen=new Set();
-  SEED.forEach(s=>parseColorsFromSource(s.source).forEach(c=>seen.add(c.hex)));
-  const arr=[...seen];
-  try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){}
-  return arr;
-}
-function savePalette(arr){ try{localStorage.setItem('earthsim_editor_palette',JSON.stringify(arr));}catch(e){} }
-let palette=loadPalette();
-function renderPalette(){
-  const el=document.getElementById('palette-swatches');
-  el.innerHTML='';
-  palette.forEach(c=>{
-    const sw=document.createElement('div');
-    sw.className='palette-swatch'+(c===selectedPaletteColor?' selected':'');
-    sw.style.background=c; sw.title=c;
-    sw.onclick=()=>{selectedPaletteColor=c;renderPalette();};
-    el.appendChild(sw);
-  });
-}
-function addToPalette(hex){
-  if(!palette.includes(hex)){palette.push(hex);savePalette(palette);}
-  selectedPaletteColor=hex;
-  renderPalette();
-}
-
-function renderColorParts(){
-  const list=document.getElementById('color-parts-list');
-  list.innerHTML='';
-  curColors.forEach((c,i)=>{
-    const row=document.createElement('div');
-    row.className='color-part';
-    row.innerHTML=`<span style="font-size:9px;color:#7ec8e3;padding:0 2px">Color ${i+1}${c.label?' ('+c.label+')':''}</span>
-      <input type="color" value="${c.hex}" oninput="setPartColor(${i},this.value)">
-      <span class="rm" onclick="removePart(${i})">✕</span>`;
-    list.appendChild(row);
-  });
-}
-function setPartColor(i,hex){
-  curColors[i].hex=hex;
-  const src=document.getElementById('source-editor').value;
-  const body=splitBody(src);
-  if(body!==null) document.getElementById('source-editor').value=rebuildSource(curColors,body);
-  if(!palette.includes(hex)){palette.push(hex);savePalette(palette);renderPalette();}
-  runPreview();
-}
-function addColorPart(){
-  curColors.push({hex:selectedPaletteColor||'#5dade2',label:null});
-  const src=document.getElementById('source-editor').value;
-  let body=splitBody(src);
-  if(body===null){ const braceIdx=src.indexOf('{'); body=braceIdx!==-1?src.slice(braceIdx+1):'\n}\n'; }
-  document.getElementById('source-editor').value=rebuildSource(curColors,body);
-  renderColorParts();
-  runPreview();
-  toast('Added Color '+curColors.length+' — reference it in your drawing code as color'+curColors.length+'.');
-}
-function removePart(i){
-  if(curColors.length<=1){toast('Need at least one color part.');return;}
-  curColors.splice(i,1);
-  const src=document.getElementById('source-editor').value;
-  const body=splitBody(src);
-  if(body!==null) document.getElementById('source-editor').value=rebuildSource(curColors,body);
-  renderColorParts();
-  runPreview();
-  toast('Removed. Remaining color numbers may have shifted — check your drawing code still refers to the right colorN.');
+function renderPreview(){
+  const box=document.getElementById('preview-box');
+  const s=slots[curSlot];
+  box.innerHTML=s&&s.imageData?`<img src="${s.imageData}">`:'<div class="preview-placeholder">No image yet — load a file or generate one below.</div>';
 }
 
 function selectSlot(i){
   curSlot=i;
   const s=slots[i];
-  document.getElementById('slot-name').value=s.name;
-  let src=s.source||'';
-  if(!src.includes(COLOR_SETUP_MARKER)){
-    if(s.colors) src=migrateOldColorsSourceToNumbered(src,s.colors);
-    else src=migrateBareColorSourceToNumbered(src,s.color);
-  }
-  document.getElementById('source-editor').value=src;
-  curColors=parseColorsFromSource(src);
-  if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
-  renderColorParts();
-  document.getElementById('status-line').textContent=s.empty?'Empty slot — describe what you want in the prompt box, or write source directly.':('Slot '+(i+1)+' — '+s.name);
-  const seedCount=seedMismatchWarning(s.name,curColors.length);
-  const warnEl=document.getElementById('reset-warning');
-  if(seedCount!=null){
-    warnEl.innerHTML='⚠ This saved copy has '+curColors.length+' color part(s), but the built-in version of "'+s.name+'" has '+seedCount+'. It may predate a template update and not be fully wired up. <button class="actbtn discard" style="padding:2px 8px;font-size:9px" onclick="resetSlotToSeedDefault()">🔄 RESET TO SEED DEFAULT</button>';
-    warnEl.style.display='block';
-  } else {
-    warnEl.style.display='none';
-  }
+  document.getElementById('slot-name').value=s.title||s.name||'';
+  document.getElementById('slot-desc').value=s.description||'';
+  renderPreview();
+  document.getElementById('status-line').textContent=s.empty?'Empty slot — load a file or generate an image below.':('Slot '+(i+1)+' — '+s.name);
   renderSlotList();
-  runPreview();
 }
 
-function getFn(){
-  const src=document.getElementById('source-editor').value;
+let pendingImageData=null;
+function onFileChosen(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    pendingImageData=reader.result;
+    renderPendingPreview();
+    toast('Loaded '+file.name+'. Click SAVE to keep it in this slot.');
+  };
+  reader.readAsDataURL(file);
+}
+function renderPendingPreview(){
+  const box=document.getElementById('preview-box');
+  if(pendingImageData) box.innerHTML='<img src="'+pendingImageData+'">';
+}
+
+async function submitPrompt(){
+  const promptText=document.getElementById('prompt-input').value.trim();
+  if(!promptText){ toast('Type a description first.'); return; }
+  const statusEl=document.getElementById('prompt-status');
+  statusEl.textContent='Generating with ChatGPT...';
   try{
-    const factory=new Function(src+'\nreturn draw;');
-    return factory();
+    const dataUrl=await generateImageWithChatGPT(promptText);
+    pendingImageData=dataUrl;
+    renderPendingPreview();
+    statusEl.textContent='Generated. Click SAVE to keep it in this slot.';
   }catch(e){
-    document.getElementById('status-line').textContent='⚠ Source error: '+e.message;
-    return null;
+    statusEl.textContent='⚠ '+e.message;
   }
-}
-
-// Calls draw() the right way whichever style it's actually written in: the current numbered
-// color1..colorN style, the legacy single-string "color" style, or the intermediate "colors" object
-// style — so nothing ever silently goes black regardless of when an object was last saved.
-function callDrawFn(fn,ctx,cx,cy,t,scale,colorsArr){
-  const head=fn.toString().match(/^\s*function[^(]*\(([^)]*)\)/);
-  const params=head?head[1].split(',').map(p=>p.trim()).filter(Boolean):[];
-  const tail=params.slice(5);
-  if(tail.length===0){ fn(ctx,cx,cy,t,scale); return; }
-  if(tail.length===1 && tail[0]==='color'){ fn(ctx,cx,cy,t,scale,(colorsArr[0]&&colorsArr[0].hex)||'#5dade2'); return; }
-  if(tail.length===1 && tail[0]==='colors'){
-    const obj={}; colorsArr.forEach((c,i)=>obj['color'+(i+1)]=c.hex); if(colorsArr[0])obj.main=colorsArr[0].hex;
-    fn(ctx,cx,cy,t,scale,obj); return;
-  }
-  const args=tail.map((p,i)=>(colorsArr[i]&&colorsArr[i].hex)||'#5dade2');
-  fn(ctx,cx,cy,t,scale,...args);
-}
-
-let animT=0;
-function runPreview(){
-  const fn=getFn();
-  const bigCv=document.getElementById('preview-big'),bigCx=bigCv.getContext('2d');
-  const gameCv=document.getElementById('preview-game'),gameCx=gameCv.getContext('2d');
-  bigCx.clearRect(0,0,120,120);
-  gameCx.clearRect(0,0,48,48);
-  if(fn){
-    try{ callDrawFn(fn,bigCx,60,70,animT,9,curColors); }catch(e){}
-    try{ gameCx.save(); gameCx.translate(0,0); callDrawFn(fn,gameCx,24,30,animT,1.6,curColors); gameCx.restore(); }catch(e){}
-  }
-}
-function loop(){ animT+=0.03; runPreview(); requestAnimationFrame(loop); }
-
-function onSourceEdit(){
-  // if the person hand-edits default_colorN values directly in the textarea, keep the swatches in sync
-  const parsed=parseColorsFromSource(document.getElementById('source-editor').value);
-  if(parsed.length){ curColors=parsed; renderColorParts(); }
 }
 
 function doSave(){
-  const src=document.getElementById('source-editor').value;
-  const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
-  slots[curSlot]={name,source:src,empty:!src.trim()};
+  const title=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
+  const description=document.getElementById('slot-desc').value||'';
+  const imageData=pendingImageData!==null?pendingImageData:(slots[curSlot].imageData||'');
+  slots[curSlot]={name:title,title,description,imageData,empty:!imageData};
   saveSlots(NS,slots);
-  pushVersion(NS,curSlot,src,name);
+  pushVersion(NS,curSlot,imageData,title,{description});
+  pendingImageData=null;
   renderSlotList();
-  toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
+  toast('Saved slot '+(curSlot+1)+' ('+title+') — new version recorded.');
 }
 function doDiscard(){
+  pendingImageData=null;
   const versions=getVersions(NS,curSlot);
   if(versions.length){
     const last=versions[versions.length-1];
-    document.getElementById('source-editor').value=last.source;
     document.getElementById('slot-name').value=last.name||slots[curSlot].name;
-  } else {
-    document.getElementById('source-editor').value=slots[curSlot].source||'';
+    document.getElementById('slot-desc').value=(last.description!==undefined?last.description:slots[curSlot].description)||'';
+    slots[curSlot]={...slots[curSlot],imageData:last.source,title:last.name,description:last.description};
   }
-  curColors=parseColorsFromSource(document.getElementById('source-editor').value);
-  if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
-  renderColorParts();
-  runPreview();
+  renderPreview();
   toast('Reverted to last saved version.');
 }
 function toggleVersionList(){
@@ -544,51 +236,25 @@ function loadVersion(v){
   const versions=getVersions(NS,curSlot);
   const found=versions.find(x=>x.v===v);
   if(found){
-    document.getElementById('source-editor').value=found.source;
+    pendingImageData=found.source;
     document.getElementById('slot-name').value=found.name||slots[curSlot].name;
-    curColors=parseColorsFromSource(found.source);
-    if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
-    renderColorParts();
-    runPreview();
+    document.getElementById('slot-desc').value=found.description||'';
+    renderPendingPreview();
     toast('Loaded version '+v+'.');
   }
   document.getElementById('version-list').style.display='none';
 }
 
-async function submitPrompt(){
-  const promptText=document.getElementById('prompt-input').value.trim();
-  if(!promptText){ toast('Type an instruction first.'); return; }
-  const statusEl=document.getElementById('prompt-status');
-  statusEl.textContent='Sending to Claude...';
-  try{
-    const current=document.getElementById('source-editor').value;
-    const hint='You are editing a JavaScript function for a retro pixel-art decorative image/icon (not necessarily an animated creature). '+
-      'It must stay fully self-contained (so it also works as a standalone plugin file): the function '+
-      'signature is function draw(ctx, cx, cy, t, scale, color1, color2, ...) — one optional colorN '+
-      'parameter per color part, in order. Immediately after the opening brace, declare for each part: '+
-      '"let default_colorN = \'#hex\'; // short label" then "if (colorN == null) colorN = default_colorN;" '+
-      '— then a line that is exactly "'+COLOR_SETUP_MARKER+'" — then the actual drawing code using '+
-      'color1/color2/etc. Keep this exact structure so the color parts stay editable. Current color count: '+curColors.length+'.';
-    const newSrc=await callClaude(promptText,current,hint);
-    document.getElementById('source-editor').value=newSrc;
-    curColors=parseColorsFromSource(newSrc);
-    if(!curColors.length)curColors=[{hex:'#5dade2',label:null}];
-    renderColorParts();
-    statusEl.textContent='Updated. Review, then SAVE if you like it.';
-    runPreview();
-  }catch(e){
-    statusEl.textContent='⚠ '+e.message;
-  }
-}
-
 async function doGithubPush(){
-  const src=document.getElementById('source-editor').value;
-  const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
-  const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.js';
+  const s=slots[curSlot];
+  if(!s.imageData){ toast('Nothing to publish — save an image first.'); return; }
+  const title=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
+  const fname=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.json';
+  const bundle=JSON.stringify({title,description:document.getElementById('slot-desc').value||'',imageData:s.imageData});
   toast('Publishing to Store...');
   try{
-    await pushToGithub(fname,src,'Update object: '+name); // colors are embedded directly in the source — no extra metadata needed
-    toast('Published '+fname+' to the Store — colors are baked directly into the file as defaults.');
+    await pushToGithub(fname,bundle,'Update image: '+title);
+    toast('Published '+fname+' to the Store.');
   }catch(e){
     toast('⚠ '+e.message);
   }
@@ -601,89 +267,8 @@ document.addEventListener('click',(ev)=>{
   }
 });
 
-// ---- Shapes & Effects reference gallery ----
-function openReference(){
-  document.getElementById('ref-modal').style.display='flex';
-  buildReferenceGallery();
-}
-function closeReference(){
-  document.getElementById('ref-modal').style.display='none';
-}
-const REF_SHAPES=[
-  {name:'Rectangle',code:'ctx.fillStyle=color;\nctx.fillRect(cx-w/2,cy-h/2,w,h);',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#5dade2';ctx.fillRect(cx-14,cy-10,28,20);}},
-  {name:'Circle / Ellipse',code:'ctx.beginPath();\nctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);\nctx.fill();',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#e67e22';ctx.beginPath();ctx.ellipse(cx,cy,16,12,0,0,Math.PI*2);ctx.fill();}},
-  {name:'Triangle',code:'ctx.beginPath();\nctx.moveTo(x1,y1);\nctx.lineTo(x2,y2);\nctx.lineTo(x3,y3);\nctx.closePath();ctx.fill();',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#f7dc6f';ctx.beginPath();ctx.moveTo(cx,cy-16);ctx.lineTo(cx-14,cy+12);ctx.lineTo(cx+14,cy+12);ctx.closePath();ctx.fill();}},
-  {name:'Line / Stroke',code:'ctx.strokeStyle=color;\nctx.lineWidth=2;\nctx.beginPath();\nctx.moveTo(x1,y1);ctx.lineTo(x2,y2);\nctx.stroke();',
-   draw:(ctx,cx,cy,t)=>{ctx.strokeStyle='#ec407a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-16,cy+10);ctx.lineTo(cx+16,cy-10);ctx.stroke();}},
-  {name:'Star (polygon)',code:'for(k=0;k<5;k++){\n  // alternate outer/inner radius points\n  ctx.lineTo(ox,oy); ctx.lineTo(ix,iy);\n}\nctx.closePath();ctx.fill();',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#e08283';ctx.beginPath();for(let k=0;k<5;k++){const oa=-Math.PI/2+k*(Math.PI*2/5),ia=oa+Math.PI/5;const ox=cx+Math.cos(oa)*15,oy=cy+Math.sin(oa)*15,ix=cx+Math.cos(ia)*6,iy=cy+Math.sin(ia)*6;if(k===0)ctx.moveTo(ox,oy);else ctx.lineTo(ox,oy);ctx.lineTo(ix,iy);}ctx.closePath();ctx.fill();}},
-  {name:'Curve (quadratic)',code:'ctx.beginPath();\nctx.moveTo(x0,y0);\nctx.quadraticCurveTo(cpx,cpy,x1,y1);\nctx.stroke();',
-   draw:(ctx,cx,cy,t)=>{ctx.strokeStyle='#2ecc71';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-16,cy+12);ctx.quadraticCurveTo(cx,cy-20,cx+16,cy+12);ctx.stroke();}},
-  {name:'Multiple sub-shapes',code:'// combine shapes for a body plan:\nctx.fillStyle=colors.body; /* ellipse */\nctx.fillStyle=colors.legs; /* rects */',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#a9cce3';ctx.beginPath();ctx.ellipse(cx,cy-4,14,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7a8c9a';ctx.fillRect(cx-8,cy+2,4,10);ctx.fillRect(cx+4,cy+2,4,10);}},
-  {name:'Path with holes',code:'ctx.beginPath();\nctx.ellipse(...outer...);\nctx.ellipse(...inner...); // reverse winding\nctx.fill("evenodd");',
-   draw:(ctx,cx,cy,t)=>{ctx.fillStyle='#f0b27a';ctx.beginPath();ctx.ellipse(cx,cy,16,16,0,0,Math.PI*2);ctx.ellipse(cx,cy,8,8,0,0,Math.PI*2,true);ctx.fill('evenodd');}},
-];
-const REF_EFFECTS=[
-  {name:'Pulsing scale',code:'const s = 1 + Math.sin(t*2)*0.15;\nctx.beginPath();ctx.arc(cx,cy,10*s,0,Math.PI*2);ctx.fill();',
-   draw:(ctx,cx,cy,t)=>{const s=1+Math.sin(t*2)*0.15;ctx.fillStyle='#5fd6a8';ctx.beginPath();ctx.arc(cx,cy,10*s,0,Math.PI*2);ctx.fill();}},
-  {name:'Bobbing motion',code:'const y = cy + Math.sin(t*3)*6;\nctx.fillRect(cx-8,y-8,16,16);',
-   draw:(ctx,cx,cy,t)=>{const y=cy+Math.sin(t*3)*10;ctx.fillStyle='#ec407a';ctx.fillRect(cx-9,y-9,18,18);}},
-  {name:'Fading opacity',code:'ctx.globalAlpha = 0.4 + 0.4*Math.sin(t*2);\nctx.fill();\nctx.globalAlpha = 1;',
-   draw:(ctx,cx,cy,t)=>{ctx.globalAlpha=0.3+0.6*(0.5+0.5*Math.sin(t*2));ctx.fillStyle='#5dade2';ctx.beginPath();ctx.arc(cx,cy,14,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}},
-  {name:'Rotation',code:'ctx.save();\nctx.translate(cx,cy);\nctx.rotate(t);\nctx.fillRect(-10,-3,20,6);\nctx.restore();',
-   draw:(ctx,cx,cy,t)=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(t);ctx.fillStyle='#f7dc6f';ctx.fillRect(-14,-4,28,8);ctx.restore();}},
-  {name:'Gradient fill',code:'const g = ctx.createLinearGradient(x0,y0,x1,y1);\ng.addColorStop(0,colorA);\ng.addColorStop(1,colorB);\nctx.fillStyle = g;',
-   draw:(ctx,cx,cy,t)=>{const g=ctx.createLinearGradient(cx-16,cy-16,cx+16,cy+16);g.addColorStop(0,'#5dade2');g.addColorStop(1,'#2ecc71');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,16,14,0,0,Math.PI*2);ctx.fill();}},
-  {name:'Glow (shadow blur)',code:'ctx.shadowColor = color;\nctx.shadowBlur = 8;\nctx.fill();\nctx.shadowBlur = 0;',
-   draw:(ctx,cx,cy,t)=>{ctx.shadowColor='#ffec27';ctx.shadowBlur=10;ctx.fillStyle='#ffec27';ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}},
-  {name:'Walk cycle (bob + legs)',code:'const bob = Math.abs(Math.sin(t*5))*3;\n// body rises on each "step", legs alternate',
-   draw:(ctx,cx,cy,t)=>{const bob=Math.abs(Math.sin(t*5))*4;ctx.fillStyle='#d35400';ctx.beginPath();ctx.ellipse(cx,cy-10-bob,14,8,0,0,Math.PI*2);ctx.fill();ctx.fillRect(cx-8,cy-bob,4,10);ctx.fillRect(cx+4,cy-bob,4,10);}},
-  {name:'Self-contained colors',code:'function draw(ctx,cx,cy,t,scale,color1,color2){\n  let default_color1=\'#6b4a2b\'; // trunk\n  let default_color2=\'#1d6a2f\'; // leaves\n  if(color1==null)color1=default_color1;\n  if(color2==null)color2=default_color2;\n  // --- END COLOR SETUP ---\n  ctx.fillStyle=color1;\n  ctx.fillStyle=color2;\n}',
-   draw:(ctx,cx,cy,t)=>{ctx.strokeStyle='#6b4a2b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,cy+16);ctx.lineTo(cx,cy-4);ctx.stroke();ctx.fillStyle='#1d6a2f';ctx.beginPath();ctx.arc(cx,cy-10,12,0,Math.PI*2);ctx.fill();}},
-];
-function buildReferenceGallery(){
-  fillRefGrid('ref-shapes',REF_SHAPES);
-  fillRefGrid('ref-effects',REF_EFFECTS);
-}
-function fillRefGrid(containerId,items){
-  const grid=document.getElementById(containerId);
-  if(grid.dataset.built)return; // build once, canvases keep animating via the shared loop below
-  grid.innerHTML='';
-  items.forEach((item,i)=>{
-    const card=document.createElement('div');
-    card.className='ref-card';
-    const cvId=containerId+'-cv-'+i;
-    card.innerHTML=`<canvas id="${cvId}" width="80" height="80"></canvas><div class="ref-name">${item.name}</div><pre>${item.code}</pre>`;
-    grid.appendChild(card);
-  });
-  grid.dataset.built='1';
-  grid._items=items;
-  grid._containerId=containerId;
-}
-function refLoop(){
-  ['ref-shapes','ref-effects'].forEach(cid=>{
-    const grid=document.getElementById(cid);
-    if(!grid||!grid._items)return;
-    grid._items.forEach((item,i)=>{
-      const cv=document.getElementById(cid+'-cv-'+i);
-      if(!cv)return;
-      const cx2=cv.getContext('2d');
-      cx2.clearRect(0,0,80,80);
-      try{ item.draw(cx2,40,40,animT); }catch(e){}
-    });
-  });
-  requestAnimationFrame(refLoop);
-}
-requestAnimationFrame(refLoop);
-
-renderPalette();
 renderSlotList();
 selectSlot(0);
-requestAnimationFrame(loop);
 </script>
 </body>
 </html>

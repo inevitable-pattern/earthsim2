@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Story Editor — Earth Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:100vh;overflow:hidden}
+#top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0a1628;border-bottom:1px solid #1a3a5c}
+#top h1{font-size:14px;color:#4ecb71;letter-spacing:2px;flex:1}
+.topbtn{font-family:'Courier New',monospace;font-size:11px;padding:5px 10px;background:#071525;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.topbtn:hover{border-color:#4ecb71;color:#4ecb71}
+#body{display:flex;height:calc(100vh - 42px)}
+#slot-panel{width:210px;flex-shrink:0;border-right:1px solid #1a3a5c;display:flex;flex-direction:column}
+#slot-search{padding:6px;border-bottom:1px solid #1a3a5c}
+#slot-search input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:4px}
+#slot-list{flex:1;overflow-y:auto}
+.slot-item{padding:6px 10px;font-size:11px;border-bottom:1px solid #071525;cursor:pointer}
+.slot-item:hover{background:#0d2137}
+.slot-item.active{background:#1a3a5c;color:#ffec27}
+.slot-item.empty{color:#3a5a78;font-style:italic}
+#main{flex:1;display:flex;overflow:hidden}
+#pages-col{flex:1;display:flex;flex-direction:column;padding:12px;overflow:hidden;border-right:1px solid #1a3a5c}
+#slot-name{background:#071525;border:1px solid #1a3a5c;color:#ffec27;font-family:inherit;font-size:12px;padding:5px 8px;margin-bottom:8px;width:100%}
+#page-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.page-card{background:#071525;border:1px solid #1a3a5c;padding:8px;display:flex;gap:8px}
+.page-card.active{border-color:#ffec27}
+.page-thumb{width:60px;height:60px;background:#04101c;border:1px solid #1a3a5c;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.page-thumb img{max-width:100%;max-height:100%}
+.page-thumb .ph{font-size:8px;color:#3a5a78;text-align:center}
+.page-body{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.page-body textarea{width:100%;background:#04101c;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px;height:44px;resize:vertical}
+.page-actions{display:flex;gap:4px}
+.pgbtn{font-family:'Courier New',monospace;font-size:9px;padding:3px 6px;background:#0a1628;color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.pgbtn:hover{border-color:#4ecb71}
+#add-page-btn{margin-top:8px;font-family:'Courier New',monospace;font-size:11px;padding:6px 12px;background:#0d1a2b;color:#5dade2;border:1px solid #5dade2;cursor:pointer}
+#preview-col{width:280px;flex-shrink:0;padding:12px;display:flex;flex-direction:column}
+#preview-col .lbl{font-size:9px;color:#4a7c9e;letter-spacing:1px;margin-bottom:8px}
+#story-preview{background:#04101c;border:1px solid #1a3a5c;flex:1;display:flex;flex-direction:column;cursor:pointer;overflow:hidden}
+#story-preview .img-area{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#story-preview .img-area img{max-width:100%;max-height:100%}
+#story-preview .ph{font-size:10px;color:#3a5a78}
+#story-preview .text-area{padding:8px;font-size:10px;color:#7ec8e3;line-height:1.5;border-top:1px solid #1a3a5c;min-height:50px}
+#story-preview .cursor{display:inline-block;animation:blink 0.9s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#preview-nav{display:flex;justify-content:space-between;font-size:9px;color:#4a7c9e;padding-top:6px}
+#action-row{display:flex;gap:6px;padding:8px 0;flex-wrap:wrap;align-items:center}
+.actbtn{font-family:'Courier New',monospace;font-size:11px;padding:6px 12px;cursor:pointer;border:1px solid}
+.actbtn.save{background:#0d2b12;color:#4ecb71;border-color:#4ecb71}
+.actbtn.discard{background:#2b0d0d;color:#ff6b6b;border-color:#ff6b6b}
+.actbtn.load{background:#0d1a2b;color:#5dade2;border-color:#5dade2}
+.actbtn.gh{background:#1a1a1a;color:#ccc;border-color:#666}
+.actbtn:hover{filter:brightness(1.3)}
+#version-list{display:none;position:absolute;background:#0a1628;border:1px solid #5dade2;max-height:200px;overflow-y:auto;z-index:20;min-width:220px}
+.version-item{padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #071525}
+.version-item:hover{background:#0d2137}
+#image-picker-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:110;align-items:center;justify-content:center}
+#image-picker-box{background:#0a1628;border:1px solid #5dade2;padding:14px;width:420px;max-height:80vh;overflow-y:auto}
+#image-picker-box h3{color:#5dade2;font-size:12px;margin-bottom:10px}
+.pick-item{display:flex;align-items:center;gap:8px;padding:5px;cursor:pointer;font-size:11px;border-bottom:1px solid #071525}
+.pick-item:hover{background:#0d2137}
+.pick-thumb{width:30px;height:30px;background:#04101c;border:1px solid #1a3a5c;flex-shrink:0}
+.pick-thumb img{width:100%;height:100%;object-fit:cover}
+#settings-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center}
+#settings-box{background:#0a1628;border:1px solid #4ecb71;padding:20px;width:420px;max-width:90vw}
+#settings-box h2{color:#4ecb71;font-size:13px;margin-bottom:12px;letter-spacing:1px}
+.set-row{margin-bottom:10px}
+.set-row label{display:block;font-size:10px;color:#4a7c9e;margin-bottom:3px}
+.set-row input{width:100%;background:#071525;border:1px solid #1a3a5c;color:#7ec8e3;font-family:inherit;font-size:11px;padding:5px}
+.set-note{font-size:9px;color:#7a5a3a;margin-top:12px;line-height:1.5;border-top:1px solid #1a3a5c;padding-top:10px}
+</style>
+</head>
+<body>
+<div id="top">
+  <button class="topbtn" onclick="location.href='index.html'">← BACK</button>
+  <h1>📖 STORY EDITOR</h1>
+  <button class="topbtn" onclick="openSettings()">⚙ SETTINGS</button>
+</div>
+<div id="body">
+  <div id="slot-panel">
+    <div id="slot-search"><input id="slot-search-input" placeholder="Search slots..." oninput="renderSlotList()"></div>
+    <div id="slot-list"></div>
+  </div>
+  <div id="main">
+    <div id="pages-col">
+      <input id="slot-name" placeholder="Story title">
+      <div id="page-list"></div>
+      <button id="add-page-btn" onclick="addPage()">+ ADD PAGE</button>
+      <div id="action-row">
+        <button class="actbtn save" onclick="doSave()">💾 SAVE</button>
+        <button class="actbtn discard" onclick="doDiscard()">🗑 DISCARD</button>
+        <div style="position:relative">
+          <button class="actbtn load" onclick="toggleVersionList()">📜 LOAD VERSION</button>
+          <div id="version-list"></div>
+        </div>
+        <button class="actbtn gh" onclick="doGithubPush()">☁ PUBLISH TO STORE</button>
+      </div>
+    </div>
+    <div id="preview-col">
+      <div class="lbl">▶ PREVIEW (click to advance, like in-game)</div>
+      <div id="story-preview" onclick="advancePreview()">
+        <div class="img-area"><div class="ph">no image on this page</div></div>
+        <div class="text-area"></div>
+      </div>
+      <div id="preview-nav"><span id="preview-page-num"></span><span>click card to advance →</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="image-picker-modal">
+  <div id="image-picker-box">
+    <h3>Choose an image for this page</h3>
+    <div class="pick-item" onclick="chooseImageForPage(-1,null)">— none —</div>
+    <div id="image-picker-list"></div>
+    <button class="actbtn discard" style="margin-top:8px" onclick="document.getElementById('image-picker-modal').style.display='none'">CLOSE</button>
+  </div>
+</div>
+
+<div id="settings-modal">
+  <div id="settings-box">
+    <h2>⚙ SETTINGS</h2>
+    <div class="set-row"><label>Claude API Key</label><input id="set-api-key" type="password" placeholder="sk-ant-..."></div>
+    <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
+    <div class="set-row"><label>ChatGPT (OpenAI) API Key — for AI image generation</label><input id="set-chatgpt-key" type="password" placeholder="sk-..."></div>
+    <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
+    <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
+    <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="stories/"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="actbtn save" onclick="saveSettingsFromForm()">SAVE SETTINGS</button>
+      <button class="actbtn discard" onclick="closeSettings()">CLOSE</button>
+    </div>
+    <div class="set-note">Stored only in this browser's local storage. Treat all keys like passwords.</div>
+  </div>
+</div>
+
+<script src="editor-core.js"></script>
+<script>
+const NS='stories';
+const SEED=[
+  {name:'Welcome Story',pages:[
+    {imageName:null,text:'Welcome to Earth Simulator. This is an example story — edit or replace it with your own.'},
+    {imageName:null,text:'Stories can mix images and text across as many pages as you like.'},
+  ]},
+];
+let slots=loadSlots(NS,SEED,100);
+let curSlot=0;
+let curPages=[];
+let previewIndex=0;
+let pickingPageIndex=null;
+
+function getImageSlots(){
+  try{ return JSON.parse(localStorage.getItem('earthsim_editor_images_slots')||'[]'); }catch(e){ return []; }
+}
+function findImageByName(name){
+  if(!name)return null;
+  return getImageSlots().find(s=>s&&!s.empty&&s.name===name)||null;
+}
+
+function renderSlotList(){
+  const q=(document.getElementById('slot-search-input').value||'').toLowerCase();
+  const list=document.getElementById('slot-list');
+  list.innerHTML='';
+  slots.forEach((s,i)=>{
+    if(q && !s.name.toLowerCase().includes(q)) return;
+    const div=document.createElement('div');
+    div.className='slot-item'+(i===curSlot?' active':'')+(s.empty?' empty':'');
+    div.textContent=(i+1)+'. '+s.name;
+    div.onclick=()=>selectSlot(i);
+    list.appendChild(div);
+  });
+}
+
+function renderPages(){
+  const list=document.getElementById('page-list');
+  list.innerHTML='';
+  curPages.forEach((p,i)=>{
+    const img=findImageByName(p.imageName);
+    const card=document.createElement('div');
+    card.className='page-card'+(i===previewIndex?' active':'');
+    card.innerHTML=`
+      <div class="page-thumb" onclick="openImagePicker(${i})">${img&&img.imageData?`<img src="${img.imageData}">`:'<div class="ph">+ pick<br>image</div>'}</div>
+      <div class="page-body">
+        <textarea placeholder="Page ${i+1} text" oninput="setPageText(${i},this.value)">${p.text||''}</textarea>
+        <div class="page-actions">
+          <button class="pgbtn" onclick="movePage(${i},-1)">↑ up</button>
+          <button class="pgbtn" onclick="movePage(${i},1)">↓ down</button>
+          <button class="pgbtn" onclick="removePage(${i})">✕ remove</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function setPageText(i,val){ curPages[i].text=val; renderPreview(); }
+function addPage(){ curPages.push({imageName:null,text:''}); renderPages(); renderPreview(); }
+function removePage(i){ curPages.splice(i,1); if(previewIndex>=curPages.length)previewIndex=Math.max(0,curPages.length-1); renderPages(); renderPreview(); }
+function movePage(i,dir){
+  const j=i+dir;
+  if(j<0||j>=curPages.length)return;
+  [curPages[i],curPages[j]]=[curPages[j],curPages[i]];
+  renderPages(); renderPreview();
+}
+
+function openImagePicker(i){
+  pickingPageIndex=i;
+  const list=document.getElementById('image-picker-list');
+  const imgs=getImageSlots().filter(s=>s&&!s.empty);
+  list.innerHTML=imgs.length?'':'<div style="font-size:10px;color:#3a5a78;padding:6px">No images saved yet — create some in the Image Editor first.</div>';
+  imgs.forEach(s=>{
+    const row=document.createElement('div');
+    row.className='pick-item';
+    row.innerHTML=`<div class="pick-thumb">${s.imageData?`<img src="${s.imageData}">`:''}</div><span>${s.name}</span>`;
+    row.onclick=()=>chooseImageForPage(i,s.name);
+    list.appendChild(row);
+  });
+  document.getElementById('image-picker-modal').style.display='flex';
+}
+function chooseImageForPage(i,name){
+  if(i>=0) curPages[i].imageName=name;
+  document.getElementById('image-picker-modal').style.display='none';
+  renderPages(); renderPreview();
+}
+
+function renderPreview(){
+  const box=document.getElementById('story-preview');
+  const imgArea=box.querySelector('.img-area');
+  const textArea=box.querySelector('.text-area');
+  const numEl=document.getElementById('preview-page-num');
+  if(!curPages.length){
+    imgArea.innerHTML='<div class="ph">no pages yet</div>';
+    textArea.innerHTML='';
+    numEl.textContent='';
+    return;
+  }
+  if(previewIndex>=curPages.length)previewIndex=curPages.length-1;
+  const p=curPages[previewIndex];
+  const img=findImageByName(p.imageName);
+  imgArea.innerHTML=(img&&img.imageData)?`<img src="${img.imageData}">`:'<div class="ph">no image on this page</div>';
+  const hasMore=previewIndex<curPages.length-1;
+  textArea.innerHTML=(p.text||'')+(hasMore?' <span class="cursor">▾</span>':'');
+  numEl.textContent='Page '+(previewIndex+1)+' / '+curPages.length;
+}
+function advancePreview(){
+  if(previewIndex<curPages.length-1){ previewIndex++; } else { previewIndex=0; }
+  renderPages();
+  renderPreview();
+}
+
+function selectSlot(i){
+  curSlot=i;
+  const s=slots[i];
+  document.getElementById('slot-name').value=s.name;
+  curPages=(s.pages||[]).map(p=>({...p}));
+  previewIndex=0;
+  renderPages();
+  renderPreview();
+  renderSlotList();
+}
+
+function doSave(){
+  const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
+  slots[curSlot]={name,pages:curPages.map(p=>({...p})),empty:!curPages.length};
+  saveSlots(NS,slots);
+  pushVersion(NS,curSlot,JSON.stringify(curPages),name);
+  renderSlotList();
+  toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
+}
+function doDiscard(){
+  const versions=getVersions(NS,curSlot);
+  if(versions.length){
+    const last=versions[versions.length-1];
+    document.getElementById('slot-name').value=last.name||slots[curSlot].name;
+    try{ curPages=JSON.parse(last.source); }catch(e){ curPages=[]; }
+  } else {
+    curPages=(slots[curSlot].pages||[]).map(p=>({...p}));
+  }
+  previewIndex=0;
+  renderPages(); renderPreview();
+  toast('Reverted to last saved version.');
+}
+function toggleVersionList(){
+  const el=document.getElementById('version-list');
+  if(el.style.display==='block'){ el.style.display='none'; return; }
+  const versions=getVersions(NS,curSlot);
+  el.innerHTML=versions.length?versions.slice().reverse().map(v=>
+    `<div class="version-item" onclick="loadVersion(${v.v})">v${v.v} — ${new Date(v.time).toLocaleString()}</div>`).join('')
+    : '<div class="version-item">No saved versions yet</div>';
+  el.style.display='block';
+}
+function loadVersion(v){
+  const versions=getVersions(NS,curSlot);
+  const found=versions.find(x=>x.v===v);
+  if(found){
+    document.getElementById('slot-name').value=found.name||slots[curSlot].name;
+    try{ curPages=JSON.parse(found.source); }catch(e){ curPages=[]; }
+    previewIndex=0;
+    renderPages(); renderPreview();
+    toast('Loaded version '+v+'.');
+  }
+  document.getElementById('version-list').style.display='none';
+}
+
+async function doGithubPush(){
+  const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
+  const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.json';
+  const bundle=JSON.stringify({name,pages:curPages});
+  toast('Publishing to Store...');
+  try{
+    await pushToGithub(fname,bundle,'Update story: '+name);
+    toast('Published '+fname+' to the Store.');
+  }catch(e){
+    toast('⚠ '+e.message);
+  }
+}
+
+document.addEventListener('click',(ev)=>{
+  const vl=document.getElementById('version-list');
+  if(vl.style.display==='block' && !vl.contains(ev.target) && ev.target.textContent.indexOf('LOAD VERSION')===-1){
+    vl.style.display='none';
+  }
+});
+
+renderSlotList();
+selectSlot(0);
+</script>
+</body>
+</html>

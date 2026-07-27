@@ -69,6 +69,14 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
 .climate-card{flex:1;background:#071525;border:1px solid #0d2137;padding:4px 6px}
 .climate-card-title{font-size:7px;color:#4a7c9e;letter-spacing:1px;margin-bottom:3px}
 .climate-item{font-size:8px;line-height:1.3;display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;white-space:nowrap}
+#info-card{background:#04101c;border:1px solid #1a3a5c;cursor:pointer;display:flex;flex-direction:column;min-height:220px}
+#info-img-area{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px}
+#info-img-area img{max-width:100%;max-height:180px}
+.info-ph{font-size:9px;color:#3a5a78;text-align:center;padding:10px;line-height:1.5}
+#info-text-area{padding:8px;font-size:9px;color:#7ec8e3;line-height:1.6;border-top:1px solid #1a3a5c;min-height:40px}
+#info-cursor{display:inline-block;color:#ffec27;animation:info-blink 0.9s steps(1) infinite}
+@keyframes info-blink{50%{opacity:0}}
+#info-nav{display:flex;justify-content:space-between;font-size:8px;color:#4a7c9e;padding-top:5px}
 .climate-item:last-child{margin-bottom:0}
 .ci-icon{font-size:9px;display:inline-block;width:12px;text-align:center;flex-shrink:0}
 .ci-label{display:flex;align-items:center;gap:2px}
@@ -232,6 +240,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('event.html','_blank')">⚡ EVENT</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('age.html','_blank')">🕰 AGE</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('image.html','_blank')">🖼 IMAGE</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('story.html','_blank')">📖 STORY</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('plugin.html','_blank')">🔌 PLUGIN</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('store.html','_blank')">🏬 STORE</button>
           </div>
@@ -240,18 +249,12 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
         <div id="log-list"></div>
       </div>
       <div id="tab-info" class="tab-pane" style="display:none">
-        <div class="climate-card" style="margin-bottom:6px">
-          <div class="climate-card-title">🗞 LATEST EVENT</div>
-          <div id="info-event-row" style="font-size:8px;line-height:1.5"></div>
+        <div id="info-story-list" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px"></div>
+        <div id="info-card" onclick="advanceInfoPage()">
+          <div id="info-img-area"><div class="info-ph">Click an event, the companion, or the sky/land/sea/underground to see something here.</div></div>
+          <div id="info-text-area"></div>
         </div>
-        <div class="climate-card" style="margin-bottom:6px">
-          <div class="climate-card-title">💬 COMPANION SAYS</div>
-          <div id="info-companion-row" style="font-size:8px;line-height:1.5"></div>
-        </div>
-        <div class="climate-card">
-          <div class="climate-card-title">🔎 CLICKED REGION</div>
-          <div id="info-click-row" style="font-size:8px;line-height:1.6">Click the sky, land, sea, or underground on the left to inspect what's there.</div>
-        </div>
+        <div id="info-nav"><span id="info-page-num"></span><span id="info-hint"></span></div>
       </div>
     </div>
   </div>
@@ -286,30 +289,61 @@ function setTab(tab){
     if(pane)pane.style.display=(t===tab)?'block':'none';
     if(btn)btn.classList.toggle('active',t===tab);
   });
-  if(tab==='info')renderInfoTab();
+  if(tab==='info'){ renderInfoPage(); renderStoryList(); }
 }
-function renderInfoTab(){
-  const evEl=document.getElementById('info-event-row');
-  if(evEl){
-    if(eventLogEntries&&eventLogEntries.length){
-      const e=eventLogEntries[0];
-      evEl.innerHTML=`<div style="color:#4a7c9e">${e.mya>=1000?(e.mya/1000).toFixed(2)+' BYA':e.mya+T('mya_short')}</div><div style="color:#7ec8e3;margin-top:2px">${e.text}</div>`;
-    } else {
-      evEl.textContent='Nothing has happened yet.';
-    }
-  }
-  const compEl=document.getElementById('info-companion-row');
-  if(compEl && typeof COMPANIONS!=='undefined' && typeof currentChar!=='undefined'){
-    const name=COMPANIONS[currentChar].name;
-    const text=(typingState&&typingState.text)||'';
-    compEl.innerHTML=`<div style="color:#4ecb71">${name}:</div><div style="color:#7ec8e3;margin-top:2px">${text||'...'}</div>`;
-  }
+function playStory(storyIdx){
+  let stories=[];
+  try{ stories=JSON.parse(localStorage.getItem('earthsim_editor_stories_slots')||'[]'); }catch(e){}
+  const story=stories[storyIdx];
+  if(!story||!story.pages||!story.pages.length)return;
+  let imgs=[];
+  try{ imgs=JSON.parse(localStorage.getItem('earthsim_editor_images_slots')||'[]'); }catch(e){}
+  const pages=story.pages.map(p=>{
+    const img=p.imageName?imgs.find(s=>s&&!s.empty&&s.name===p.imageName):null;
+    return {image:img?img.imageData:null,text:p.text||''};
+  });
+  showInfoPages(pages);
 }
-let lastClickInfo=null;
-function renderClickInfo(){
-  const el=document.getElementById('info-click-row');
-  if(el && lastClickInfo) el.innerHTML=lastClickInfo;
+function renderStoryList(){
+  const el=document.getElementById('info-story-list');
+  if(!el)return;
+  let stories=[];
+  try{ stories=JSON.parse(localStorage.getItem('earthsim_editor_stories_slots')||'[]'); }catch(e){}
+  const nonEmpty=stories.map((s,i)=>({s,i})).filter(x=>x.s&&!x.s.empty);
+  el.innerHTML=nonEmpty.length
+    ?nonEmpty.map(({s,i})=>`<button class="ebtn" style="font-size:8px;padding:2px 6px" onclick="playStory(${i})">▶ ${s.name}</button>`).join('')
+    :'';
 }
+
+// ---- INFO tab: single-card, kamishibai-style page viewer ----
+// Used for: the latest event, the companion's current line, a clicked region's summary, and
+// (via showInfoPages) full multi-page STORY plugins. Only one page is shown at a time; clicking
+// the card advances to the next page, with a blinking cursor while more pages remain.
+let infoPages=[{image:null,text:null}];
+let infoPageIndex=0;
+function showInfoPages(pages){
+  if(!pages||!pages.length)return;
+  infoPages=pages;
+  infoPageIndex=0;
+  renderInfoPage();
+}
+function renderInfoPage(){
+  const imgArea=document.getElementById('info-img-area');
+  const textArea=document.getElementById('info-text-area');
+  const numEl=document.getElementById('info-page-num');
+  const hintEl=document.getElementById('info-hint');
+  if(!imgArea)return;
+  const p=infoPages[infoPageIndex]||{image:null,text:null};
+  imgArea.innerHTML=p.image?`<img src="${p.image}">`:'<div class="info-ph">'+(p.text?'':'Click an event, the companion, or the sky/land/sea/underground to see something here.')+'</div>';
+  const hasMore=infoPageIndex<infoPages.length-1;
+  textArea.innerHTML=(p.text||'')+(hasMore?' <span id="info-cursor">▾</span>':'');
+  numEl.textContent=infoPages.length>1?('Page '+(infoPageIndex+1)+' / '+infoPages.length):'';
+  hintEl.textContent=hasMore?(lang==='ja'?'クリックで次へ →':'click to continue →'):'';
+}
+function advanceInfoPage(){
+  if(infoPageIndex<infoPages.length-1){ infoPageIndex++; renderInfoPage(); }
+}
+
 // build a lookup from raw biomass key -> {icon,en,ja} for the INFO tab's click summaries
 let KEY_TO_DISPLAY={};
 function buildKeyToDisplay(){
@@ -325,28 +359,28 @@ function topBioInLayer(keys){
 }
 function computeClickInfo(iy){
   if(iy<LAND_TOP){
-    return `<div style="color:#7ec8e3">${lang==='ja'?'空':'Sky'} — ${Math.round(state.temp)}°C, ${Math.round(state.surface.windAvg)} m/s, ${Math.round(state.humidityPct)}%RH</div>`;
+    return `${lang==='ja'?'空':'Sky'} — ${Math.round(state.temp)}°C, ${Math.round(state.surface.windAvg)} m/s, ${Math.round(state.humidityPct)}%RH`;
   } else if(iy<LAND_BASE){
     const top=topBioInLayer(['lichen','spore_plant','gymnosperm','angiosperm','carnifern','insect','arachnid','amphibian','reptile','synapsid','dino','mammal','primate','human','bird','pterosaur','fungi']);
-    return `<div style="color:#7ec8e3">${lang==='ja'?'陸':'Land'} — ${lang==='ja'?'優占種':'dominant'}: ${top}</div>`;
+    return `${lang==='ja'?'陸':'Land'} — ${lang==='ja'?'優占種':'dominant'}: ${top}`;
   } else if(iy<FLOOR_BOT){
     const top=topBioInLayer(['plankton','cyanobact','algae','jellyfish','trilobite','mollusk','crustacean','echinoderm','jawless_fish','jawed_fish','lobe_fish','shark','cetacean','cephalopod']);
-    return `<div style="color:#7ec8e3">${lang==='ja'?'海':'Sea'} — ${lang==='ja'?'優占種':'dominant'}: ${top}</div>`;
+    return `${lang==='ja'?'海':'Sea'} — ${lang==='ja'?'優占種':'dominant'}: ${top}`;
   } else {
     const top=topBioInLayer(['bacteria','archaea']);
-    return `<div style="color:#7ec8e3">${lang==='ja'?'地下':'Underground'} — ${lang==='ja'?'マグマ活動':'magma activity'} ${Math.round(state.surface.magma)}%, ${lang==='ja'?'地下生物':'subsurface life'}: ${top}</div>`;
+    return `${lang==='ja'?'地下':'Underground'} — ${lang==='ja'?'マグマ活動':'magma activity'} ${Math.round(state.surface.magma)}%, ${lang==='ja'?'地下生物':'subsurface life'}: ${top}`;
   }
 }
 // clicking the macro cross-section jumps to the related tab: sky->climate, land/sea->biosphere, underground->crust
+// and also pushes a one-page summary into the INFO tab
 document.getElementById('macro').addEventListener('click',(ev)=>{
   const rect=ev.currentTarget.getBoundingClientRect();
   const relY=(ev.clientY-rect.top)/rect.height;
   const iy=relY*MH;
-  lastClickInfo=computeClickInfo(iy);
+  showInfoPages([{image:null,text:computeClickInfo(iy)}]);
   if(iy<LAND_TOP) setTab('climate');
   else if(iy<FLOOR_BOT) setTab('bio');
   else setTab('crust');
-  renderClickInfo();
 });
 
 // ---- コンパニオン（ARK / PICO / AIKO） ----
@@ -435,6 +469,11 @@ function typewriterTick(ds){
     const cu=document.getElementById('companion-cursor');if(cu)cu.style.visibility='visible';
   }
 }
+function syncCompanionToInfo(){
+  infoPages=COMPANIONS[currentChar].lines[lang].map(t=>({image:null,text:'💬 '+COMPANIONS[currentChar].name+': '+t}));
+  infoPageIndex=dialogueIndex;
+  renderInfoPage();
+}
 function advanceDialogue(){
   if(!typingState.done){
     typingState.charIndex=typingState.target.length;
@@ -446,6 +485,7 @@ function advanceDialogue(){
   const lines=COMPANIONS[currentChar].lines[lang];
   dialogueIndex=(dialogueIndex+1)%lines.length;
   startTyping(lines[dialogueIndex]);
+  syncCompanionToInfo();
 }
 function switchCharacter(name){
   if(!COMPANIONS[name])return;
@@ -453,6 +493,7 @@ function switchCharacter(name){
   startTyping(COMPANIONS[name].lines[lang][0]);
   const nameEl=document.getElementById('companion-name');if(nameEl)nameEl.textContent=COMPANIONS[name].name;
   document.querySelectorAll('.char-btn').forEach(b=>b.classList.toggle('active',b.dataset.char===name));
+  syncCompanionToInfo();
 }
 function drawCompanionAvatar(t){
   cactx.clearRect(0,0,48,48);
@@ -903,23 +944,38 @@ function updateMeteor(ds){
 }
 
 function doEvent(type){
-  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;offset.temp+=25;offset.co2+=18;offset.windAvg+=45;offset.humidity-=15;offset.pressureAtm+=0.03;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'));}
-  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;offset.windAvg+=18;offset.humidity+=10;offset.pressureAtm-=0.02;ashLevel=1;volcanoActive=1;setEvent(T('ev_volcano'));}
-  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;offset.windAvg+=22;offset.humidity-=20;offset.pressureAtm+=0.05;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'));}
-  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;offset.windAvg-=4;offset.humidity+=15;offset.pressureAtm-=0.03;setEvent(T('ev_warm'));}
-  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;offset.windAvg+=25;offset.humidity-=10;impactFlash=0.6;setEvent(T('ev_ext'));}
-  else if(type==='earthquake'){quakeActive=1;ashLevel=Math.max(ashLevel,0.35);offset.windAvg+=6;setEvent(T('ev_quake'));}
-  else if(type==='typhoon'){typhoonActive=1;offset.windAvg+=65;offset.humidity+=30;offset.pressureAtm-=0.04;setEvent(T('ev_typhoon'));}
+  if(type==='meteor'){meteorActive=true;meteorX=20+Math.random()*(MW-40);meteorY=SKY_TOP;meteorVY=1.6+Math.random()*0.8;offset.temp+=25;offset.co2+=18;offset.windAvg+=45;offset.humidity-=15;offset.pressureAtm+=0.03;bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=20;});offset.bio.bacteria+=8;offset.bio.fungi+=10;setEvent(T('ev_meteor'),'meteor');}
+  else if(type==='volcano'){offset.temp+=18;offset.co2+=25;offset.o2-=6;offset.windAvg+=18;offset.humidity+=10;offset.pressureAtm-=0.02;ashLevel=1;volcanoActive=1;setEvent(T('ev_volcano'),'volcano');}
+  else if(type==='ice'){offset.temp-=35;offset.iceRatio+=0.7;offset.windAvg+=22;offset.humidity-=20;offset.pressureAtm+=0.05;bioKeys().forEach(k=>{if(!['bacteria','archaea','cyanobact'].includes(k))offset.bio[k]-=15;});setEvent(T('ev_ice'),'ice');}
+  else if(type==='warm'){offset.temp+=25;offset.co2+=12;offset.iceRatio-=0.5;offset.windAvg-=4;offset.humidity+=15;offset.pressureAtm-=0.03;setEvent(T('ev_warm'),'warm');}
+  else if(type==='mass_ext'){bioKeys().forEach(k=>{if(!['bacteria','fungi','archaea','cyanobact'].includes(k))offset.bio[k]-=45;});offset.bio.bacteria+=15;offset.bio.fungi+=20;offset.temp+=12;offset.windAvg+=25;offset.humidity-=10;impactFlash=0.6;setEvent(T('ev_ext'),'mass_ext');}
+  else if(type==='earthquake'){quakeActive=1;ashLevel=Math.max(ashLevel,0.35);offset.windAvg+=6;setEvent(T('ev_quake'),'earthquake');}
+  else if(type==='typhoon'){typhoonActive=1;offset.windAvg+=65;offset.humidity+=30;offset.pressureAtm-=0.04;setEvent(T('ev_typhoon'),'typhoon');}
 }
 
 let eventLogEntries=[];
 try{const savedLog=localStorage.getItem('earthsim_log');if(savedLog)eventLogEntries=JSON.parse(savedLog);}catch(e){}
-function setEvent(msg){
+const EVENT_TYPE_TO_NAME={meteor:'Meteor Impact',volcano:'Volcanic Eruption',ice:'Ice Age',warm:'Global Warming',mass_ext:'Mass Extinction',earthquake:'Earthquake',typhoon:'Typhoon'};
+function findEventImage(typeName){
+  try{
+    const slots=JSON.parse(localStorage.getItem('earthsim_editor_events_slots')||'[]');
+    const slot=slots.find(s=>s&&!s.empty&&s.name===typeName);
+    if(slot&&slot.imageName){
+      const imgs=JSON.parse(localStorage.getItem('earthsim_editor_images_slots')||'[]');
+      const img=imgs.find(s=>s&&!s.empty&&s.name===slot.imageName);
+      return img?img.imageData:null;
+    }
+  }catch(e){}
+  return null;
+}
+function setEvent(msg,eventType){
   const el=document.getElementById('event-log');if(el)el.textContent=msg;
   eventLogEntries.unshift({mya:Math.round(simMya),text:msg});
   if(eventLogEntries.length>200)eventLogEntries.length=200;
   try{localStorage.setItem('earthsim_log',JSON.stringify(eventLogEntries));}catch(e){}
   renderLog();
+  const typeName=eventType&&EVENT_TYPE_TO_NAME[eventType];
+  showInfoPages([{image:typeName?findEventImage(typeName):null,text:msg}]);
 }
 function renderLog(){
   const el=document.getElementById('log-list');if(!el)return;
@@ -2053,7 +2109,7 @@ function drawMacro(t){
 let uiTick=0;
 function updateUI(){
   uiTick++;
-  if(activeTab==='info' && uiTick%10===0) renderInfoTab();
+  if(activeTab==='info' && uiTick%10===0) renderInfoPage();
   const pct=Math.max(0,Math.min(100,(TOTAL_MYA-simMya)/TOTAL_MYA*100));
   const pb=document.getElementById('progress-bar');if(pb)pb.style.width=pct.toFixed(2)+'%';
   const pl=document.getElementById('progress-label');if(pl)pl.textContent=pct.toFixed(1)+'%';
@@ -2222,6 +2278,7 @@ function loop(ts){
 initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();renderComposition();buildKeyToDisplay();
 document.getElementById('companion-name').textContent=COMPANIONS[currentChar].name;
 startTyping(COMPANIONS[currentChar].lines[lang][0]);
+syncCompanionToInfo();
 applyLang();
 renderLog();
 requestAnimationFrame(loop);

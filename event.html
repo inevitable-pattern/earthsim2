@@ -70,6 +70,19 @@ body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:10
       <label style="font-size:9px;color:#4a7c9e">NAME:</label>
       <input id="slot-name" value="">
     </div>
+    <div id="slot-image-row" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:10px">
+      <label style="font-size:9px;color:#4a7c9e">IMAGE:</label>
+      <div id="slot-image-thumb" style="width:32px;height:32px;background:#04101c;border:1px solid #1a3a5c;cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openImagePicker()"></div>
+      <span id="slot-image-name" style="color:#7ec8e3">none</span>
+      <button class="actbtn discard" style="padding:2px 6px;font-size:9px" onclick="chooseImage(null)">clear</button>
+    </div>
+    <div id="image-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:110;align-items:center;justify-content:center">
+      <div style="background:#0a1628;border:1px solid #5dade2;padding:14px;width:380px;max-height:70vh;overflow-y:auto">
+        <h3 style="color:#5dade2;font-size:12px;margin-bottom:10px">Choose an image</h3>
+        <div id="image-picker-list"></div>
+        <button class="actbtn discard" style="margin-top:8px" onclick="document.getElementById('image-picker-modal').style.display='none'">CLOSE</button>
+      </div>
+    </div>
     <div id="prompt-area">
       <label>PROMPT (ask Claude to modify this event)</label>
       <textarea id="prompt-input" placeholder="e.g. make this event also spike humidity, and write a more dramatic description"></textarea>
@@ -87,7 +100,7 @@ body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:10
         <button class="actbtn load" onclick="toggleVersionList()">📜 LOAD VERSION</button>
         <div id="version-list"></div>
       </div>
-      <button class="actbtn gh" onclick="doGithubPush()">🐙 PUSH TO GITHUB</button>
+      <button class="actbtn gh" onclick="doGithubPush()">☁ PUBLISH TO STORE</button>
     </div>
   </div>
 </div>
@@ -97,6 +110,7 @@ body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:10
     <h2>⚙ SETTINGS</h2>
     <div class="set-row"><label>Claude API Key</label><input id="set-api-key" type="password" placeholder="sk-ant-..."></div>
     <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
+    <div class="set-row"><label>ChatGPT (OpenAI) API Key — for AI image generation</label><input id="set-chatgpt-key" type="password" placeholder="sk-..."></div>
     <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
     <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
     <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="events/"></div>
@@ -195,11 +209,47 @@ function renderPreview(){
   }
 }
 
+let curImageName=null;
+function getImageSlots(){
+  try{ return JSON.parse(localStorage.getItem('earthsim_editor_images_slots')||'[]'); }catch(e){ return []; }
+}
+function findImageByName(name){
+  if(!name)return null;
+  return getImageSlots().find(s=>s&&!s.empty&&s.name===name)||null;
+}
+function renderImageField(){
+  const thumb=document.getElementById('slot-image-thumb');
+  const nameEl=document.getElementById('slot-image-name');
+  const img=findImageByName(curImageName);
+  thumb.innerHTML=(img&&img.imageData)?`<img src="${img.imageData}" style="max-width:100%;max-height:100%">`:'<span style="font-size:8px;color:#3a5a78">+</span>';
+  nameEl.textContent=curImageName||'none';
+}
+function openImagePicker(){
+  const list=document.getElementById('image-picker-list');
+  const imgs=getImageSlots().filter(s=>s&&!s.empty);
+  list.innerHTML=imgs.length?'':'<div style="font-size:10px;color:#3a5a78;padding:6px">No images saved yet — create some in the Image Editor first.</div>';
+  imgs.forEach(s=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px;cursor:pointer;font-size:11px;border-bottom:1px solid #071525';
+    row.innerHTML=`<div style="width:30px;height:30px;background:#04101c;border:1px solid #1a3a5c;flex-shrink:0">${s.imageData?`<img src="${s.imageData}" style="width:100%;height:100%;object-fit:cover">`:''}</div><span>${s.name}</span>`;
+    row.onclick=()=>chooseImage(s.name);
+    list.appendChild(row);
+  });
+  document.getElementById('image-picker-modal').style.display='flex';
+}
+function chooseImage(name){
+  curImageName=name;
+  renderImageField();
+  document.getElementById('image-picker-modal').style.display='none';
+}
+
 function selectSlot(i){
   curSlot=i;
   const s=slots[i];
   document.getElementById('slot-name').value=s.name;
   document.getElementById('source-editor').value=s.source||'';
+  curImageName=s.imageName||null;
+  renderImageField();
   renderSlotList();
   renderPreview();
 }
@@ -209,9 +259,9 @@ document.getElementById('source-editor').addEventListener('input',renderPreview)
 function doSave(){
   const src=document.getElementById('source-editor').value;
   const name=document.getElementById('slot-name').value||('Slot '+(curSlot+1));
-  slots[curSlot]={name,source:src,empty:!src.trim()};
+  slots[curSlot]={name,source:src,imageName:curImageName,empty:!src.trim()};
   saveSlots(NS,slots);
-  pushVersion(NS,curSlot,src,name);
+  pushVersion(NS,curSlot,src,name,{imageName:curImageName});
   renderSlotList();
   toast('Saved slot '+(curSlot+1)+' ('+name+') — new version recorded.');
 }
@@ -221,6 +271,8 @@ function doDiscard(){
     const last=versions[versions.length-1];
     document.getElementById('source-editor').value=last.source;
     document.getElementById('slot-name').value=last.name||slots[curSlot].name;
+    curImageName=last.imageName||null;
+    renderImageField();
   } else {
     document.getElementById('source-editor').value=slots[curSlot].source||'';
   }
@@ -242,6 +294,8 @@ function loadVersion(v){
   if(found){
     document.getElementById('source-editor').value=found.source;
     document.getElementById('slot-name').value=found.name||slots[curSlot].name;
+    curImageName=found.imageName||null;
+    renderImageField();
     renderPreview();
     toast('Loaded version '+v+'.');
   }
@@ -270,10 +324,10 @@ async function doGithubPush(){
   const src=document.getElementById('source-editor').value;
   const name=document.getElementById('slot-name').value||('slot-'+(curSlot+1));
   const fname=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')+'.json';
-  toast('Pushing to GitHub...');
+  toast('Publishing to Store...');
   try{
     await pushToGithub(fname,src,'Update event: '+name);
-    toast('Pushed '+fname+' to GitHub.');
+    toast('Published '+fname+' to the Store.');
   }catch(e){
     toast('⚠ '+e.message);
   }

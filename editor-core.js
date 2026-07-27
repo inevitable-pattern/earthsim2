@@ -16,11 +16,13 @@ function wireSettingsModal(){
   const s=getSettings();
   const apiKeyEl=document.getElementById('set-api-key');
   const modelEl=document.getElementById('set-model');
+  const chatgptKeyEl=document.getElementById('set-chatgpt-key');
   const ghTokenEl=document.getElementById('set-gh-token');
   const ghRepoEl=document.getElementById('set-gh-repo');
   const ghPathEl=document.getElementById('set-gh-path');
   if(apiKeyEl)apiKeyEl.value=s.apiKey||'';
   if(modelEl)modelEl.value=s.model||'claude-sonnet-5';
+  if(chatgptKeyEl)chatgptKeyEl.value=s.chatgptKey||'';
   if(ghTokenEl)ghTokenEl.value=s.ghToken||'';
   if(ghRepoEl)ghRepoEl.value=s.ghRepo||'';
   if(ghPathEl)ghPathEl.value=s.ghPath||'';
@@ -33,9 +35,11 @@ function closeSettings(){
   document.getElementById('settings-modal').style.display='none';
 }
 function saveSettingsFromForm(){
+  const chatgptEl=document.getElementById('set-chatgpt-key');
   const s={
     apiKey:document.getElementById('set-api-key').value.trim(),
     model:document.getElementById('set-model').value.trim()||'claude-sonnet-5',
+    chatgptKey:chatgptEl?chatgptEl.value.trim():'',
     ghToken:document.getElementById('set-gh-token').value.trim(),
     ghRepo:document.getElementById('set-gh-repo').value.trim(),
     ghPath:document.getElementById('set-gh-path').value.trim(),
@@ -101,6 +105,30 @@ async function callClaude(promptText, currentSource, systemHint){
   const data=await res.json();
   const text=(data.content||[]).map(b=>b.text||'').join('');
   return text.replace(/```js|```javascript|```/g,'').trim();
+}
+
+// ---- ChatGPT (OpenAI) image generation — direct browser call using the person's own key ----
+// Note: OpenAI's API does not generally allow direct browser calls with an API key (no CORS
+// allowance for arbitrary origins), so this may fail with a network/CORS error depending on
+// OpenAI's current policy. The "load from device" file picker is the reliable fallback either way.
+async function generateImageWithChatGPT(promptText){
+  const s=getSettings();
+  if(!s.chatgptKey){ throw new Error('No ChatGPT API key set. Open SETTINGS first.'); }
+  const res=await fetch('https://api.openai.com/v1/images/generations',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.chatgptKey},
+    body:JSON.stringify({model:'gpt-image-1',prompt:promptText,size:'1024x1024',n:1})
+  }).catch(err=>{ throw new Error('Network/CORS error calling OpenAI directly from the browser — this often cannot be done without a small server-side relay. ('+err.message+')'); });
+  if(!res.ok){
+    const errText=await res.text().catch(()=>String(res.status));
+    throw new Error('OpenAI API error '+res.status+': '+errText.slice(0,300));
+  }
+  const data=await res.json();
+  const item=(data.data||[])[0];
+  if(!item) throw new Error('No image returned.');
+  if(item.b64_json) return 'data:image/png;base64,'+item.b64_json;
+  if(item.url) return item.url;
+  throw new Error('Unrecognized response shape from OpenAI.');
 }
 
 // ---- GitHub push (Contents API, person's own PAT) ----
