@@ -127,6 +127,21 @@ async function pushToGithub(path,content,message){
   return await putRes.json();
 }
 
+// ---- Plugin enable/disable state (used by the game to decide which saved overrides to apply) ----
+function getPluginState(){
+  try{ return JSON.parse(localStorage.getItem('earthsim_plugin_state')||'{}'); }catch(e){ return {}; }
+}
+function setPluginEnabled(namespace,slotIndex,enabled){
+  const state=getPluginState();
+  state[namespace+':'+slotIndex]=enabled;
+  try{ localStorage.setItem('earthsim_plugin_state',JSON.stringify(state)); }catch(e){}
+}
+function isPluginEnabled(namespace,slotIndex){
+  const state=getPluginState();
+  const v=state[namespace+':'+slotIndex];
+  return v===undefined?true:v; // enabled by default
+}
+
 // ---- tiny toast helper ----
 let _toastTimer=null;
 function toast(msg){

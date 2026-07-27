@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Object Editor — Earth Simulator</title>
+<title>Image Editor — Earth Simulator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#000;color:#7ec8e3;font-family:'Courier New',monospace;height:100vh;overflow:hidden}
@@ -81,7 +81,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 <body>
 <div id="top">
   <button class="topbtn" onclick="location.href='index.html'">← BACK</button>
-  <h1>🧬 OBJECT EDITOR</h1>
+  <h1>🖼 IMAGE EDITOR</h1>
   <button class="topbtn" onclick="openReference()">📖 REFERENCE</button>
   <button class="topbtn" onclick="openSettings()">⚙ SETTINGS</button>
 </div>
@@ -145,7 +145,7 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
     <div class="set-row"><label>Claude Model</label><input id="set-model" placeholder="claude-sonnet-5"></div>
     <div class="set-row"><label>GitHub Personal Access Token</label><input id="set-gh-token" type="password" placeholder="ghp_..."></div>
     <div class="set-row"><label>GitHub Repo (owner/repo)</label><input id="set-gh-repo" placeholder="yourname/earthsim-assets"></div>
-    <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="objects/"></div>
+    <div class="set-row"><label>Path prefix (optional)</label><input id="set-gh-path" placeholder="images/"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="actbtn save" onclick="saveSettingsFromForm()">SAVE SETTINGS</button>
       <button class="actbtn discard" onclick="closeSettings()">CLOSE</button>
@@ -173,303 +173,101 @@ canvas#preview-game{width:120px;height:120px;image-rendering:pixelated;backgroun
 
 <script src="editor-core.js"></script>
 <script>
-const NS='objects';
+const NS='images';
 const PRIMARY_PART={'Fungi / Mushroom':'cap','Conifer Tree':'leaves','Flowering Tree':'leaves','UFO':'body'};
 const SEED=[
-{name:'Plankton',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#5dade2'; // main
+{name:'Sun',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
+  let default_color1 = '#ffe066'; // disc
+  let default_color2 = '#ffb703'; // rays
   if (color1 == null) color1 = default_color1;
+  if (color2 == null) color2 = default_color2;
   // --- END COLOR SETUP ---
 
-  const x = cx + Math.sin(t*0.6)*3*scale;
-  const y = cy + Math.cos(t*0.5)*2*scale;
-  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = color2;
+  ctx.lineWidth = 1.2*scale;
+  for (let i=0;i<8;i++){
+    const ang = i*(Math.PI/4) + t*0.3;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(ang)*9*scale, cy+Math.sin(ang)*9*scale);
+    ctx.lineTo(cx+Math.cos(ang)*13*scale, cy+Math.sin(ang)*13*scale);
+    ctx.stroke();
+  }
   ctx.fillStyle = color1;
-  ctx.fillRect(x, y, 1*scale, 1*scale);
-  ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, 8*scale, 0, Math.PI*2); ctx.fill();
 }`},
-{name:'Kelp',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#2ecc71'; // main
+{name:'Moon',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#eef3f8'; // crescent
   if (color1 == null) color1 = default_color1;
   // --- END COLOR SETUP ---
 
-  const sway = Math.sin(t*1.1)*3*scale;
+  ctx.fillStyle = color1;
+  ctx.beginPath(); ctx.arc(cx, cy, 8*scale, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(cx+4*scale, cy-2*scale, 7*scale, 0, Math.PI*2); ctx.fill();
+}`},
+{name:'Cloud',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#f4f7fb'; // puff
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  const bob = Math.sin(t*0.8)*1.5*scale;
+  ctx.fillStyle = color1;
+  ctx.beginPath();
+  ctx.ellipse(cx-6*scale, cy+bob, 6*scale, 4*scale, 0, 0, Math.PI*2);
+  ctx.ellipse(cx, cy-2*scale+bob, 8*scale, 5.5*scale, 0, 0, Math.PI*2);
+  ctx.ellipse(cx+7*scale, cy+bob, 5.5*scale, 4*scale, 0, 0, Math.PI*2);
+  ctx.fill();
+}`},
+{name:'Raindrop',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#5dade2'; // drop
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  const y = cy + (t*40 % 20)*scale*0.1;
+  ctx.fillStyle = color1;
+  ctx.beginPath();
+  ctx.moveTo(cx, y-8*scale);
+  ctx.quadraticCurveTo(cx+6*scale, y+2*scale, cx, y+8*scale);
+  ctx.quadraticCurveTo(cx-6*scale, y+2*scale, cx, y-8*scale);
+  ctx.fill();
+}`},
+{name:'Snowflake',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#ffffff'; // flake
+  if (color1 == null) color1 = default_color1;
+  // --- END COLOR SETUP ---
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(t*0.3);
   ctx.strokeStyle = color1;
   ctx.lineWidth = 1*scale;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.quadraticCurveTo(cx+sway, cy-5*scale, cx+sway*1.6, cy-9*scale);
-  ctx.stroke();
-}`},
-{name:'Jellyfish',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#f8c8d4'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const rr = (1.6+Math.sin(t*2.4)*0.6)*scale;
-  ctx.globalAlpha = 0.8;
-  ctx.fillStyle = color1;
-  ctx.beginPath(); ctx.ellipse(cx, cy, rr, rr*0.7, 0, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = color1; ctx.globalAlpha = 0.4; ctx.lineWidth = 0.6*scale;
-  ctx.beginPath();
-  ctx.moveTo(cx-scale, cy+rr*0.7); ctx.lineTo(cx-scale, cy+rr*0.7+2*scale);
-  ctx.moveTo(cx+scale, cy+rr*0.7); ctx.lineTo(cx+scale, cy+rr*0.7+2.5*scale);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-}`},
-{name:'Trilobite',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#a04000'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  ctx.fillStyle = color1;
-  ctx.beginPath(); ctx.ellipse(cx, cy, 1.8*scale, 1*scale, 0, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.3*scale;
-  for (let s=-1; s<=1; s++) {
-    ctx.beginPath();
-    ctx.moveTo(cx+s*0.6*scale, cy-0.9*scale);
-    ctx.lineTo(cx+s*0.6*scale, cy+0.9*scale);
-    ctx.stroke();
+  for (let i=0;i<6;i++){
+    ctx.save();
+    ctx.rotate(i*Math.PI/3);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-9*scale); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-6*scale); ctx.lineTo(-2.5*scale,-8*scale); ctx.moveTo(0,-6*scale); ctx.lineTo(2.5*scale,-8*scale); ctx.stroke();
+    ctx.restore();
   }
+  ctx.restore();
 }`},
-{name:'Shell / Mollusk',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#d98880'; // main
+{name:'Star Icon',source:`function draw(ctx, cx, cy, t, scale, color1) {
+  let default_color1 = '#ffec27'; // star
   if (color1 == null) color1 = default_color1;
   // --- END COLOR SETUP ---
 
-  ctx.fillStyle = color1;
-  ctx.beginPath();
-  ctx.moveTo(cx-1.6*scale, cy);
-  ctx.quadraticCurveTo(cx, cy-2*scale, cx+1.6*scale, cy);
-  ctx.quadraticCurveTo(cx, cy+0.8*scale, cx-1.6*scale, cy);
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 0.25*scale;
-  for (let s=-1; s<=1; s++) {
-    ctx.beginPath();
-    ctx.moveTo(cx+s*0.9*scale, cy-0.2*scale);
-    ctx.lineTo(cx, cy-1.6*scale);
-    ctx.stroke();
-  }
-}`},
-{name:'Starfish',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#e08283'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
+  const tw = 0.7+0.3*Math.sin(t*3);
+  ctx.globalAlpha = tw;
   ctx.fillStyle = color1;
   ctx.beginPath();
   for (let k=0;k<5;k++){
     const outAng=-Math.PI/2+k*(Math.PI*2/5), inAng=outAng+Math.PI/5;
-    const ox=cx+Math.cos(outAng)*2.1*scale, oy=cy+Math.sin(outAng)*2.1*scale;
-    const ix=cx+Math.cos(inAng)*0.8*scale, iy=cy+Math.sin(inAng)*0.8*scale;
+    const ox=cx+Math.cos(outAng)*8*scale, oy=cy+Math.sin(outAng)*8*scale;
+    const ix=cx+Math.cos(inAng)*3*scale, iy=cy+Math.sin(inAng)*3*scale;
     if(k===0) ctx.moveTo(ox,oy); else ctx.lineTo(ox,oy);
     ctx.lineTo(ix,iy);
   }
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle='rgba(0,0,0,0.25)';
-  ctx.beginPath(); ctx.arc(cx,cy,0.6*scale,0,Math.PI*2); ctx.fill();
-}`},
-{name:'Crab',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#e67e22'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const x=cx,y=cy;
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.ellipse(x,y,1.7*scale,1.2*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=color1; ctx.lineWidth=0.45*scale;
-  for(let s=-1;s<=1;s+=2){
-    ctx.beginPath();
-    ctx.moveTo(x+s*1.6*scale,y+0.7*scale); ctx.lineTo(x+s*2.3*scale,y+1.5*scale); ctx.lineTo(x+s*1.9*scale,y+1.9*scale);
-    ctx.moveTo(x+s*1.4*scale,y+0.9*scale); ctx.lineTo(x+s*1.9*scale,y+1.5*scale);
-    ctx.stroke();
-  }
-  ctx.beginPath();
-  ctx.moveTo(x-1.5*scale,y-0.6*scale); ctx.lineTo(x-2.6*scale,y-1.4*scale);
-  ctx.moveTo(x+1.5*scale,y-0.6*scale); ctx.lineTo(x+2.6*scale,y-1.4*scale);
-  ctx.stroke();
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.moveTo(x-2.6*scale,y-1.4*scale); ctx.lineTo(x-3.3*scale,y-1.9*scale); ctx.lineTo(x-3*scale,y-0.9*scale); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(x+2.6*scale,y-1.4*scale); ctx.lineTo(x+3.3*scale,y-1.9*scale); ctx.lineTo(x+3*scale,y-0.9*scale); ctx.fill();
-}`},
-{name:'Fish',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#5dade2'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const y=cy+Math.sin(t*3)*1.6*scale;
-  const w=2.2*scale, h=1.2*scale;
-  ctx.fillStyle=color1;
-  ctx.beginPath();
-  ctx.moveTo(cx-w/2,y); ctx.lineTo(cx+w/2,y-h/2); ctx.lineTo(cx+w/2,y+h/2);
-  ctx.closePath(); ctx.fill();
-}`},
-{name:'Amphibian',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#58d68d'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const y=cy-Math.abs(Math.sin(t*3))*2.2*scale;
-  ctx.fillStyle=color1;
-  ctx.fillRect(cx-1*scale,y-1*scale,2*scale,1.6*scale);
-}`},
-{name:'Insect',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#f7dc6f'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
-  ctx.fillStyle=color1;
-  ctx.fillRect(cx-1*scale,cy-bob-1.6*scale,2*scale,1.6*scale);
-  ctx.fillRect(cx-0.6*scale,cy-0.6*scale,0.6*scale,0.8*scale);
-  ctx.fillRect(cx+0.2*scale,cy-0.6*scale,0.6*scale,0.8*scale);
-}`},
-{name:'Reptile',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#a9cce3'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const dir=1;
-  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
-  const bodyY=cy-bob-0.6*scale;
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.ellipse(cx,bodyY,2*scale,0.9*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=color1; ctx.lineWidth=0.8*scale;
-  ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.lineTo(cx-dir*3.4*scale,bodyY+0.4*scale); ctx.stroke();
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.arc(cx+dir*2*scale,bodyY-0.1*scale,0.55*scale,0,Math.PI*2); ctx.fill();
-  ctx.fillRect(cx-0.9*scale,cy-0.5*scale,0.5*scale,0.7*scale);
-  ctx.fillRect(cx+0.4*scale,cy-0.5*scale,0.5*scale,0.7*scale);
-}`},
-{name:'Dinosaur (Sauropod)',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#d35400'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const dir=1;
-  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
-  const bodyY=cy-bob-1.1*scale;
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.ellipse(cx,bodyY,2.6*scale,1.5*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=color1; ctx.lineWidth=1.3*scale;
-  ctx.beginPath(); ctx.moveTo(cx+dir*2*scale,bodyY-0.6*scale); ctx.quadraticCurveTo(cx+dir*3.6*scale,bodyY-2.8*scale,cx+dir*4.4*scale,bodyY-3.6*scale); ctx.stroke();
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.arc(cx+dir*4.6*scale,bodyY-3.8*scale,0.6*scale,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=color1; ctx.lineWidth=1*scale;
-  ctx.beginPath(); ctx.moveTo(cx-dir*2.4*scale,bodyY+0.2*scale); ctx.quadraticCurveTo(cx-dir*4.2*scale,bodyY+0.8*scale,cx-dir*5.4*scale,bodyY-0.6*scale); ctx.stroke();
-  ctx.fillRect(cx-1.1*scale,cy-0.6*scale,0.6*scale,0.9*scale);
-  ctx.fillRect(cx+0.5*scale,cy-0.6*scale,0.6*scale,0.9*scale);
-}`},
-{name:'Mammal',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#ec407a'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const dir=1;
-  const bob=Math.abs(Math.sin(t*5))*0.6*scale;
-  const bodyY=cy-bob-0.9*scale;
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.ellipse(cx,bodyY,1.8*scale,1.3*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+dir*1.7*scale,bodyY-0.9*scale,0.7*scale,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+dir*2.2*scale,bodyY-1.5*scale,0.35*scale,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=color1; ctx.lineWidth=0.6*scale;
-  ctx.beginPath(); ctx.moveTo(cx-dir*1.8*scale,bodyY); ctx.quadraticCurveTo(cx-dir*2.6*scale,bodyY-0.8*scale,cx-dir*2.9*scale,bodyY-0.2*scale); ctx.stroke();
-  ctx.fillRect(cx-0.9*scale,cy-0.6*scale,0.6*scale,0.9*scale);
-  ctx.fillRect(cx+0.3*scale,cy-0.6*scale,0.6*scale,0.9*scale);
-}`},
-{name:'Bird',source:`function draw(ctx, cx, cy, t, scale, color1) {
-  let default_color1 = '#f1c40f'; // main
-  if (color1 == null) color1 = default_color1;
-  // --- END COLOR SETUP ---
-
-  const flap=Math.sin(t*9)*1.4*scale;
-  ctx.strokeStyle=color1; ctx.lineWidth=0.8*scale;
-  ctx.beginPath();
-  ctx.moveTo(cx-2*scale,cy-flap); ctx.lineTo(cx,cy); ctx.lineTo(cx+2*scale,cy-flap);
-  ctx.stroke();
-}`},
-{name:'Fungi / Mushroom',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
-  let default_color1 = '#f0b27a'; // cap
-  let default_color2 = '#d5b895'; // stem
-  if (color1 == null) color1 = default_color1;
-  if (color2 == null) color2 = default_color2;
-  // --- END COLOR SETUP ---
-
-  const pulse=(0.9+Math.sin(t*1.6)*0.15)*scale;
-  ctx.fillStyle=color1;
-  ctx.beginPath(); ctx.ellipse(cx,cy-1.4*pulse,1.4*pulse,0.9*pulse,0,Math.PI,0); ctx.fill();
-  ctx.fillStyle=color2;
-  ctx.fillRect(cx-0.3*scale,cy-1.4*pulse,0.6*scale,1.4*pulse);
-}`},
-{name:'Conifer Tree',source:`function draw(ctx, cx, cy, t, scale, color1, color2) {
-  let default_color1 = '#6b4a2b'; // trunk
-  let default_color2 = '#1d6a2f'; // leaves
-  if (color1 == null) color1 = default_color1;
-  if (color2 == null) color2 = default_color2;
-  // --- END COLOR SETUP ---
-
-  const lean=Math.sin(t*1.1)*0.08*scale;
-  const h=7*scale;
-  ctx.strokeStyle=color1; ctx.lineWidth=0.6*scale;
-  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h*0.3); ctx.stroke();
-  ctx.fillStyle=color2;
-  for(let tier=0;tier<3;tier++){
-    const ty=cy-h*0.25-tier*h*0.32;
-    const tw=(2.6-tier*0.6)*scale;
-    ctx.beginPath();
-    ctx.moveTo(cx+lean*h*(tier/3),ty-h*0.42);
-    ctx.lineTo(cx+lean*h*(tier/3)-tw/2,ty);
-    ctx.lineTo(cx+lean*h*(tier/3)+tw/2,ty);
-    ctx.closePath(); ctx.fill();
-  }
-}`},
-{name:'Flowering Tree',source:`function draw(ctx, cx, cy, t, scale, color1, color2, color3) {
-  let default_color1 = '#6b4a2b'; // trunk
-  let default_color2 = '#2e8b3d'; // leaves
-  let default_color3 = '#f8c8d4'; // flowers
-  if (color1 == null) color1 = default_color1;
-  if (color2 == null) color2 = default_color2;
-  if (color3 == null) color3 = default_color3;
-  // --- END COLOR SETUP ---
-
-  const lean=Math.sin(t*1.15)*0.1*scale;
-  const h=6*scale;
-  ctx.strokeStyle=color1; ctx.lineWidth=0.7*scale;
-  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+lean*h,cy-h); ctx.stroke();
-  const tcx=cx+lean*h, tcy=cy-h-1.3*scale;
-  ctx.fillStyle=color2;
-  ctx.beginPath(); ctx.ellipse(tcx,tcy,2*scale,2.1*scale,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=color3;
-  for(let k=0;k<3;k++){
-    const ang=k*2.1;
-    ctx.beginPath(); ctx.arc(tcx+Math.cos(ang)*1.3*scale,tcy+Math.sin(ang)*1.1*scale,0.45*scale,0,Math.PI*2); ctx.fill();
-  }
-}`},
-{name:'UFO',source:`function draw(ctx, cx, cy, t, scale, color1, color2, color3, color4) {
-  let default_color1 = '#5fd6a8'; // body
-  let default_color2 = '#3a8c72'; // underside
-  let default_color3 = '#eafcf6'; // canopy
-  let default_color4 = '#8fb8ae'; // legs
-  if (color1 == null) color1 = default_color1;
-  if (color2 == null) color2 = default_color2;
-  if (color3 == null) color3 = default_color3;
-  if (color4 == null) color4 = default_color4;
-  // --- END COLOR SETUP ---
-
-  const S=scale*0.7;
-  ctx.strokeStyle=color4; ctx.lineWidth=1.3*S;
-  ctx.beginPath();
-  ctx.moveTo(cx-2*S,cy+1.6*S); ctx.lineTo(cx-4.3*S,cy+3.9*S);
-  ctx.moveTo(cx+2*S,cy+1.6*S); ctx.lineTo(cx+4.3*S,cy+3.9*S);
-  ctx.stroke();
-  ctx.fillStyle=color2;
-  ctx.beginPath(); ctx.ellipse(cx,cy+0.4*S,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=color1; ctx.strokeStyle='#0a1f1a'; ctx.lineWidth=0.9*S;
-  ctx.beginPath(); ctx.ellipse(cx,cy,6.6*S,2.2*S,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=color3;
-  ctx.beginPath(); ctx.ellipse(cx,cy-1.8*S,3.1*S,2*S,0,Math.PI,0); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=\`rgba(255,255,150,\${0.6+0.4*Math.sin(t*4)})\`;
-  ctx.beginPath(); ctx.arc(cx-3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.arc(cx,cy+0.7*S,0.8*S,0,Math.PI*2); ctx.arc(cx+3.1*S,cy+0.5*S,0.8*S,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
 }`},
 ];
 
@@ -764,7 +562,7 @@ async function submitPrompt(){
   statusEl.textContent='Sending to Claude...';
   try{
     const current=document.getElementById('source-editor').value;
-    const hint='You are editing a JavaScript function for a retro pixel-art canvas game creature/object. '+
+    const hint='You are editing a JavaScript function for a retro pixel-art decorative image/icon (not necessarily an animated creature). '+
       'It must stay fully self-contained (so it also works as a standalone plugin file): the function '+
       'signature is function draw(ctx, cx, cy, t, scale, color1, color2, ...) — one optional colorN '+
       'parameter per color part, in order. Immediately after the opening brace, declare for each part: '+

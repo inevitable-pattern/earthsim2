@@ -170,6 +170,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
       <button class="tab-btn" id="tab-btn-ocean" onclick="setTab('ocean')">OCEAN</button>
       <button class="tab-btn" id="tab-btn-crust" onclick="setTab('crust')">CRUST</button>
       <button class="tab-btn" id="tab-btn-log" onclick="setTab('log')">LOG</button>
+      <button class="tab-btn" id="tab-btn-info" onclick="setTab('info')">INFO</button>
     </div>
     <div id="tab-content">
       <div id="tab-climate" class="tab-pane">
@@ -230,10 +231,27 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('editor.html','_blank')">🧬 OBJECT</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('event.html','_blank')">⚡ EVENT</button>
             <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('age.html','_blank')">🕰 AGE</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('image.html','_blank')">🖼 IMAGE</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('plugin.html','_blank')">🔌 PLUGIN</button>
+            <button class="ebtn" style="border-color:#1e5c37;color:#4ecb71" onclick="window.open('store.html','_blank')">🏬 STORE</button>
           </div>
         </div>
         <div class="climate-card-title" id="lbl-log">LOG</div>
         <div id="log-list"></div>
+      </div>
+      <div id="tab-info" class="tab-pane" style="display:none">
+        <div class="climate-card" style="margin-bottom:6px">
+          <div class="climate-card-title">🗞 LATEST EVENT</div>
+          <div id="info-event-row" style="font-size:8px;line-height:1.5"></div>
+        </div>
+        <div class="climate-card" style="margin-bottom:6px">
+          <div class="climate-card-title">💬 COMPANION SAYS</div>
+          <div id="info-companion-row" style="font-size:8px;line-height:1.5"></div>
+        </div>
+        <div class="climate-card">
+          <div class="climate-card-title">🔎 CLICKED REGION</div>
+          <div id="info-click-row" style="font-size:8px;line-height:1.6">Click the sky, land, sea, or underground on the left to inspect what's there.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -263,20 +281,72 @@ autoScale();
 let activeTab='climate';
 function setTab(tab){
   activeTab=tab;
-  ['climate','bio','ocean','crust','log'].forEach(t=>{
+  ['climate','bio','ocean','crust','log','info'].forEach(t=>{
     const pane=document.getElementById('tab-'+t),btn=document.getElementById('tab-btn-'+t);
     if(pane)pane.style.display=(t===tab)?'block':'none';
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  if(tab==='info')renderInfoTab();
+}
+function renderInfoTab(){
+  const evEl=document.getElementById('info-event-row');
+  if(evEl){
+    if(eventLogEntries&&eventLogEntries.length){
+      const e=eventLogEntries[0];
+      evEl.innerHTML=`<div style="color:#4a7c9e">${e.mya>=1000?(e.mya/1000).toFixed(2)+' BYA':e.mya+T('mya_short')}</div><div style="color:#7ec8e3;margin-top:2px">${e.text}</div>`;
+    } else {
+      evEl.textContent='Nothing has happened yet.';
+    }
+  }
+  const compEl=document.getElementById('info-companion-row');
+  if(compEl && typeof COMPANIONS!=='undefined' && typeof currentChar!=='undefined'){
+    const name=COMPANIONS[currentChar].name;
+    const text=(typingState&&typingState.text)||'';
+    compEl.innerHTML=`<div style="color:#4ecb71">${name}:</div><div style="color:#7ec8e3;margin-top:2px">${text||'...'}</div>`;
+  }
+}
+let lastClickInfo=null;
+function renderClickInfo(){
+  const el=document.getElementById('info-click-row');
+  if(el && lastClickInfo) el.innerHTML=lastClickInfo;
+}
+// build a lookup from raw biomass key -> {icon,en,ja} for the INFO tab's click summaries
+let KEY_TO_DISPLAY={};
+function buildKeyToDisplay(){
+  BIO_GROUPS_DEF.forEach(g=>g.members.forEach(m=>{ m.keys.forEach(k=>{ KEY_TO_DISPLAY[k]={icon:m.icon,en:m.en,ja:m.ja}; }); }));
+}
+function topBioInLayer(keys){
+  let best=null,bestV=-1;
+  keys.forEach(k=>{ const v=(state.bio&&state.bio[k])||0; if(v>bestV){bestV=v;best=k;} });
+  if(!best||bestV<=0.5) return lang==='ja'?'目立った生物は検出されていない。':'very little detectable life right now.';
+  const disp=KEY_TO_DISPLAY[best];
+  const label=disp?disp.icon+' '+(disp[lang]||disp.en):best;
+  return label+' ('+Math.round(bestV)+'%)';
+}
+function computeClickInfo(iy){
+  if(iy<LAND_TOP){
+    return `<div style="color:#7ec8e3">${lang==='ja'?'空':'Sky'} — ${Math.round(state.temp)}°C, ${Math.round(state.surface.windAvg)} m/s, ${Math.round(state.humidityPct)}%RH</div>`;
+  } else if(iy<LAND_BASE){
+    const top=topBioInLayer(['lichen','spore_plant','gymnosperm','angiosperm','carnifern','insect','arachnid','amphibian','reptile','synapsid','dino','mammal','primate','human','bird','pterosaur','fungi']);
+    return `<div style="color:#7ec8e3">${lang==='ja'?'陸':'Land'} — ${lang==='ja'?'優占種':'dominant'}: ${top}</div>`;
+  } else if(iy<FLOOR_BOT){
+    const top=topBioInLayer(['plankton','cyanobact','algae','jellyfish','trilobite','mollusk','crustacean','echinoderm','jawless_fish','jawed_fish','lobe_fish','shark','cetacean','cephalopod']);
+    return `<div style="color:#7ec8e3">${lang==='ja'?'海':'Sea'} — ${lang==='ja'?'優占種':'dominant'}: ${top}</div>`;
+  } else {
+    const top=topBioInLayer(['bacteria','archaea']);
+    return `<div style="color:#7ec8e3">${lang==='ja'?'地下':'Underground'} — ${lang==='ja'?'マグマ活動':'magma activity'} ${Math.round(state.surface.magma)}%, ${lang==='ja'?'地下生物':'subsurface life'}: ${top}</div>`;
+  }
 }
 // clicking the macro cross-section jumps to the related tab: sky->climate, land/sea->biosphere, underground->crust
 document.getElementById('macro').addEventListener('click',(ev)=>{
   const rect=ev.currentTarget.getBoundingClientRect();
   const relY=(ev.clientY-rect.top)/rect.height;
   const iy=relY*MH;
+  lastClickInfo=computeClickInfo(iy);
   if(iy<LAND_TOP) setTab('climate');
   else if(iy<FLOOR_BOT) setTab('bio');
   else setTab('crust');
+  renderClickInfo();
 });
 
 // ---- コンパニオン（ARK / PICO / AIKO） ----
@@ -1240,6 +1310,12 @@ function pickPrimaryColor(s){
   if(s.colors){ const keys=Object.keys(s.colors); return keys.length?s.colors[keys[0]]:null; } // older metadata format
   return s.color||null; // oldest single-color format
 }
+function isPluginEnabledLocal(namespace,slotIndex){
+  let state={};
+  try{ state=JSON.parse(localStorage.getItem('earthsim_plugin_state')||'{}'); }catch(e){}
+  const v=state[namespace+':'+slotIndex];
+  return v===undefined?true:v; // enabled by default
+}
 function applyEditorColorOverrides(){
   let raw;
   try{ raw=localStorage.getItem('earthsim_editor_objects_slots'); }catch(e){ return; }
@@ -1247,8 +1323,9 @@ function applyEditorColorOverrides(){
   let slots;
   try{ slots=JSON.parse(raw); }catch(e){ return; }
   if(!Array.isArray(slots))return;
-  slots.forEach(s=>{
+  slots.forEach((s,i)=>{
     if(!s||s.empty)return;
+    if(!isPluginEnabledLocal('objects',i))return;
     const primary=pickPrimaryColor(s);
     if(!primary)return;
     if(s.name==='UFO'){ UFO_BASE_COLOR=primary; return; }
@@ -1976,6 +2053,7 @@ function drawMacro(t){
 let uiTick=0;
 function updateUI(){
   uiTick++;
+  if(activeTab==='info' && uiTick%10===0) renderInfoTab();
   const pct=Math.max(0,Math.min(100,(TOTAL_MYA-simMya)/TOTAL_MYA*100));
   const pb=document.getElementById('progress-bar');if(pb)pb.style.width=pct.toFixed(2)+'%';
   const pl=document.getElementById('progress-label');if(pl)pl.textContent=pct.toFixed(1)+'%';
@@ -2141,7 +2219,7 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();renderComposition();
+initState(0);initOffset();initMacroStars();initMacroParticles();initRainDrops();buildTimeline();renderComposition();buildKeyToDisplay();
 document.getElementById('companion-name').textContent=COMPANIONS[currentChar].name;
 startTyping(COMPANIONS[currentChar].lines[lang][0]);
 applyLang();
