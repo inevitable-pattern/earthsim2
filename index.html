@@ -1210,27 +1210,35 @@ let UFO_BASE_COLOR='#5fd6a8';
 
 // ---- Object Editor bridge ----
 // The Object Editor (editor.html) saves its slots to localStorage under 'earthsim_editor_objects_slots'.
-// Each slot now carries a `colors` object (one color per named part, e.g. trunk/leaves for a tree, since
-// the editor supports per-shape coloring). This game doesn't run the editor's custom drawing code (that
-// would mean executing arbitrary saved JS in the render loop), but it DOES read back one "primary" color
-// per object and apply it to the matching creature here — so a color picked in the editor shows up
-// in-game after a refresh (or immediately, via the storage-event listener below, if both tabs are open).
-// Full multi-part / custom-shape reflection in-game is planned as a future plugin-style extension.
+// Colors now live INSIDE each object's source code as `let default_colorN = '#hex';` lines — that's what
+// makes a saved object fully self-contained/portable (it works standalone, called as draw(ctx,cx,cy,t,scale)
+// with no color args at all). This game doesn't run the editor's custom drawing code (that would mean
+// executing arbitrary saved JS in the render loop), but it DOES read back one "primary" default color per
+// object straight out of its source text and apply it to the matching creature here — so a color picked
+// in the editor shows up in-game after a refresh (or immediately, via the storage-event listener below,
+// if both tabs are open). Full custom-shape reflection in-game is planned as a future plugin-style extension.
 const EDITOR_COLOR_MAP={
   'Plankton':'plankton','Kelp':'kelp','Jellyfish':'jelly','Trilobite':'trilo','Shell / Mollusk':'shell',
   'Starfish':'star','Crab':'crab','Fish':'fish','Amphibian':'amph','Insect':'bug','Reptile':'rept',
   'Dinosaur (Sauropod)':'dino','Mammal':'mam','Bird':'bird','Fungi / Mushroom':'fungi',
   'Conifer Tree':'conifer','Flowering Tree':'flowering'
 };
-const EDITOR_PRIMARY_PART={'Fungi / Mushroom':'cap','Conifer Tree':'leaves','Flowering Tree':'leaves','UFO':'body'};
+const EDITOR_PRIMARY_INDEX={'Conifer Tree':1,'Flowering Tree':1}; // 0-based: these use their 2nd color (leaves) as the visible tint
+function parseDefaultColorsFromSource(source){
+  const re=/let\s+default_color(\d+)\s*=\s*'([^']*)'/g;
+  const arr=[];
+  let m;
+  while((m=re.exec(source||''))){ arr[parseInt(m[1],10)-1]=m[2]; }
+  return arr.filter(Boolean);
+}
 function pickPrimaryColor(s){
-  if(s.colors){
-    const part=EDITOR_PRIMARY_PART[s.name];
-    if(part && s.colors[part])return s.colors[part];
-    const keys=Object.keys(s.colors);
-    return keys.length?s.colors[keys[0]]:null;
+  const parsed=parseDefaultColorsFromSource(s.source);
+  if(parsed.length){
+    const idx=EDITOR_PRIMARY_INDEX[s.name]||0;
+    return parsed[idx]||parsed[0];
   }
-  return s.color||null; // backward compatibility with the older single-color format
+  if(s.colors){ const keys=Object.keys(s.colors); return keys.length?s.colors[keys[0]]:null; } // older metadata format
+  return s.color||null; // oldest single-color format
 }
 function applyEditorColorOverrides(){
   let raw;
