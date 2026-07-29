@@ -1037,7 +1037,77 @@ function toggleMusic(){
 }
 const bgMusicEl=document.getElementById('bg-music');
 if(bgMusicEl)bgMusicEl.addEventListener('error',()=>{if(musicOn)startProceduralMusic();});
+
+// ---- Pxtone playback (primary music path) ----
+// Streams AudioData chunks from Pxtone.Pxtone#stream() and schedules them back-to-back on a
+// single AudioContext for gapless playback — works with any browser that supports WebCodecs
+// AudioData + standard Web Audio, without needing MediaStreamTrackGenerator.
+let pxtonePlayer=null, pxtoneReader=null, pxtoneStopFlag=false, pxtoneNextStart=0, pxtoneTried=false;
+const PXTONE_TRACK_URL='demon_forest_last_bible_3.ptcop';
+async function ensurePxtonePlayer(){
+  if(pxtonePlayer)return pxtonePlayer;
+  if(typeof Pxtone==='undefined'||!Pxtone.Pxtone)throw new Error('Pxtone.js not loaded');
+  const res=await fetch(PXTONE_TRACK_URL);
+  if(!res.ok)throw new Error('Could not fetch '+PXTONE_TRACK_URL);
+  const buf=new Uint8Array(await res.arrayBuffer());
+  if(!Pxtone.Pxtone.validate(buf))throw new Error('Invalid .ptcop file');
+  const player=new Pxtone.Pxtone();
+  await player.read(buf);
+  pxtonePlayer=player;
+  return player;
+}
+async function pxtonePumpLoop(){
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')await audioCtx.resume();
+  while(!pxtoneStopFlag){
+    if(!pxtoneReader){
+      pxtoneReader=pxtonePlayer.stream().getReader();
+      pxtoneNextStart=audioCtx.currentTime+0.15;
+    }
+    const {value:audioData,done}=await pxtoneReader.read();
+    if(pxtoneStopFlag){ if(audioData)audioData.close(); break; }
+    if(done){ pxtoneReader=null; continue; } // loop the track when it ends
+    const numberOfFrames=audioData.numberOfFrames,numberOfChannels=audioData.numberOfChannels;
+    const audioBuffer=audioCtx.createBuffer(numberOfChannels,numberOfFrames,audioData.sampleRate);
+    for(let ch=0;ch<numberOfChannels;ch++){
+      const chData=new Float32Array(numberOfFrames);
+      audioData.copyTo(chData,{planeIndex:ch});
+      audioBuffer.copyToChannel(chData,ch);
+    }
+    audioData.close();
+    const source=audioCtx.createBufferSource();
+    source.buffer=audioBuffer;
+    const gain=audioCtx.createGain();gain.gain.value=0.5;
+    source.connect(gain);gain.connect(audioCtx.destination);
+    const startAt=Math.max(pxtoneNextStart,audioCtx.currentTime);
+    source.start(startAt);
+    pxtoneNextStart=startAt+audioBuffer.duration;
+    // pace ourselves so we don't decode/schedule far ahead of playback
+    const aheadBy=pxtoneNextStart-audioCtx.currentTime;
+    if(aheadBy>1.5) await new Promise(r=>setTimeout(r,(aheadBy-1)*1000));
+  }
+}
+async function startPxtoneMusic(){
+  await ensurePxtonePlayer();
+  pxtoneStopFlag=false;
+  pxtonePumpLoop().catch(()=>{ if(musicOn)startMusicFallback(); });
+}
+function stopPxtoneMusic(){
+  pxtoneStopFlag=true;
+  pxtoneReader=null;
+}
+
 function startMusic(){
+  if(!pxtoneTried){
+    pxtoneTried=true;
+    startPxtoneMusic().catch(()=>{ pxtonePlayer=null; startMusicFallback(); });
+  } else if(pxtonePlayer){
+    startPxtoneMusic().catch(()=>startMusicFallback());
+  } else {
+    startMusicFallback();
+  }
+}
+function startMusicFallback(){
   if(bgMusicEl){
     bgMusicEl.volume=0.4;
     const p=bgMusicEl.play();
@@ -1066,6 +1136,7 @@ function startProceduralMusic(){
   }catch(e){}
 }
 function stopMusic(){
+  stopPxtoneMusic();
   if(bgMusicEl){try{bgMusicEl.pause();bgMusicEl.currentTime=0;}catch(e){}}
   stopProceduralMusic();
 }
