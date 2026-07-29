@@ -6,7 +6,7 @@
 <title>Earth History Simulator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+html,body{width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
 #scale-root{width:940px;height:640px;transform-origin:center center;position:relative}
 #wrap{display:flex;gap:0;width:940px;height:640px;background:#000;font-family:'Courier New',monospace}
 #left{width:484px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px;gap:4px;position:relative}
@@ -17,8 +17,11 @@ html,body{width:100%;height:100%;background:#000;display:flex;align-items:center
 #lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
 #lang-btn:hover{background:#1a3a5c}
 #eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px;padding-left:40px}
-#macro-wrap{position:relative;width:440px;height:400px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000}
-canvas#macro{width:440px;height:400px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer}
+#macro-wrap{position:relative;width:440px;height:400px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000;overflow:hidden}
+canvas#macro{width:440px;height:400px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;transition:transform 0.15s;transform-origin:center center}
+#zoom-controls{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:5}
+.zoombtn{font-family:'Courier New',monospace;font-size:12px;width:20px;height:20px;line-height:18px;text-align:center;padding:0;background:rgba(10,22,40,0.8);color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
+.zoombtn:hover{border-color:#4ecb71;color:#4ecb71}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 #progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
 #progress-bar{height:100%;background:#1a5276;width:0%}
@@ -119,7 +122,11 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
   </div>
   <div id="macro-wrap">
     <canvas id="macro" width="176" height="160"></canvas>
-
+    <div id="zoom-controls">
+      <button class="zoombtn" onclick="zoomMacro(-1)" title="Zoom out">−</button>
+      <button class="zoombtn" onclick="zoomMacroReset()" title="Reset zoom">⤢</button>
+      <button class="zoombtn" onclick="zoomMacro(1)" title="Zoom in">+</button>
+    </div>
   </div>
   <div id="progress-outer">
     <div id="progress-bar"></div>
@@ -382,6 +389,20 @@ document.getElementById('macro').addEventListener('click',(ev)=>{
   else if(iy<FLOOR_BOT) setTab('bio');
   else setTab('crust');
 });
+
+// ---- 縦画面ビューのズーム ----
+let macroZoom=1;
+function applyMacroZoom(){
+  document.getElementById('macro').style.transform='scale('+macroZoom+')';
+}
+function zoomMacro(dir){
+  macroZoom=Math.max(1,Math.min(3,Math.round((macroZoom+dir*0.25)*100)/100));
+  applyMacroZoom();
+}
+function zoomMacroReset(){
+  macroZoom=1;
+  applyMacroZoom();
+}
 
 // ---- コンパニオン（ARK / PICO / AIKO） ----
 const COMPANIONS={
