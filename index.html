@@ -17,11 +17,14 @@ html,body{width:100%;height:100%;background:#000;display:flex;align-items:center
 #lang-btn{font-family:'Courier New',monospace;font-size:9px;padding:2px 7px;background:#0a1628;color:#ffec27;border:1px solid #ffec27;cursor:pointer;flex-shrink:0}
 #lang-btn:hover{background:#1a3a5c}
 #eon-badge{font-size:9px;color:#7ec8e3;text-align:center;min-height:14px;padding-left:40px}
-#macro-wrap{position:relative;width:440px;height:400px;border:2px solid #1a3a5c;box-shadow:0 0 0 1px #040e1c inset;background:#000;overflow:hidden}
-canvas#macro{width:440px;height:400px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;transition:transform 0.15s;transform-origin:center center}
-#zoom-controls{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:5}
+#macro-wrap{position:relative;width:440px;height:400px;background:#000;overflow:hidden}
+#macro-wrap:fullscreen{width:100vw;height:100vh}
+#macro-wrap:-webkit-full-screen{width:100vw;height:100vh}
+canvas#macro{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;transition:transform 0.15s;transform-origin:center center}
+#zoom-controls{position:absolute;top:4px;right:4px;display:flex;gap:3px;z-index:5;opacity:0;pointer-events:none;transition:opacity 0.2s ease}
+#macro-wrap:hover #zoom-controls{opacity:0.65;pointer-events:auto}
 .zoombtn{font-family:'Courier New',monospace;font-size:12px;width:20px;height:20px;line-height:18px;text-align:center;padding:0;background:rgba(10,22,40,0.8);color:#7ec8e3;border:1px solid #1a3a5c;cursor:pointer}
-.zoombtn:hover{border-color:#4ecb71;color:#4ecb71}
+.zoombtn:hover{border-color:#4ecb71;color:#4ecb71;opacity:1}
 #top-row2{position:absolute;top:4px;left:0;width:100%;display:flex;justify-content:space-between;padding:0 6px;pointer-events:none}
 #progress-outer{width:100%;height:8px;background:#040e1c;border:1px solid #1a3a5c;position:relative}
 #progress-bar{height:100%;background:#1a5276;width:0%}
@@ -124,7 +127,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
     <canvas id="macro" width="176" height="160"></canvas>
     <div id="zoom-controls">
       <button class="zoombtn" onclick="zoomMacro(-1)" title="Zoom out">−</button>
-      <button class="zoombtn" onclick="zoomMacroReset()" title="Reset zoom">⤢</button>
+      <button class="zoombtn" id="fs-btn" onclick="toggleMacroFullscreen()" title="Fullscreen">⤢</button>
       <button class="zoombtn" onclick="zoomMacro(1)" title="Zoom in">+</button>
     </div>
   </div>
@@ -399,10 +402,31 @@ function zoomMacro(dir){
   macroZoom=Math.max(1,Math.min(3,Math.round((macroZoom+dir*0.25)*100)/100));
   applyMacroZoom();
 }
-function zoomMacroReset(){
-  macroZoom=1;
-  applyMacroZoom();
+function toggleMacroFullscreen(){
+  const el=document.getElementById('macro-wrap');
+  const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
+  if(!fsEl){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+    if(req) req.call(el);
+  }else{
+    const exit=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
+    if(exit) exit.call(document);
+  }
 }
+function updateFsBtn(){
+  const btn=document.getElementById('fs-btn');
+  if(!btn) return;
+  const fsEl=document.fullscreenElement||document.webkitFullscreenElement;
+  if(fsEl){
+    btn.textContent='⤡';
+    btn.title='Exit Fullscreen';
+  }else{
+    btn.textContent='⤢';
+    btn.title='Fullscreen';
+  }
+}
+document.addEventListener('fullscreenchange',updateFsBtn);
+document.addEventListener('webkitfullscreenchange',updateFsBtn);
 
 // ---- コンパニオン（ARK / PICO / AIKO） ----
 const COMPANIONS={
