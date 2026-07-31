@@ -134,7 +134,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
     <canvas id="macro" width="176" height="160"></canvas>
     <div id="zoom-controls">
       <div id="volume-control">
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.4" oninput="setMusicVolume(this.value)" title="Volume">
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1" oninput="setMusicVolume(this.value)" title="Volume">
         <button class="zoombtn" id="mute-btn" onclick="toggleMute()" title="Mute">♪</button>
       </div>
       <button class="zoombtn" onclick="zoomMacro(-1)" title="Zoom out">−</button>
@@ -251,7 +251,7 @@ canvas#world-map{width:100%;max-width:220px;height:auto;image-rendering:pixelate
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             <button class="ebtn" onclick="saveGame()" id="btn-save">💾 SAVE</button>
             <button class="ebtn" onclick="loadGame()" id="btn-load">📂 LOAD</button>
-            <button class="ebtn" onclick="toggleMusic()" id="btn-music">🎵 OFF</button>
+            <button class="ebtn" onclick="toggleMusic()" id="btn-music">🎵 ON</button>
           </div>
         </div>
         <div class="climate-card" style="margin-bottom:6px;background:#0a1f14;border-color:#1e5c37">
@@ -1063,13 +1063,27 @@ function loadGame(){
     setEvent(T('load_ok'));
   }catch(e){setEvent(T('load_fail'));}
 }
-let audioCtx=null,musicOn=false,musicNodes=null;
-let musicVolume=0.4,musicMuted=false;
+let audioCtx=null,musicNodes=null;
+const AUDIO_SETTINGS_KEY='es_audio_settings';
+function loadAudioSettings(){
+  let s={musicOn:true,musicVolume:0.1,musicMuted:false};
+  try{
+    const raw=localStorage.getItem(AUDIO_SETTINGS_KEY);
+    if(raw)Object.assign(s,JSON.parse(raw));
+  }catch(e){}
+  return s;
+}
+function saveAudioSettings(){
+  try{localStorage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify({musicOn,musicVolume,musicMuted}));}catch(e){}
+}
+const _savedAudio=loadAudioSettings();
+let musicOn=_savedAudio.musicOn,musicVolume=_savedAudio.musicVolume,musicMuted=_savedAudio.musicMuted;
 function toggleMusic(){
   musicOn=!musicOn;
   const btn=document.getElementById('btn-music');
   if(musicOn){startMusic();if(btn)btn.textContent='🎵 ON';}
   else{stopMusic();if(btn)btn.textContent='🎵 OFF';}
+  saveAudioSettings();
 }
 const bgMusicEl=document.getElementById('bg-music');
 if(bgMusicEl)bgMusicEl.addEventListener('error',()=>{if(musicOn)startProceduralMusic();});
@@ -1136,12 +1150,30 @@ function setMusicVolume(v){
   musicVolume=parseFloat(v);
   if(musicVolume>0)musicMuted=false;
   applyVolume();
+  saveAudioSettings();
 }
 function toggleMute(){
   musicMuted=!musicMuted;
   applyVolume();
+  saveAudioSettings();
 }
-updateVolumeUI();
+(function initMusic(){
+  const btn=document.getElementById('btn-music');
+  if(btn)btn.textContent=musicOn?'🎵 ON':'🎵 OFF';
+  updateVolumeUI();
+  if(musicOn){
+    startMusic();
+    // some browsers block audio-with-sound until the user has interacted with the page —
+    // retry once on the first click/keypress if playback didn't actually start.
+    const retryOnGesture=()=>{
+      if(musicOn&&bgMusicEl&&bgMusicEl.paused)startMusic();
+      document.removeEventListener('pointerdown',retryOnGesture);
+      document.removeEventListener('keydown',retryOnGesture);
+    };
+    document.addEventListener('pointerdown',retryOnGesture,{once:true});
+    document.addEventListener('keydown',retryOnGesture,{once:true});
+  }
+})();
 function setSpd(s){spd=s;[0,1,5,20,100].forEach(v=>{const b=document.getElementById('b'+v);if(b)b.classList.toggle('active',v===s);});}
 
 function resetSim(){
