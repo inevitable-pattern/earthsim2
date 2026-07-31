@@ -407,7 +407,12 @@ document.getElementById('macro').addEventListener('click',(ev)=>{
 // ---- 縦画面ビューのズーム ----
 let macroZoom=1;
 function applyMacroZoom(){
-  document.getElementById('macro').style.transform='scale('+macroZoom+')';
+  const el=document.getElementById('macro');
+  el.style.transform='scale('+macroZoom+')';
+  // Re-render the shape-drawn cross-section at a resolution matching the zoom level instead of
+  // just stretching the existing low-res raster — keeps edges crisp instead of turning into big blocky dots.
+  const newW=Math.round(MW*macroZoom),newH=Math.round(MH*macroZoom);
+  if(el.width!==newW||el.height!==newH){el.width=newW;el.height=newH;}
 }
 function zoomMacro(dir){
   macroZoom=Math.max(1,Math.min(3,Math.round((macroZoom+dir*0.25)*100)/100));
@@ -1838,6 +1843,11 @@ function drawMacro(t){
   const dayPhase=(t*0.015)%1;
   const nightFactor=(Math.sin(dayPhase*Math.PI*2-Math.PI/2)+1)/2; // 0=night,1=day
 
+  // canvas width/height are resized to MW*macroZoom / MH*macroZoom when zooming (see applyMacroZoom),
+  // which resets the 2D context — reapply the scale + pixel-art setting every frame so all the
+  // existing shape draws (still written in MW/MH logical units) render at full zoomed resolution.
+  mctx.setTransform(macroZoom,0,0,macroZoom,0,0);
+  mctx.imageSmoothingEnabled=false;
   mctx.clearRect(0,0,MW,MH);
   if(quakeActive>0.02){
     const shakeMag=quakeActive*2.6;
