@@ -1068,7 +1068,6 @@ function loadGame(){
     setEvent(T('load_ok'));
   }catch(e){setEvent(T('load_fail'));}
 }
-let audioCtx=null,musicNodes=null;
 const AUDIO_SETTINGS_KEY='es_audio_settings';
 function loadAudioSettings(){
   let s={musicOn:true,musicVolume:0.1,musicMuted:false};
@@ -1091,58 +1090,22 @@ function toggleMusic(){
   saveAudioSettings();
 }
 const bgMusicEl=document.getElementById('bg-music');
-if(bgMusicEl)bgMusicEl.addEventListener('error',()=>{if(musicOn)startProceduralMusic();});
+if(bgMusicEl)bgMusicEl.addEventListener('error',()=>{
+  // silent to the user — just a console breadcrumb for debugging (e.g. unsupported codec/missing file)
+  console.warn('bg-music failed to load:',bgMusicEl.error&&bgMusicEl.error.message,bgMusicEl.error&&bgMusicEl.error.code);
+});
 
+// No synthetic "drone" fallback anymore — it kept getting triggered by autoplay-block races and
+// was more annoying than silence. If the real track can't play (blocked or errored), we just stay
+// quiet and let the next user gesture (button click, or the one-time retry below) try again.
 function startMusic(){
-  startMusicFallback();
-}
-function startMusicFallback(){
-  if(bgMusicEl){
-    bgMusicEl.volume=musicMuted?0:musicVolume;
-    const p=bgMusicEl.play();
-    // play() resolves/rejects asynchronously, so by the time this fires the user may have already
-    // hit OFF — recheck musicOn here or a stale callback can start the drone (or leave it running)
-    // after playback was supposed to have stopped.
-    if(p&&p.then){
-      p.then(()=>{ if(musicOn)stopProceduralMusic(); else stopMusic(); })
-       .catch(()=>{ if(musicOn)startProceduralMusic(); });
-    } else if(musicOn){
-      stopProceduralMusic();
-    }
-  } else if(musicOn){
-    startProceduralMusic();
-  }
-}
-function startProceduralMusic(){
-  stopProceduralMusic(); // always clear any previous set first — prevents overlapping drones
-  try{
-    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==='suspended')audioCtx.resume();
-    const master=audioCtx.createGain();master.gain.value=(musicMuted?0:musicVolume)*0.11;master.connect(audioCtx.destination);
-    const freqs=[110,146.83,164.81,220];
-    const oscs=freqs.map((f,i)=>{
-      const osc=audioCtx.createOscillator();osc.type='sine';osc.frequency.value=f;
-      const g=audioCtx.createGain();g.gain.value=0.5/(i+1);
-      osc.connect(g);g.connect(master);osc.start();
-      return osc;
-    });
-    const lfo=audioCtx.createOscillator();lfo.frequency.value=0.06;
-    const lfoGain=audioCtx.createGain();lfoGain.gain.value=0.018;
-    lfo.connect(lfoGain);lfoGain.connect(master.gain);lfo.start();
-    musicNodes={master,oscs,lfo};
-  }catch(e){}
+  if(!bgMusicEl)return;
+  bgMusicEl.volume=musicMuted?0:musicVolume;
+  const p=bgMusicEl.play();
+  if(p&&p.catch)p.catch(e=>console.warn('bg-music play() blocked/failed:',e&&e.message));
 }
 function stopMusic(){
   if(bgMusicEl){try{bgMusicEl.pause();bgMusicEl.currentTime=0;}catch(e){}}
-  stopProceduralMusic();
-}
-function stopProceduralMusic(){
-  if(musicNodes){
-    musicNodes.oscs.forEach(o=>{try{o.stop();o.disconnect();}catch(e){}});
-    try{musicNodes.lfo.stop();musicNodes.lfo.disconnect();}catch(e){}
-    try{musicNodes.master.disconnect();}catch(e){}
-    musicNodes=null;
-  }
 }
 
 // ---- Volume / Mute controls (zoom-controls cluster) ----
@@ -1156,16 +1119,6 @@ function updateVolumeUI(){
 function applyVolume(){
   const vol=musicMuted?0:musicVolume;
   if(bgMusicEl)bgMusicEl.volume=vol;
-  if(vol<=0){
-    // the drone's LFO is wired straight into the gain param, so setting gain to 0 alone
-    // doesn't actually silence it — fully stop it instead
-    stopProceduralMusic();
-  } else if(musicNodes&&musicNodes.master){
-    musicNodes.master.gain.value=vol*0.11;
-  } else if(musicOn&&bgMusicEl&&bgMusicEl.paused){
-    // real track isn't actually playing (blocked/failed) — resume the ambient fallback
-    startProceduralMusic();
-  }
   updateVolumeUI();
 }
 function setMusicVolume(v){
