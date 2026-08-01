@@ -1100,10 +1100,16 @@ function startMusicFallback(){
   if(bgMusicEl){
     bgMusicEl.volume=musicMuted?0:musicVolume;
     const p=bgMusicEl.play();
-    // once the real track is actually playing, make sure the ambient drone fallback isn't left running under it
-    if(p&&p.then)p.then(()=>stopProceduralMusic()).catch(()=>startProceduralMusic());
-    else stopProceduralMusic();
-  } else {
+    // play() resolves/rejects asynchronously, so by the time this fires the user may have already
+    // hit OFF — recheck musicOn here or a stale callback can start the drone (or leave it running)
+    // after playback was supposed to have stopped.
+    if(p&&p.then){
+      p.then(()=>{ if(musicOn)stopProceduralMusic(); else stopMusic(); })
+       .catch(()=>{ if(musicOn)startProceduralMusic(); });
+    } else if(musicOn){
+      stopProceduralMusic();
+    }
+  } else if(musicOn){
     startProceduralMusic();
   }
 }
